@@ -42,3 +42,6 @@ nosetests.xml
 # Pipy codes
 
 .pypirc
+
+# ipython stuff
+.ipynb_checkpoints
