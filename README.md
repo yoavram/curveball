@@ -1,16 +1,11 @@
-# curveball
+# Curveball
 
 
 ## Installation
 
-curveball can be installed by unzipping the source code in one directory and using this command:
+Curveball can be installed with:
 ```
-sudo python setup.py install
-```
-
-You can also install it directly from the Python Package Index with this command: ::
-```
-sudo pip curveball install
+pip install curveball
 ```
 
 ## Licence
@@ -19,4 +14,4 @@ See file LICENCE.txt in this folder
 
 
 ## Contribute
-curveball is an open-source software. Everyone is welcome to contribute !
+**curveball** is an open-source software. Everyone is welcome to contribute! Please Use issues and pull requests in the official [Github repository](https://github.com/yoavram/curveball)
