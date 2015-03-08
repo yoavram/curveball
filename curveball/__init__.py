@@ -4,5 +4,6 @@
 
 from .curveball import *
 from .io import *
+from .plate import Plate
 
 from .version import __version__
