@@ -92,4 +92,8 @@ class Plate(object):
 		self._click_square(i, j)
 		self.fig.canvas.draw()
 
-	
+if __name__ == '__main__':
+	plate = Plate.ninety_six_well(3)
+	plt.show()
+	fname = raw_input("What should I call it?\n")
+	plate.to_csv(fname)
