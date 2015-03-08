@@ -5,7 +5,7 @@
 
 Curveball can be installed with:
 ```
-pip install git+https://github.com/yoavram/curveball.git
+pip install git+https://github.com/yoavram/curveball.git#egg=curveball
 ```
 
 ## Licence
