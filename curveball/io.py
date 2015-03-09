@@ -49,6 +49,8 @@ def read_tecan_xlsx(filename, label, sheet=None, max_time=None, well2strain=None
         df['Number'] = map(lambda x: int(x[1:]), df.Well)
         if well2strain:
             df['Strain'] = map(well2strain, df.Well)
+        else:
+            df['Strain'] = df.Well
         if not max_time:
             max_time = df.Time.max()
         df = df[df.Time < max_time]
@@ -63,7 +65,6 @@ def read_tecan_xlsx(filename, label, sheet=None, max_time=None, well2strain=None
         lbl,df = dataframes[0]
         lbl = '_' + lbl
         for lbli,dfi in dataframes[1:]:
-            lbli = '_' + lbli
-            print lbl,lbli
+            lbli = '_' + lbli            
             df = pd.merge(df, dfi, on=('Cycle Nr.','Well','Letter','Number','Strain'), suffixes=(lbl,lbli))
         return df
