@@ -35,6 +35,23 @@ class PlateTest(unittest.TestCase):
 		import filecmp
 		self.assertTrue(filecmp.cmp(tmpname, fname))
 
+	def test_to_array(self):
+		plate  = Plate.ninety_six_wells(2)
+		arr = plate.to_array()
+		self.assertTrue((arr == 0).all())
+		self.assertEquals(arr.shape, (8,12))
+
+	def test_well2strain(self):
+		plate  = Plate.ninety_six_wells(2)
+		plate.strains = self.strains
+		well2strain = plate.well2strain
+		self.assertEquals(well2strain('A1'), 1)
+		self.assertEquals(well2strain('A3'), 0)
+		self.assertEquals(well2strain('C2'), 0)
+		self.assertEquals(well2strain('C3'), 2)
+		self.assertEquals(well2strain('G12'), 0)
+		self.assertEquals(well2strain('G8'), 4)
+
 
 if __name__ == '__main__':
     unittest.main()

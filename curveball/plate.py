@@ -14,9 +14,10 @@ from matplotlib.patches import RegularPolygon
 class Plate(object):
 	edge_color = '#888888'    
 	all_colors = ('none', 'blue', 'green', 'red', 'darkblue', 'darkred', 'darkgreen', 'black', 'black')
+	ABCD = 'ABCDEFGHIJKLMNOPQRSTUVQXYZ'
 
 	@classmethod
-	def ninety_six_well(cls, nstrains=2):
+	def ninety_six_wells(cls, nstrains=2):
 		return cls(12, 8, nstrains)
 
 	@classmethod
@@ -41,8 +42,12 @@ class Plate(object):
 		return np.savetxt(fname, np.rot90(self.strains), fmt='%d', delimiter=', ')
 
 
+	def to_array(self):
+		return np.rot90(self.strains)
+
+
 	def __repr__(self):
-		return str(np.rot90(self.strains))
+		return str(self.to_array())
   
 
 	def __init__(self, width, height, nstrains):
@@ -92,8 +97,17 @@ class Plate(object):
 		self._click_square(i, j)
 		self.fig.canvas.draw()
 
+
+	def well2strain(self, well):
+		'''well: a string of letter+number'''
+		j = int(well[1:]) - 1 # zero count
+		letter = well[0]
+		i = self.ABCD.index(letter.upper())
+		return self.to_array()[i,j]
+
+
 if __name__ == '__main__':
 	plate = Plate.ninety_six_well(3)
 	plt.show()
-	fname = raw_input("What should I call it?\n")
+	fname = raw_input("Plate filename?\n")
 	plate.to_csv(fname)
