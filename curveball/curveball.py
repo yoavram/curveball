@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-def plot_96wells(df, y, x='Time', func=plt.plot, strains=None, output_filename=None):
+def plot_96wells(df, x, y, func=plt.plot, strains=None, output_filename=None):
 	if strains==None:
 		strains=[]
 	if 'Strain' in df:
