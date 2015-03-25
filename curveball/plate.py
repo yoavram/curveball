@@ -106,8 +106,8 @@ class Plate(object):
 		return self.to_array()[i,j]
 
 
-if __name__ == '__main__':
-	plate = Plate.ninety_six_well(3)
+if __name__ == '__main__':	
+	plate = Plate.ninety_six_wells(3)
 	plt.show()
 	fname = raw_input("Plate filename?\n")
 	plate.to_csv(fname)
