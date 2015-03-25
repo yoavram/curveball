@@ -106,7 +106,12 @@ class Plate(object):
 		return self.to_array()[i,j]
 
 
-if __name__ == '__main__':	
+if __name__ == '__main__':
+	import sys
+	if len(sys.argv) > 1:
+		nstrains = int(sys.argv[1])		
+	else:
+		nstrains = 3
 	plate = Plate.ninety_six_wells(3)
 	plt.show()
 	fname = raw_input("Plate filename?\n")
