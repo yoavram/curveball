@@ -26,7 +26,7 @@ class Plate(object):
 		strains = np.rot90(strains, 3)
 		nstrains = len(np.unique(strains))
 		if not 0 in strains:
-			nstrains += 1            
+			nstrains += 1
 		plate = cls(strains.shape[0], strains.shape[1], nstrains)
 		plate.strains = strains
 		for i in range(plate.width):
@@ -51,7 +51,7 @@ class Plate(object):
   
 
 	def __init__(self, width, height, nstrains):
-		self.width, self.height, self.nstrains = width, height, nstrains+1     
+		self.width, self.height, self.nstrains = width, height, nstrains    
 		# http://web.stanford.edu/~mwaskom/software/seaborn/tutorial/color_palettes.html
 		self.colors = ["#95a5a6"] + sns.color_palette("Set1", self.nstrains)
 	

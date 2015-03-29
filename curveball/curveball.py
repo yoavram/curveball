@@ -1,17 +1,14 @@
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-def plot_96wells(df, x, y, func=plt.plot, strains=None, output_filename=None):
-	if strains==None:
-		strains=[]
+def plot_96wells(df, x, y, func=plt.plot, output_filename=None):
 	if 'Strain' in df:
 		hue = 'Strain'
 	else:
 		hue = 'Well'
 	g = sns.FacetGrid(df, hue=hue, col='Number', row='Letter', 
                   sharex=True, sharey=True, size=1,
-                  aspect=12./8., despine=True,margin_titles=True,
-                  hue_order=strains, palette=sns.color_palette("Set1", 4))
+                  aspect=12./8., despine=True,margin_titles=True)
 	g.map(func, x, y)
 	g.fig.set_figwidth(12) 
 	g.fig.set_figheight(8)
