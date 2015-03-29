@@ -10,10 +10,10 @@ License: BSD
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.patches import RegularPolygon
+import seaborn as sns
 
 class Plate(object):
 	edge_color = '#888888'    
-	all_colors = ('none', 'blue', 'green', 'red', 'darkblue', 'darkred', 'darkgreen', 'black', 'black')
 	ABCD = 'ABCDEFGHIJKLMNOPQRSTUVQXYZ'
 
 	@classmethod
@@ -52,8 +52,8 @@ class Plate(object):
 
 	def __init__(self, width, height, nstrains):
 		self.width, self.height, self.nstrains = width, height, nstrains+1     
-
-		self.colors = self.all_colors[:self.nstrains]
+		# http://web.stanford.edu/~mwaskom/software/seaborn/tutorial/color_palettes.html
+		self.colors = ["#95a5a6"] + sns.color_palette("Set1", self.nstrains)
 	
 		# Create the figure and axes
 		self.fig = plt.figure(figsize=((width + 2) / 3., (height + 2) / 3.))
@@ -109,10 +109,11 @@ class Plate(object):
 if __name__ == '__main__':
 	import sys
 	if len(sys.argv) > 1:
-		nstrains = int(sys.argv[1])		
+		nstrains = int(sys.argv[1])			
 	else:
 		nstrains = 3
-	plate = Plate.ninety_six_wells(3)
+	print "# strains:", nstrains
+	plate = Plate.ninety_six_wells(nstrains)
 	plt.show()
 	fname = raw_input("Plate filename?\n")
 	plate.to_csv(fname)
