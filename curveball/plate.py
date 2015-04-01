@@ -13,7 +13,8 @@ from matplotlib.patches import RegularPolygon
 import seaborn as sns
 
 class Plate(object):
-	edge_color = '#888888'    
+	edge_color = '#888888'
+	bg_color = "#95a5a6"    
 	ABCD = 'ABCDEFGHIJKLMNOPQRSTUVQXYZ'
 
 	@classmethod
@@ -22,19 +23,30 @@ class Plate(object):
 
 	@classmethod
 	def from_csv(cls, filename):
-		strains = np.loadtxt(filename, dtype=int, delimiter=', ')
-		strains = np.rot90(strains, 3)
+		strains = np.loadtxt(filename, dtype=object, delimiter=', ')
+		strains = np.rot90(strains, 3)				
 		nstrains = len(np.unique(strains))
-		if not 0 in strains:
-			nstrains += 1
+		palette = sns.color_palette("Set1", nstrains)
+
 		plate = cls(strains.shape[0], strains.shape[1], nstrains)
 		plate.strains = strains
+		plate.colors  = {0: '#ffffff'}
+
 		for i in range(plate.width):
 			for j in range(plate.height):
-				col = strains[i,j]
-				if col > 0:
-					col = plate.colors[col]                
-					plate.squares[i,j].set_facecolor(col)   
+				strain = strains[i,j]
+				# if number, parse to int
+				try:
+					strain = int(strain)
+					strains[i,j] = strain
+				except ValueError:
+					pass
+				# if not already in colors, set color
+				if strain not in plate.colors:
+					plate.colors[strain] = palette.pop()
+				# get color and paint the well
+				color = plate.colors[strain]
+				plate.squares[i,j].set_facecolor(color)
 		return plate
 	
 
@@ -52,9 +64,7 @@ class Plate(object):
 
 	def __init__(self, width, height, nstrains):
 		self.width, self.height, self.nstrains = width, height, nstrains    
-		# http://web.stanford.edu/~mwaskom/software/seaborn/tutorial/color_palettes.html
-		self.colors = ["#95a5a6"] + sns.color_palette("Set1", self.nstrains)
-	
+		
 		# Create the figure and axes
 		self.fig = plt.figure(figsize=((width + 2) / 3., (height + 2) / 3.))
 		self.ax = self.fig.add_axes((0.05, 0.05, 0.9, 0.9),
@@ -71,7 +81,7 @@ class Plate(object):
 												 radius=0.5 * np.sqrt(2),
 												 orientation=np.pi / 4,
 												 ec=self.edge_color,
-												 fc=self.colors[0])
+												 fc=self.bg_color)
 								  for j in range(height)]
 								 for i in range(width)])
 		[self.ax.add_patch(sq) for sq in self.squares.flat]  
