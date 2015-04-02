@@ -92,19 +92,22 @@ class Plate(object):
 	def colormap(self):
 		return self._colormap
 
-
 	@property 
 	def strainmap(self):
 		return self._strainmap
 
+	@property 
+	def wellmap(self):
+		return self._wellmap
+
 	def strain2wells(self, strain):
-		return self._strainmap[strain]
+		return self.strainmap[strain]
 
 	def strain2color(self, strain):
-		return self._colormap[strain]
+		return self.colormap[strain]
 
 	def well2strain(self, well):
-		return self._wellmap[well]
+		return self.wellmap[well]
 
 	def well2color(self, well):
 		strain = self.well2strain(well)
