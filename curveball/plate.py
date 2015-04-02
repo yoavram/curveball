@@ -113,9 +113,8 @@ class Plate(object):
 		strain = self.well2strain(well)
 		return self.strain2color(strain)
 
-	def __repr__(self):
-		pass
-		#return str(self.to_array())
+	def __repr__(self):		
+		return str(self.to_array())
   
 
 		

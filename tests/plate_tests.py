@@ -31,6 +31,11 @@ class PlateTest(unittest.TestCase):
 		self.assertTrue((plate._array == self.array).all())
 
 
+	def test_repr(self):
+		plate = Plate(self.array)
+		self.assertEquals(str(plate), str(self.array))
+
+
 	def test_from_csv(self):
 		plate  = Plate.from_csv(fname)
 		self.assertTrue((plate._array == self.array).all())
