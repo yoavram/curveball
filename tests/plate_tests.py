@@ -52,5 +52,21 @@ class PlateTest(unittest.TestCase):
 		self.assertFalse(arr is self.array)
 
 
+	def test_get_strains(self):
+		plate  = Plate(self.array)
+		strains = plate.strains
+		self.assertEquals(strains,[0,1,2,3,4])
+
+
+	def test_colormap(self):
+		plate  = Plate(self.array)
+		colormap = plate.colormap
+		self.assertEquals(sorted(colormap.keys()), plate.strains)
+		self.assertEquals(colormap[0], Plate.BLANK_COLOR)
+		colors = sorted(colormap.values())
+		colorset = sorted(set(colors))
+		self.assertEquals(colors, colorset)
+
+
 if __name__ == '__main__':
     unittest.main()

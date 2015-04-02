@@ -6,16 +6,19 @@ import seaborn as sns
 class Plate(object):
 	#edge_color = '#888888'
 	#bg_color = "#95a5a6"    
+	BLANK_COLOR = '#ffffff'
 
-	def __init__(self, array):		
+	def __init__(self, array, palette=sns.color_palette()):		
 		self._array = array
+		self._palette = [Plate.BLANK_COLOR] + palette
 		for i in range(self._array.shape[0]):
 			for j in range(self._array.shape[1]):
 				## convert to int if possible
 				try:
 					self._array[i,j] = int(self._array[i,j])
 				except ValueError:
-					pass			
+					pass
+		self._colormap = dict(zip(self.strains, self._palette))
 		# self.width, self.height, self.nstrains = width, height, nstrains    
 		
 		# # Create the figure and axes
@@ -60,7 +63,16 @@ class Plate(object):
 
 	def to_array(self):
 		return self._array.copy()
-		#return np.rot90(self.strains)
+
+	
+	@property
+	def strains(self):
+		return sorted(np.unique(self._array))
+
+
+	@property 
+	def colormap(self):
+		return self._colormap
 
 
 	def __repr__(self):
