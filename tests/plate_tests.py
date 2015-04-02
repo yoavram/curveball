@@ -5,6 +5,7 @@ import tempfile
 import os
 import filecmp
 import seaborn as sns
+#from test.test_support import captured_stdout
 
 fname = 'tests/plate.csv'
 
@@ -107,6 +108,12 @@ class PlateTest(unittest.TestCase):
 		self.assertEquals(plate.well2color('E5'), palette[2])
 		self.assertEquals(plate.well2color('G7'), palette[3])
 		self.assertEquals(plate.well2color('G12'), Plate.BLANK_COLOR)
+
+
+	def test_empty_96_wells(self):
+		plate = Plate.empty_96_wells()
+		self.assertEquals(plate.shape, (8,12))
+		self.assertEquals(plate.strains, [0])
 
 
 if __name__ == '__main__':

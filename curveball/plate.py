@@ -64,9 +64,9 @@ class Plate(object):
 		# self.fig.canvas.mpl_connect('button_press_event', self._button_press)
 		
 
-	#@classmethod
-	#def ninety_six_wells(cls, nstrains=2):
-#		return cls(12, 8, nstrains)
+	@classmethod
+	def empty_96_wells(cls):
+		return cls(np.zeros((8,12), dtype=int))
 
 
 	@classmethod
@@ -100,6 +100,11 @@ class Plate(object):
 	def wellmap(self):
 		return self._wellmap
 
+
+	@property 
+	def shape(self):
+		return self._array.shape
+
 	def strain2wells(self, strain):
 		return self.strainmap[strain]
 
@@ -116,11 +121,7 @@ class Plate(object):
 	def __repr__(self):		
 		return str(self.to_array())
   
-
-		
-	
-	
-
-
 if __name__ == '__main__':
-	pass
+	import argparse
+	parser = argparse.ArgumentParser()
+	parser.parse_args()
