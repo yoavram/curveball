@@ -1,56 +1,49 @@
 import unittest
 from curveball import Plate
 import numpy as np
+import tempfile
+import os
+import filecmp
 
 
-fname = 'tests/strains.csv'
-tmpname = 'tests/tmp.csv'
+fname = 'tests/plate.csv'
 
 
 class PlateTest(unittest.TestCase):
 	def setUp(self):
-		self.strains = np.array([[0, 0, 0, 0, 0, 0, 1, 1],
-								[0, 0, 0, 0, 0, 0, 1, 1],
-								[0, 0, 0, 0, 2, 2, 0, 0],
-								[0, 0, 0, 0, 2, 2, 0, 0],
-								[0, 0, 3, 3, 0, 0, 0, 0],
-								[0, 0, 3, 3, 0, 0, 0, 0],
-								[4, 4, 0, 0, 0, 0, 0, 0],
-								[4, 4, 0, 0, 0, 0, 0, 0],
-								[0, 0, 0, 0, 0, 0, 0, 0],
-								[0, 0, 0, 0, 0, 0, 0, 0],
-								[0, 0, 0, 0, 0, 0, 0, 0],
-								[0, 0, 0, 0, 0, 0, 0, 0]])
+		self.matrix = np.array([[1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+								[1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+								[0, 0, 2, 2, 0, 0, 0, 0, 0, 0, 0, 0],
+								[0, 0, 2, 2, 0, 0, 0, 0, 0, 0, 0, 0],
+								[0, 0, 0, 0, 3, 3, 0, 0, 0, 0, 0, 0],
+								[0, 0, 0, 0, 3, 3, 0, 0, 0, 0, 0, 0],
+								[0, 0, 0, 0, 0, 0, 4, 4, 0, 0, 0, 0],
+								[0, 0, 0, 0, 0, 0, 4, 4, 0, 0, 0, 0]])
+
+
+	def test_init(self):
+		plate = Plate(self.matrix)
+		self.assertTrue((plate._matrix == self.matrix).all())
 
 
 	def test_from_csv(self):
 		plate  = Plate.from_csv(fname)
-		self.assertTrue((plate.strains == self.strains).all())
+		self.assertTrue((plate._matrix == self.matrix).all())
 
 
 	def test_to_csv(self):
-		plate = Plate(self.strains.shape[1], self.strains.shape[0], 5)
-		plate.strains = self.strains.copy()
-		plate.to_csv(tmpname)
-		import filecmp
-		self.assertTrue(filecmp.cmp(tmpname, fname))
+		plate = Plate(self.matrix)
+		output = tempfile.NamedTemporaryFile(delete=False)
+		plate.to_csv(output.name)
+		self.assertTrue(filecmp.cmp(output.name, fname))		
+		os.remove(output.name)
+
 
 	def test_to_array(self):
-		plate  = Plate.ninety_six_wells(2)
+		plate  = Plate(self.matrix)
 		arr = plate.to_array()
-		self.assertTrue((arr == 0).all())
-		self.assertEquals(arr.shape, (8,12))
-
-	def test_well2strain(self):
-		plate  = Plate.ninety_six_wells(2)
-		plate.strains = self.strains
-		well2strain = plate.well2strain
-		self.assertEquals(well2strain('A1'), 1)
-		self.assertEquals(well2strain('A3'), 0)
-		self.assertEquals(well2strain('C2'), 0)
-		self.assertEquals(well2strain('C3'), 2)
-		self.assertEquals(well2strain('G12'), 0)
-		self.assertEquals(well2strain('G8'), 4)
+		self.assertTrue((arr == self.matrix).all())
+		self.assertFalse(arr is self.matrix)
 
 
 if __name__ == '__main__':
