@@ -19,6 +19,11 @@ class PlateTest(unittest.TestCase):
 								[0, 0, 0, 0, 3, 3, 0, 0, 0, 0, 0, 0],
 								[0, 0, 0, 0, 0, 0, 4, 4, 0, 0, 0, 0],
 								[0, 0, 0, 0, 0, 0, 4, 4, 0, 0, 0, 0]])
+		np.savetxt(fname, self.array, fmt='%s', delimiter=', ')
+
+
+	def tearDown(self):
+		os.remove(fname)
 
 
 	def test_init(self):
@@ -35,7 +40,8 @@ class PlateTest(unittest.TestCase):
 		plate = Plate(self.array)
 		output = tempfile.NamedTemporaryFile(delete=False)
 		plate.to_csv(output.name)
-		self.assertTrue(filecmp.cmp(output.name, fname))		
+		self.assertTrue(filecmp.cmp(output.name, fname))
+		output.close()	
 		os.remove(output.name)
 
 
