@@ -7,18 +7,36 @@ class Plate(object):
 	#edge_color = '#888888'
 	#bg_color = "#95a5a6"    
 	BLANK_COLOR = '#ffffff'
+	ABC = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
 
 	def __init__(self, array, palette=sns.color_palette()):		
 		self._array = array
 		self._palette = [Plate.BLANK_COLOR] + palette
+
+		## convert to int if possible
 		for i in range(self._array.shape[0]):
 			for j in range(self._array.shape[1]):
-				## convert to int if possible
+				
 				try:
 					self._array[i,j] = int(self._array[i,j])
 				except ValueError:
 					pass
+
+		## colormap maps strain name to strain color in plots
 		self._colormap = dict(zip(self.strains, self._palette))
+
+		## strainmap maps strain name to strain well names
+		strainmap = {}
+		wellmap = {}
+		for i in range(self._array.shape[0]):
+			for j in range(self._array.shape[1]):
+				well = Plate.ABC[i] + str(j + 1)
+				strain = self._array[i,j]
+				wellmap[well] = strain
+				strainmap[strain] = strainmap.get(strain, []) + [well]
+		self._strainmap = {k:tuple(v) for k,v in strainmap.items()}
+		self._wellmap = wellmap
+
 		# self.width, self.height, self.nstrains = width, height, nstrains    
 		
 		# # Create the figure and axes
@@ -74,6 +92,23 @@ class Plate(object):
 	def colormap(self):
 		return self._colormap
 
+
+	@property 
+	def strainmap(self):
+		return self._strainmap
+
+	def strain2wells(self, strain):
+		return self._strainmap[strain]
+
+	def strain2color(self, strain):
+		return self._colormap[strain]
+
+	def well2strain(self, well):
+		return self._wellmap[well]
+
+	def well2color(self, well):
+		strain = self.well2strain(well)
+		return self.strain2color(strain)
 
 	def __repr__(self):
 		pass
