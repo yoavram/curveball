@@ -5,30 +5,61 @@ from string import ascii_uppercase
 import seaborn as sns
 sns.set_style("ticks")
 
-def plot_timeseries(df, x, y, func=plt.plot, output_filename=None):
-    if 'Color' in df:
-        hue = 'Strain'
-        palette = df.Color.unique()
-        hue_order = df.Strain.unique()
-    else:
-        hue = 'Well'
-        palette = df.Color
-        hue_order = df.Well
-	palette[palette == '#ffffff'] = '#000000'
-    g = sns.FacetGrid(df, hue=hue, col='Col', row='Row',
+def plot_timeseries_grid(df, x, y, func=plt.plot, output_filename=None):
+	if 'Strain' in df:
+		hue = 'Strain'
+		palette = df.Color.unique()
+		hue_order = df.Strain.unique()
+		palette[palette == '#ffffff'] = '#000000'
+	else:
+		hue = 'Well'
+		palette = sns.color_palette()
+		hue_order = df.Well
+	height = len(df.Row.unique())
+	width = len(df.Col.unique())
+	g = sns.FacetGrid(df, hue=hue, col='Col', row='Row',
                       palette=palette, hue_order=hue_order,
                       sharex=True, sharey=True, size=1,
-                      aspect=12./8., despine=True,margin_titles=True)
-    g.map(func, x, y)
-    g.fig.set_figwidth(12)
-    g.fig.set_figheight(8)
-    plt.locator_params(nbins=4) # 4 ticks is enough
-    g.set_axis_labels('','') 	# remove facets axis labels
-    g.fig.text(0.5, 0, x, size='x-large') # xlabel
-    g.fig.text(-0.01, 0.5, y, size='x-large', rotation='vertical') # ylabel
-    if output_filename:
-        g.savefig(output_filename, bbox_inches='tight', pad_inches=1)
-    return g
+                      aspect=width/float(height), despine=True,margin_titles=True)
+	g.map(func, x, y)
+	g.fig.set_figwidth(width)
+	g.fig.set_figheight(height)
+	plt.locator_params(nbins=4) # 4 ticks is enough
+	g.set_axis_labels('','') 	# remove facets axis labels
+	g.fig.text(0.5, 0, x, size='x-large') # xlabel
+	g.fig.text(-0.01, 0.5, y, size='x-large', rotation='vertical') # ylabel
+	if output_filename:
+		g.savefig(output_filename, bbox_inches='tight', pad_inches=1)
+	return g
+
+
+def plot_mean_timeseries(df, x='Time', y='OD', output_filename=None):
+	palette = df.Color.unique()
+	palette[palette == '#ffffff'] = '#000000'
+	grp = df.groupby(by=('Strain','Cycle Nr.'))
+	agg = grp.mean().reset_index()
+	g = sns.FacetGrid(agg, hue='Strain', size=5, aspect=1.5, palette=palette, hue_order=df.Strain.unique())
+	g.map(plt.plot, x, y);
+	g.add_legend()
+	if output_filename:
+		g.savefig(output_filename, bbox_inches='tight', pad_inches=1)
+	return g
+
+
+def tsplot(df, x='Time', y='OD', alfa=0.05, output_filename=None):
+	if 'Strain' in df:
+		condition = 'Strain'
+		palette = df.Color.unique()
+		palette[palette == '#ffffff'] = '#000000'
+	else:
+		condition = 'Well'
+		palette = sns.color_palette()
+	g = sns.tsplot(df, time=x, unit='Well', condition=condition, value=y,
+					err_style='ci_band', ci=100 * (1 - alfa), color=palette)
+	sns.despine()
+	if output_filename:
+		g.savefig(output_filename, bbox_inches='tight', pad_inches=1)
+	return g
 
 
 def plot_plate(df, edge_color='#888888'):
