@@ -26,7 +26,7 @@ def plot_timeseries(df, x, y, func=plt.plot, output_filename=None):
 
 
 def plot_plate(df, edge_color='#888888'):
-    plate = df.pivot('row', 'col', 'color').as_matrix()
+    plate = df.pivot('Row', 'Col', 'Color').as_matrix()
     height, width = plate.shape
     fig = plt.figure(figsize=((width + 2) / 3., (height + 2) / 3.))
     ax = fig.add_axes((0.05, 0.05, 0.9, 0.9),
