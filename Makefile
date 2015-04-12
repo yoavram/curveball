@@ -24,5 +24,5 @@ test:
 tox:
 	@tox
 
-docs:
-	@cd curveball/docs && make html && open _build/html/index.html
+doc:
+	@cd docs && make html && open _build/html/index.html
