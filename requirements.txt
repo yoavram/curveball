@@ -1,0 +1,11 @@
+lmfit===7255579c628ed5c8eeb9fc4bb10436009d6ec07c
+matplotlib==1.4.3
+numpy==1.9.2
+pandas==0.16.0
+pyparsing==2.0.3
+python-dateutil==2.4.2
+pytz==2015.2
+scipy==0.15.1
+seaborn==0.5.1
+six==1.9.0
+xlrd==0.9.3
