@@ -12,6 +12,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 sns.set_style("ticks")
 
+from scipy.stats import chisqprob
 from lmfit import Model
 
 
@@ -76,6 +77,57 @@ def baranyi_roberts_function(t, y0, r, K, nu, q0, v):
     return K / ((1 - (1 - (K/y0)**nu) * np.exp( -r * nu * At ))**(1./nu))
 
 
+def lrtest(m0, m1, alfa=0.05):
+    r"""Perform a likelihood ratio test on two nested models.
+
+    For two models, one nested in the other (meaning that the nested model estimated parameters are a subset of the nesting model), the test statistic :math:`D` is:
+
+    .. math::
+
+        \Lambda = \Big( \Big(\frac{\sum{(X_i - \hat{X_i}(\theta_1))^2}}{\sum{(X_i - \hat{X_i}(\theta_0))^2}}\Big)^{n/2} \Big)
+
+        D = -2 log \Lambda
+
+        lim_{n \to \infty} D \sim \chi^2_{df=\Delta}
+
+
+    where :math:`\Lambda` is the likelihood ratio, :math:`D` is the statistic, :math:`X_{i}` are the data points, :math:`\hat{X_i}(\theta)` is the model prediction with parameters :math:`\theta`, :math:`\theta_i` is the parameters estimation for model :math:`i`, $n$ is the number of data points and :math:`\Delta` is the difference in number of parameters between the models.
+
+    The function compares between two `lmfit.ModelFit` objects. These are the results of fitting models to the same data set using the `lmfit package <lmfit.github.io/lmfit-py>`_
+
+    The function compares between model fit `m0` and `m1` and assumes that `m0` is nested in `m1`, meaning that the set of varying parameters of `m0` is a subset of the varying parameters of `m1`. The property `chisqr` of the `ModelFit` objects is the sum of the square of the residuals of the fit. `ndata` is the number of data points. `nvarys` is the number of varying parameters.
+
+    Args:
+        m0, m1: `lmfit.Model` objects representing two models. `m0` is nested in `m1`.
+        alfa: The test significance level (default 5%).
+
+    Returns:
+        prefer_m1: a boolean, should we prefer `m1` over `m0`.
+        pval: the test p-value
+        D: the test statistic
+        ddf: the number of degrees of freedom
+
+    See also: `Generalized Likelihood Ratio Test Example <http://www.stat.sc.edu/~habing/courses/703/GLRTExample.pdf>`_, `IPython notebook <http://nbviewer.ipython.org/github/yoavram/ipython-notebooks/blob/master/likelihood%20ratio%20test.ipynb>`_
+    """
+    n0 = m0.ndata
+    k0 = m0.nvarys
+    chisqr0 = m0.chisqr
+    assert chisqr0 > 0
+    n1 = m1.ndata
+    assert n0 == n1
+    k1 = m1.nvarys
+    chisqr1 = m1.chisqr
+    assert chisqr1 > 0
+    Lambda = (m1.chisqr / m0.chisqr)**(n0 / 2.)
+    D = -2 * np.log( Lambda )
+    assert D > 0
+    ddf = k1 - k0
+    assert ddf > 0
+    pval = chisqprob(D, ddf)
+    prefer_m1 = pval < alfa
+    return prefer_m1, pval, D, ddf
+
+
 def fit_model(df, well=None, ax=None, PLOT=True, PRINT=True):
     _df = df[df.Well == well].copy() if well != None else df.copy()
     models = []
@@ -85,8 +137,8 @@ def fit_model(df, well=None, ax=None, PLOT=True, PRINT=True):
     nuguess = 1.0
     _df['dODdTime'] = np.gradient(_df.OD, _df.Time)
     rguess  = 4 * _df.dODdTime[~np.isinf(_df.dODdTime)].max() / Kguess
-    params = baranyi_roberts_model.make_params(y0=y0guess, K=Kguess, r=rguess, nu=nuguess, q0=1.0, v=1.0)
 
+    params = baranyi_roberts_model.make_params(y0=y0guess, K=Kguess, r=rguess, nu=nuguess, q0=1.0, v=1.0)
     params['y0'].set(min=1-10)
     params['K'].set(min=1-10)
     params['r'].set(min=1-10)
@@ -99,8 +151,7 @@ def fit_model(df, well=None, ax=None, PLOT=True, PRINT=True):
     models.append(result)
 
     # Baranyi /w nu=1 = Logistic /w lag (5 params)
-    params['q0'].set(vary=True)
-    params['v'].set(vary=True)
+    params['nu'].set(vary=False)
     result = baranyi_roberts_model.fit(data=_df.OD, t=_df.Time, params=params)
     models.append(result)
 
