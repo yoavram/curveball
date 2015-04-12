@@ -90,7 +90,7 @@ def read_tecan_xlsx(filename, label, sheet=None, max_time=None, plate=None):
     if len(dataframes) == 0:
         return pd.DataFrame()
     if len(dataframes) == 1:
-        return dataframes[0]
+        return dataframes[0][1]
     else:
         # FIXME last label isn't used as a suffix, not sure why
         lbl,df = dataframes[0]
