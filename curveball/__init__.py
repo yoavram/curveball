@@ -3,6 +3,7 @@
 # __all__ = []
 
 from .curveball import *
-from .io import *
+import io
+import models
 
 from .version import __version__

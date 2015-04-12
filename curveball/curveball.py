@@ -1,9 +1,11 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from matplotlib.patches import RegularPolygon
-from string import ascii_uppercase
 import seaborn as sns
 sns.set_style("ticks")
+
+from matplotlib.patches import RegularPolygon
+from string import ascii_uppercase
+
 
 def plot_timeseries_grid(df, x, y, func=plt.plot, output_filename=None):
 	if 'Strain' in df:
@@ -36,7 +38,7 @@ def plot_timeseries_grid(df, x, y, func=plt.plot, output_filename=None):
 def plot_mean_timeseries(df, x='Time', y='OD', output_filename=None):
 	palette = df.Color.unique()
 	palette[palette == '#ffffff'] = '#000000'
-	grp = df.groupby(by=('Strain','Cycle Nr.'))
+	grp = df.groupby(by=('Strain', 'Cycle Nr.'))
 	agg = grp.mean().reset_index()
 	g = sns.FacetGrid(agg, hue='Strain', size=5, aspect=1.5, palette=palette, hue_order=df.Strain.unique())
 	g.map(plt.plot, x, y);
