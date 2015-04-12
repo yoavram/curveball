@@ -2,14 +2,6 @@
 import xlrd
 import pandas as pd
 
-def str2float(x):
-    if isinstance(x, str):
-        if x.strip() == '':
-            return nan
-        else:
-            return float64(x)
-    return x
-
 
 def read_tecan_xlsx(filename, label, sheet=None, max_time=None, plate=None):
     """
