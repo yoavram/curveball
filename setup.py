@@ -27,9 +27,7 @@ setup(
     name='curveball',
     version=__version__,
     description='model microbial growth curves',
-    long_description='''
-model microbial growth curves
-''',
+    long_description='''curveball uses ecological and evolutionary models to analyze microbial growth curves''',
     keywords='microbiology biomath evolution',
     author='Yoav Ram',
     author_email='yoavram+github@gmail.com',
