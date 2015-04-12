@@ -1,31 +1,45 @@
+# This file is part of curveball.
+# https://github.com/yoavram/curveball
+
+# Licensed under the MIT license:
+# http://www.opensource.org/licenses/MIT-license
+# Copyright (c) 2015, Yoav Ram <yoavram+github@gmail.com>
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
 *.py[cod]
 
 # C extensions
 *.so
 
-# Packages
-*.egg
-*.egg-info
-dist
-build
-eggs
-parts
-bin
-var
-sdist
-develop-eggs
+# Distribution / packaging
+.Python
+env/
+bin/
+build/
+develop-eggs/
+dist/
+eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+*.egg-info/
 .installed.cfg
-lib
-lib64
-__pycache__
+*.egg
 
 # Installer logs
 pip-log.txt
+pip-delete-this-directory.txt
 
 # Unit test / coverage reports
+htmlcov/
+.tox/
 .coverage
-.tox
+.cache
 nosetests.xml
+coverage.xml
 
 # Translations
 *.mo
@@ -35,13 +49,15 @@ nosetests.xml
 .project
 .pydevproject
 
-# Temp files
+# Rope
+.ropeproject
 
-*~
+# Django stuff:
+*.log
+*.pot
 
-# Pipy codes
-
-.pypirc
+# Sphinx documentation
+docs/_build/
 
 # ipython stuff
 .ipynb_checkpoints
