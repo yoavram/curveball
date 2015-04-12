@@ -16,19 +16,13 @@ setup:
 	@pip install -U -e .\[tests\]
 
 # test your application (tests in the tests/ directory)
-test: unit
-
-unit:
-	@coverage run --branch `which nosetests` -vv --with-yanc -s tests/
-	@coverage report -m --fail-under=80
-
-# show coverage in html format
-coverage-html: unit
-	@coverage html
+test:
+	@nosetests --with-coverage --cover-package=curveball --cover-inclusive --cover-min-percentage=80 --cover-html --cover-html-dir=coverage_report
+	@open coverage_report/index.html
 
 # run tests against all supported python versions
 tox:
 	@tox
 
-#docs:
-	#@cd curveball/docs && make html && open _build/html/index.html
+docs:
+	@cd curveball/docs && make html && open _build/html/index.html
