@@ -13,8 +13,15 @@ from unittest import TestCase, main
 
 
 class TestCase(TestCase):
-    pass
+    def setUp(self):
+        pass
 
+    def tearDown(self):
+        pass
+
+    def test_something(self):
+        pass
+        
 
 if __name__ == '__main__':
     main()
