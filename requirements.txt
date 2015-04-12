@@ -1,5 +1,6 @@
 lmfit===7255579c628ed5c8eeb9fc4bb10436009d6ec07c
 matplotlib==1.4.3
+nose==1.3.6
 numpy==1.9.2
 pandas==0.16.0
 pyparsing==2.0.3
