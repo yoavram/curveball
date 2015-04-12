@@ -22,10 +22,6 @@ class IOTestCase(TestCase):
         self.plate = pd.read_csv("plate_templates/G-RG-R.csv")
 
 
-    def tearDown(self):
-        pass
-
-
     def test_read_tecan_xlsx_OD(self):
         df = curveball.io.read_tecan_xlsx(self.filename, 'OD')
         self.assertIsNotNone(df)
