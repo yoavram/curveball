@@ -12,6 +12,9 @@ def str2float(x):
 
 
 def read_tecan_xlsx(filename, label, sheet=None, max_time=None, plate=None):
+    """
+    Reads a Tecan Infinity Excel file and returns a Pandas dataframe.
+    """
     wb = xlrd.open_workbook(filename)
     if sheet == None:
         for sh in wb.sheets():

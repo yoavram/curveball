@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
@@ -6,64 +8,62 @@ sns.set_style("ticks")
 from lmfit import Model
 
 
-def _logistic(t, y0, r, K):
-    """
-    The logistic growth model is the standard growth model in ecology.
+def logistic_function(t, y0, r, K):
+    r"""The logistic growth model is the standard growth model in ecology.
 
-    $$
-    \frac{dy}{dt} = r y \Big(1 - \frac{y}{K}\Big) \Rightarrow \\
-    y(t) = \frac{K}{1 - \Big(1 - \frac{K}{y_0} \Big)e^{-r t}}
-    $$
+    .. math::
+        \frac{dy}{dt} = r y \Big(1 - \frac{y}{K}\Big) \Rightarrow
+        y(t) = \frac{K}{1 - \Big(1 - \frac{K}{y_0} \Big)e^{-r t}}
 
-    - y0: initial population size
+
+    - :math:`y_0`: initial population size
     - K: maximum population size
     - r: initial growth rate per capita
 
-    ## See also
-    http://en.wikipedia.org/wiki/Logistic_function
+    See also: `Wikipedia <http://en.wikipedia.org/wiki/Logistic_function>`_
     """
-    return _richards(t ,y0, r, K, 1.)
+    return richards_function(t ,y0, r, K, 1.)
 
 
-def _richards(t, y0, r, K, nu):
-    """
-    Richards growth model (or the generalized logistic model) in a generalization of the logistic model that allows the inflection point to be anywhere along the curve.
+def richards_function(t, y0, r, K, nu):
+    r"""Richards growth model (or the generalized logistic model) in a generalization of the logistic model that allows the inflection point to be anywhere along the curve.
 
-    $$
-    \frac{dy}{dt} = r y \Big( 1 - \Big(\frac{y}{K}\Big)^{\nu} \Big) \Rightarrow \\
-    y(t) = \frac{K}{\Big[1 - \Big(1 - \Big(\frac{K}{y_0}\Big)^{\nu}\Big) e^{-r \nu t}\Big]^{1/\nu}}
-    $$
+    .. math::
 
-    - y0: initial population size
+        \frac{dy}{dt} = r y \Big( 1 - \Big(\frac{y}{K}\Big)^{\nu} \Big) \Rightarrow
+
+        y(t) = \frac{K}{\Big[1 - \Big(1 - \Big(\frac{K}{y_0}\Big)^{\nu}\Big) e^{-r \nu t}\Big]^{1/\nu}}
+
+    - :math:`y_0`: initial population size
     - K: maximum population size
     - r: initial growth rate per capita
-    - $\nu$: curvature of the logsitic term
+    - :math:`\nu`: curvature of the logsitic term
 
-    ## See also
-    http://en.wikipedia.org/wiki/Generalised_logistic_function
+    See also: `Wikipedia <http://en.wikipedia.org/wiki/Generalised_logistic_function>`_
     """
     return K / ((1 - (1 - (K/y0)**nu) * np.exp(-r * nu * t))**(1./nu))
 
 
-def _baranyi_roberts(t, y0, r, K, nu, q0, v):
-    """
-    The Baranyi-Roberts growth model is an extension of the Richards model that adds time lag.
+def baranyi_roberts_function(t, y0, r, K, nu, q0, v):
+    r"""The Baranyi-Roberts growth model is an extension of the Richards model that adds time lag.
 
-    $$
-    \frac{dy}{dt} = r \alpha(t) y \Big( 1 - \Big(\frac{y}{K}\Big)^{\nu} \Big) \Rightarrow \\
-    y(t) = \frac{K}{\Big[1 - \Big(1 - \Big(\frac{K}{y_0}\Big)^{\nu}\Big) e^{-r \nu A(t)}\Big]^{1/\nu}} \\
-    A(t) = \int_0^t{\alpha(s)ds} = \int_0^t{\frac{q_0}{q_0 + e^{-v t}} ds} = t + \frac{1}{v} \log{\Big( \frac{e^{-v t} + q0}{1 + q0} \Big)}
-    $$
+    .. math::
 
-    - y0: initial population size
+        \frac{dy}{dt} = r \alpha(t) y \Big( 1 - \Big(\frac{y}{K}\Big)^{\nu} \Big) \Rightarrow
+
+        y(t) = \frac{K}{\Big[1 - \Big(1 - \Big(\frac{K}{y_0}\Big)^{\nu}\Big) e^{-r \nu A(t)}\Big]^{1/\nu}}
+
+        A(t) = \int_0^t{\alpha(s)ds} = \int_0^t{\frac{q_0}{q_0 + e^{-v t}} ds} = t + \frac{1}{v} \log{\Big( \frac{e^{-v t} + q0}{1 + q0} \Big)}
+
+
+    - :math:`y_0`: initial population size
     - K: maximum population size
     - r: initial growth rate per capita
-    - $\nu$: curvature of the logsitic term
-    - $q_0$: initial adjustment to current environment
+    - :math:`\nu`: curvature of the logsitic term
+    - :math:`q_0`: initial adjustment to current environment
     - v: adjustment rate
 
-    ## See also
-    http://dx.doi.org/10.1016/0168-1605%2894%2990157-0
+    See also: `Baranyi, J., Roberts, T. a., 1994. A dynamic approach to predicting bacterial growth in food. Int. J. Food Microbiol. 23, 277–294. <www.ncbi.nlm.nih.gov/pubmed/7873331>`_
     """
     At = t + (1./v) * np.log((np.exp(-v * t) + q0)/(1 + q0))
     return K / ((1 - (1 - (K/y0)**nu) * np.exp( -r * nu * At ))**(1./nu))
@@ -78,7 +78,7 @@ def fit_model(df, well=None, ax=None, PLOT=True, PRINT=True):
     nuguess = 1.0
     _df['dODdTime'] = np.gradient(_df.OD, _df.Time)
     rguess  = 4 * _df.dODdTime[~np.isinf(_df.dODdTime)].max() / Kguess
-    params = baranyi_roberts.make_params(y0=y0guess, K=Kguess, r=rguess, nu=nuguess, q0=1.0, v=1.0)
+    params = baranyi_roberts_model.make_params(y0=y0guess, K=Kguess, r=rguess, nu=nuguess, q0=1.0, v=1.0)
 
     params['y0'].set(min=1-10)
     params['K'].set(min=1-10)
@@ -88,30 +88,30 @@ def fit_model(df, well=None, ax=None, PLOT=True, PRINT=True):
     params['v'].set(min=1e-10)
 
     # Baranyi - Roberts - full model (6 params)
-    result = baranyi_roberts.fit(data=_df.OD, t=_df.Time, params=params)
+    result = baranyi_roberts_model.fit(data=_df.OD, t=_df.Time, params=params)
     models.append(result)
 
     # Baranyi /w nu=1 = Logistic /w lag (5 params)
     params['q0'].set(vary=True)
     params['v'].set(vary=True)
-    result = baranyi_roberts.fit(data=_df.OD, t=_df.Time, params=params)
+    result = baranyi_roberts_model.fit(data=_df.OD, t=_df.Time, params=params)
     models.append(result)
 
     # Richards - no lag (4 params)
-    params = richards.make_params(y0=y0guess, K=Kguess, r=rguess, nu=nuguess)
+    params = richards_model.make_params(y0=y0guess, K=Kguess, r=rguess, nu=nuguess)
     params['y0'].set(min=1-10)
     params['K'].set(min=1-10)
     params['r'].set(min=1-10)
     params['nu'].set(min=1-10)
-    result = richards.fit(data=_df.OD, t=_df.Time, params=params)
+    result = richards_model.fit(data=_df.OD, t=_df.Time, params=params)
     models.append(result)
 
     # Logistic - nu=1 (3 params)
-    params = logistic.make_params(y0=y0guess, K=Kguess, r=rguess)
+    params = logistic_model.make_params(y0=y0guess, K=Kguess, r=rguess)
     params['y0'].set(min=1-10)
     params['K'].set(min=1-10)
     params['r'].set(min=1-10)
-    result = logistic.fit(data=_df.OD, t=_df.Time, params=params)
+    result = logistic_model.fit(data=_df.OD, t=_df.Time, params=params)
     models.append(result)
 
     # sort by increasing bic
@@ -149,6 +149,6 @@ def fit_model(df, well=None, ax=None, PLOT=True, PRINT=True):
     return models, ax
 
 
-logistic = Model(_logistic)
-richards = Model(_richards)
-baranyi_roberts = Model(_baranyi_roberts)
+logistic_model = Model(logistic_function)
+richards_model = Model(richards_function)
+baranyi_roberts_model = Model(baranyi_roberts_function)

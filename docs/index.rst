@@ -1,51 +1,23 @@
-curveball
-==============
+.. curveball documentation master file, created by
+   sphinx-quickstart on Sun Apr 12 13:58:38 2015.
+   You can adapt this file completely to your liking, but it should at least
+   contain the root `toctree` directive.
 
-Installation
---------------
+Welcome to curveball's documentation!
+=====================================
 
-curveball can be installed by unzipping the source code in one directory and using this command: ::
-
-    sudo python setup.py install
-
-You can also install it directly from the Python Package Index with this command: ::
-
-    sudo pip curveball install
-
-User's Guide
---------------
+Contents:
 
 .. toctree::
-   :maxdepth: 1
-   
-   file1
-   file2
-   
-Contribute !
--------------
+   :maxdepth: 2
 
-curveball is an open source software written originally by yoavram and released under the $LICENCE licence.
-Everyone is very welcome to help improve the project, fork it, blog on it... The more, the merrier !
+   models
+   io
+
 
 Indices and tables
-------------------
+==================
 
 * :ref:`genindex`
 * :ref:`modindex`
 * :ref:`search`
-
-
-
-.. # THE NEXT LINES ADD A GITHUB RIBBON TO YOUR DOCUMENTATION.
-   IT IS ONLY USEFUL IF YOUR PACKAGE IS ON GITHUB
-
-.. raw:: html
-
-        <a href="https://github.com/Zulko/curveball">
-        <img style="position: absolute; top: 0; right: 0; border: 0;"
-        src="https://s3.amazonaws.com/github/ribbons/forkme_right_red_aa0000.png"
-        alt="Fork me on GitHub"></a>
-
-
-
-

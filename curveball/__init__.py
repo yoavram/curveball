@@ -1,9 +1,11 @@
-""" curveball/__init__.py """
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
 
-# __all__ = []
+# This file is part of curveball.
+# https://github.com/yoavram/curveball
 
-from .curveball import *
-import io
-import models
+# Licensed under the MIT license:
+# http://www.opensource.org/licenses/MIT-license
+# Copyright (c) 2015, Yoav Ram <yoavram+github@gmail.com>
 
-from .version import __version__
+from .version import __version__  # NOQA
