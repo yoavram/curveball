@@ -8,7 +8,6 @@
 # http://www.opensource.org/licenses/MIT-license
 # Copyright (c) 2015, Yoav Ram <yoavram+github@gmail.com>
 
-from preggy import expect
 from unittest import TestCase, main
 
 
@@ -21,7 +20,7 @@ class TestCase(TestCase):
 
     def test_something(self):
         pass
-        
+
 
 if __name__ == '__main__':
     main()
