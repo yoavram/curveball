@@ -11,8 +11,10 @@
 from preggy import expect
 from unittest import TestCase, main
 
+import curveball
 
-class TestCase(TestCase):
+
+class IOTestCase(TestCase):
     pass
 
 
