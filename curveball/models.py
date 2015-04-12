@@ -70,7 +70,7 @@ def _baranyi_roberts(t, y0, r, K, nu, q0, v):
 
 
 def fit_model(df, well=None, ax=None, PLOT=True, PRINT=True):
-    _df = df[df.Well == well] if well != None else df
+    _df = df[df.Well == well].copy() if well != None else df.copy()
     models = []
 
     Kguess  = _df.OD.max()
