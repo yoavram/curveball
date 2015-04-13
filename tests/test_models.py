@@ -68,28 +68,28 @@ class ModelsTestCase(TestCase):
         prefer_m1,pval,D,ddf = curveball.models.lrtest(one_var_fit, two_var_fit, alfa)
         self.assertTrue(prefer_m1)
 
-    # def test_logistic(self):
-    #     y_curve = curveball.models.logistic_function(self.t, self.y0, self.r, self.K)
-    #     y_ode = odeint(logistic_ode, self.y0, self.t, args=(self.r, self.K))
-    #     y_ode.resize((len(self.t),))
-    #     err = compare_curves(y_ode, y_curve)
-    #     self.assertTrue(err < 1e-6)
-    #
-    #
-    # def test_richards(self):
-    #     y_curve = curveball.models.richards_function(self.t, self.y0, self.r, self.K, self.nu)
-    #     y_ode = odeint(richards_ode, self.y0, self.t, args=(self.r, self.K, self.nu))
-    #     y_ode.resize((len(self.t),))
-    #     err = compare_curves(y_ode, y_curve)
-    #     self.assertTrue(err < 1e-6)
-    #
-    #
-    # def test_baranyi_roberts(self):
-    #     y_curve = curveball.models.baranyi_roberts_function(self.t, self.y0, self.r, self.K, self.nu, self.q0, self.v)
-    #     y_ode = odeint(baranyi_roberts_ode, self.y0, self.t, args=(self.r, self.K, self.nu, self.q0, self.v))
-    #     y_ode.resize((len(self.t),))
-    #     err = compare_curves(y_ode, y_curve)
-    #     self.assertTrue(err < 1e-6)
+    def test_logistic(self):
+        y_curve = curveball.models.logistic_function(self.t, self.y0, self.r, self.K)
+        y_ode = odeint(logistic_ode, self.y0, self.t, args=(self.r, self.K))
+        y_ode.resize((len(self.t),))
+        err = compare_curves(y_ode, y_curve)
+        self.assertTrue(err < 1e-6)
+
+
+    def test_richards(self):
+        y_curve = curveball.models.richards_function(self.t, self.y0, self.r, self.K, self.nu)
+        y_ode = odeint(richards_ode, self.y0, self.t, args=(self.r, self.K, self.nu))
+        y_ode.resize((len(self.t),))
+        err = compare_curves(y_ode, y_curve)
+        self.assertTrue(err < 1e-6)
+
+
+    def test_baranyi_roberts(self):
+        y_curve = curveball.models.baranyi_roberts_function(self.t, self.y0, self.r, self.K, self.nu, self.q0, self.v)
+        y_ode = odeint(baranyi_roberts_ode, self.y0, self.t, args=(self.r, self.K, self.nu, self.q0, self.v))
+        y_ode.resize((len(self.t),))
+        err = compare_curves(y_ode, y_curve)
+        self.assertTrue(err < 1e-6)
 
 
     # def test_fit_model_logistic(self):
