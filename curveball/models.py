@@ -129,6 +129,11 @@ def lrtest(m0, m1, alfa=0.05):
 
 
 def fit_model(df, well=None, ax=None, PLOT=True, PRINT=True):
+    r"""Fit a growth model to data.
+
+    This function will attempt to fit a growth model to `OD~Time` taken from the `df` object.
+    The function is still being developed.
+    """
     _df = df[df.Well == well].copy() if well != None else df.copy()
     models = []
 
