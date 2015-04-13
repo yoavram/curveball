@@ -4,14 +4,14 @@
    contain the root `toctree` directive.
 
 curveball: microbial growth curves analysis
-=====================================
+===========================================
 
 Contents:
 
 .. toctree::
    :maxdepth: 1
 
-   io
+   ioutils
    plots
    models
 

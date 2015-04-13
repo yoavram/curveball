@@ -9,6 +9,6 @@
 # Copyright (c) 2015, Yoav Ram <yoavram+github@gmail.com>
 
 from .version import __version__  # NOQA
-import io
+import ioutils
 import plots
 import models

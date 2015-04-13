@@ -14,7 +14,7 @@ import os.path
 import curveball
 import pandas as pd
 
-class IOTestCase(TestCase):
+class IOUtilsTestCase(TestCase):
     def setUp(self):
         self.filename = 'data/yoavram/Tecan_210115.xlsx'
         if not os.path.exists(self.filename):
@@ -23,7 +23,7 @@ class IOTestCase(TestCase):
 
 
     def test_read_tecan_xlsx_OD(self):
-        df = curveball.io.read_tecan_xlsx(self.filename, 'OD')
+        df = curveball.ioutils.read_tecan_xlsx(self.filename, 'OD')
         self.assertIsNotNone(df)
         self.assertIsInstance(df, pd.DataFrame)
         self.assertEquals(df.shape, (8448, 9))
@@ -31,7 +31,7 @@ class IOTestCase(TestCase):
 
 
     def test_read_tecan_xlsx_full(self):
-        df = curveball.io.read_tecan_xlsx(self.filename, ('OD', 'Green', 'Red'))
+        df = curveball.ioutils.read_tecan_xlsx(self.filename, ('OD', 'Green', 'Red'))
         self.assertIsNotNone(df)
         self.assertIsInstance(df, pd.DataFrame)
         self.assertEquals(df.shape, (8448, 15))
@@ -39,7 +39,7 @@ class IOTestCase(TestCase):
 
 
     def test_read_tecan_xlsx_12hrs(self):
-        df = curveball.io.read_tecan_xlsx(self.filename, 'OD', max_time=12)
+        df = curveball.ioutils.read_tecan_xlsx(self.filename, 'OD', max_time=12)
         self.assertIsNotNone(df)
         self.assertIsInstance(df, pd.DataFrame)
         self.assertEquals(df.shape, (4992, 9))
@@ -48,7 +48,7 @@ class IOTestCase(TestCase):
 
 
     def test_read_tecan_xlsx_with_plate(self):
-        df = curveball.io.read_tecan_xlsx(self.filename, 'OD', plate=self.plate)
+        df = curveball.ioutils.read_tecan_xlsx(self.filename, 'OD', plate=self.plate)
         self.assertIsNotNone(df)
         self.assertIsInstance(df, pd.DataFrame)
         self.assertEquals(df.shape, (8448, 9))

@@ -1,7 +1,7 @@
-I/O
-===
+I/O Utils
+=========
 
-Example of a `pandas.DataFrame` generated using the `io` module functions:
+Example of a `pandas.DataFrame` generated using the `ioutils` module functions:
 
 +----+-----------+-----------------+-------------+--------+--------+-------+-------+----------+---------+--------------+--------------------+---------+----------+--------------+-------+
 |    |   Time_OD |   Temp. [°C]_OD |   Cycle Nr. | Well   |     OD | Row   | Col   | Strain   | Color   |   Time_Green |   Temp. [°C]_Green |   Green |     Time |   Temp. [°C] |   Red |
@@ -20,5 +20,5 @@ Example of a `pandas.DataFrame` generated using the `io` module functions:
 Members
 -------
 
-.. automodule:: curveball.io
+.. automodule:: curveball.ioutils
    :members:
