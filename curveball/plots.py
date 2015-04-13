@@ -16,7 +16,22 @@ from matplotlib.patches import RegularPolygon
 from string import ascii_uppercase
 
 
-def plot_timeseries_grid(df, x, y, func=plt.plot, output_filename=None):
+def plot_wells(df, x='Time', y='OD', func=plt.plot, output_filename=None):
+	"""Plot a grid of plots, one for each well in the plate.
+
+	The facetting is done by the `Row` and `Col` columns of `df`.
+	The colors are given by the `Color` column, the labels of the colors are given by the `Strain` column.
+
+	Args:
+		df: `pandas.DataFrame`.
+		x: name of column for x-axis, string.
+		y: name of column for y-axis, string.
+		func: a function to use for plotting, defaults to `matplotlib.pyplot.plot`
+		output_filename: optional filename to save the resulting figure, string.
+
+	Returns:
+		`seaborn.FacetGrid` object
+	"""
 	if 'Strain' in df:
 		hue = 'Strain'
 		palette = df.Color.unique()
