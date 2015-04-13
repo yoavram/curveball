@@ -11,8 +11,9 @@ Contents:
 .. toctree::
    :maxdepth: 1
 
-   models
    io
+   plots
+   models
 
 
 Indices and tables

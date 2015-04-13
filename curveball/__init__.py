@@ -10,4 +10,5 @@
 
 from .version import __version__  # NOQA
 import io
+import plots
 import models

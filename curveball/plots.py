@@ -16,7 +16,7 @@ from matplotlib.patches import RegularPolygon
 from string import ascii_uppercase
 
 
-def plot_wells(df, x='Time', y='OD', func=plt.plot, output_filename=None):
+def plot_wells(df, x='Time', y='OD', plot_func=plt.plot, output_filename=None):
 	"""Plot a grid of plots, one for each well in the plate.
 
 	The facetting is done by the `Row` and `Col` columns of `df`.
@@ -26,11 +26,11 @@ def plot_wells(df, x='Time', y='OD', func=plt.plot, output_filename=None):
 		df: `pandas.DataFrame`.
 		x: name of column for x-axis, string.
 		y: name of column for y-axis, string.
-		func: a function to use for plotting, defaults to `matplotlib.pyplot.plot`
+		plot_func: a function to use for plotting, defaults to `matplotlib.pyplot.plot`
 		output_filename: optional filename to save the resulting figure, string.
 
 	Returns:
-		`seaborn.FacetGrid` object
+		`g`: seaborn.FacetGrid
 	"""
 	if 'Strain' in df:
 		hue = 'Strain'
@@ -47,7 +47,7 @@ def plot_wells(df, x='Time', y='OD', func=plt.plot, output_filename=None):
                       palette=palette, hue_order=hue_order,
                       sharex=True, sharey=True, size=1,
                       aspect=width/float(height), despine=True,margin_titles=True)
-	g.map(func, x, y)
+	g.map(plot_func, x, y)
 	g.fig.set_figwidth(width)
 	g.fig.set_figheight(height)
 	plt.locator_params(nbins=4) # 4 ticks is enough
@@ -59,20 +59,52 @@ def plot_wells(df, x='Time', y='OD', func=plt.plot, output_filename=None):
 	return g
 
 
-def plot_mean_timeseries(df, x='Time', y='OD', output_filename=None):
+def plot_strains(df, x='Time', y='OD', plot_func=plt.plot, agg_func=np.mean, output_filename=None):
+	"""Aggregate by strain and plot the results on one figure with different color for each strain.
+
+	The grouping of the data is done by the `Strain` and `Cycle Nr.` columns; the aggregation is done by the `agg_func`, which defaults to `mean`.
+	The colors are given by the `Color` column, the labels of the colors are given by the `Strain` column.
+
+	Args:
+		df: `pandas.DataFrame`.
+		x: name of column for x-axis, string.
+		y: name of column for y-axis, string.
+		plot_func: a function to use for plotting, defaults to `matplotlib.pyplot.plot`.
+		agg_func: a function to use for aggregating the data.
+		output_filename: optional filename to save the resulting figure, string.
+
+	Returns:
+		`g`: seaborn.FacetGrid
+	"""
 	palette = df.Color.unique()
 	palette[palette == '#ffffff'] = '#000000'
 	grp = df.groupby(by=('Strain', 'Cycle Nr.'))
-	agg = grp.mean().reset_index()
+	agg = grp.aggregate(agg_func).reset_index()
 	g = sns.FacetGrid(agg, hue='Strain', size=5, aspect=1.5, palette=palette, hue_order=df.Strain.unique())
-	g.map(plt.plot, x, y);
+	g.map(plot_func, x, y);
 	g.add_legend()
 	if output_filename:
 		g.savefig(output_filename, bbox_inches='tight', pad_inches=1)
 	return g
 
 
-def tsplot(df, x='Time', y='OD', alfa=0.05, output_filename=None):
+def tsplot(df, x='Time', y='OD', ci_level=95, output_filename=None):
+	"""tsplot plot of the data by strain (if applicable) or well.
+
+	The grouping of the data is done by `x` and `Strain` if such a column exists; otherwise it is done by `x` and `Well`.
+	The aggregation is done by `seaborn.tsplot` which calculates the mean with a confidence interval.
+	The colors are given by the `Color` column, the labels of the colors are given by the `Strain` column; if `Strain` and `Color` don't exist the function will use a default palette and color the lines by well.
+
+	Args:
+		df: `pandas.DataFrame`.
+		x: name of column for x-axis, string.
+		y: name of column for y-axis, string.
+		ci_level: confidence interval width in precent (int; 0-100).
+		output_filename: optional filename to save the resulting figure, string.
+
+	Returns:
+		`g`: seaborn.FacetGrid
+	"""
 	if 'Strain' in df:
 		condition = 'Strain'
 		palette = df.Color.unique()
@@ -81,7 +113,7 @@ def tsplot(df, x='Time', y='OD', alfa=0.05, output_filename=None):
 		condition = 'Well'
 		palette = sns.color_palette()
 	g = sns.tsplot(df, time=x, unit='Well', condition=condition, value=y,
-					err_style='ci_band', ci=100 * (1 - alfa), color=palette)
+					err_style='ci_band', ci=ci_level, color=palette)
 	sns.despine()
 	if output_filename:
 		g.savefig(output_filename, bbox_inches='tight', pad_inches=1)
@@ -89,32 +121,45 @@ def tsplot(df, x='Time', y='OD', alfa=0.05, output_filename=None):
 
 
 def plot_plate(df, edge_color='#888888'):
-    plate = df.pivot('Row', 'Col', 'Color').as_matrix()
-    height, width = plate.shape
-    fig = plt.figure(figsize=((width + 2) / 3., (height + 2) / 3.))
-    ax = fig.add_axes((0.05, 0.05, 0.9, 0.9),
-                                aspect='equal', frameon=False,
-                                xlim=(-0.05, width + 0.05),
-                                ylim=(-0.05, height + 0.05))
-    for axis in (ax.xaxis, ax.yaxis):
-        axis.set_major_formatter(plt.NullFormatter())
-        axis.set_major_locator(plt.NullLocator())
+	"""Plot of the plate color mapping.
 
-    # Create the grid of squares
-    squares = np.array([[RegularPolygon((i + 0.5, j + 0.5),
-                                             numVertices=4,
-                                             radius=0.5 * np.sqrt(2),
-                                             orientation=np.pi / 4,
-                                             ec=edge_color,
-                                             fc=plate[height-1-j,i])
-                              for j in range(height)]
-                             for i in range(width)])
-    [ax.add_patch(sq) for sq in squares.flat]
-    ax.set_xticks(np.arange(width) + 0.5)
-    ax.set_xticklabels(np.arange(1, 1 + width))
-    ax.set_yticks(np.arange(height) + 0.5)
-    ax.set_yticklabels(ascii_uppercase[height-1::-1])
-    ax.xaxis.tick_top()
-    ax.yaxis.tick_left()
-    ax.tick_params(length=0, width=0)
-    return fig, ax
+	The function will plot the color mapping in `df`: a grid with enough columns and rows for the `Col` and `Row` columns in `df`, where the color of each grid cell given by the `Color` column.
+
+	Args:
+		df: `pandas.DataFrame`.
+		edge_color: a color hex string for the grid edges.
+
+	Returns:
+		`fig, ax` : tuple
+			- `fig` is the matplotlib.figure.Figure object
+			- `ax` is an array of axis objects.
+	"""
+	plate = df.pivot('Row', 'Col', 'Color').as_matrix()
+	height, width = plate.shape
+	fig = plt.figure(figsize=((width + 2) / 3., (height + 2) / 3.))
+	ax = fig.add_axes((0.05, 0.05, 0.9, 0.9),
+	                            aspect='equal', frameon=False,
+	                            xlim=(-0.05, width + 0.05),
+	                            ylim=(-0.05, height + 0.05))
+	for axis in (ax.xaxis, ax.yaxis):
+	    axis.set_major_formatter(plt.NullFormatter())
+	    axis.set_major_locator(plt.NullLocator())
+
+	# Create the grid of squares
+	squares = np.array([[RegularPolygon((i + 0.5, j + 0.5),
+	                                         numVertices=4,
+	                                         radius=0.5 * np.sqrt(2),
+	                                         orientation=np.pi / 4,
+	                                         ec=edge_color,
+	                                         fc=plate[height-1-j,i])
+	                          for j in range(height)]
+	                         for i in range(width)])
+	[ax.add_patch(sq) for sq in squares.flat]
+	ax.set_xticks(np.arange(width) + 0.5)
+	ax.set_xticklabels(np.arange(1, 1 + width))
+	ax.set_yticks(np.arange(height) + 0.5)
+	ax.set_yticklabels(ascii_uppercase[height-1::-1])
+	ax.xaxis.tick_top()
+	ax.yaxis.tick_left()
+	ax.tick_params(length=0, width=0)
+	return fig, ax
