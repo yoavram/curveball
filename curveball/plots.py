@@ -23,14 +23,14 @@ def plot_wells(df, x='Time', y='OD', plot_func=plt.plot, output_filename=None):
 	The colors are given by the `Color` column, the labels of the colors are given by the `Strain` column.
 
 	Args:
-		df: `pandas.DataFrame`.
-		x: name of column for x-axis, string.
-		y: name of column for y-axis, string.
-		plot_func: a function to use for plotting, defaults to `matplotlib.pyplot.plot`
-		output_filename: optional filename to save the resulting figure, string.
+		- df: :py:class:`pandas.DataFrame`.
+		- x: name of column for x-axis, string.
+		- y: name of column for y-axis, string.
+		- plot_func: a function to use for plotting, defaults to :py:func:`matplotlib.pyplot.plot`
+		- output_filename: optional filename to save the resulting figure, string.
 
 	Returns:
-		`g`: seaborn.FacetGrid
+		g: :py:class:`seaborn.FacetGrid`
 	"""
 	if 'Strain' in df:
 		hue = 'Strain'
@@ -66,15 +66,15 @@ def plot_strains(df, x='Time', y='OD', plot_func=plt.plot, agg_func=np.mean, out
 	The colors are given by the `Color` column, the labels of the colors are given by the `Strain` column.
 
 	Args:
-		df: `pandas.DataFrame`.
-		x: name of column for x-axis, string.
-		y: name of column for y-axis, string.
-		plot_func: a function to use for plotting, defaults to `matplotlib.pyplot.plot`.
-		agg_func: a function to use for aggregating the data.
-		output_filename: optional filename to save the resulting figure, string.
+		- df: :py:class:`pandas.DataFrame`.
+		- x: name of column for x-axis, string.
+		- y: name of column for y-axis, string.
+		- plot_func: a function to use for plotting, defaults to :py:func:`matplotlib.pyplot.plot`.
+		- agg_func: a function to use for aggregating the data, defaults to :py:func:`numpy.mean`.
+		- output_filename: optional filename to save the resulting figure, string.
 
 	Returns:
-		`g`: seaborn.FacetGrid
+		g: :py:class:`seaborn.FacetGrid`
 	"""
 	palette = df.Color.unique()
 	palette[palette == '#ffffff'] = '#000000'
@@ -96,14 +96,14 @@ def tsplot(df, x='Time', y='OD', ci_level=95, output_filename=None):
 	The colors are given by the `Color` column, the labels of the colors are given by the `Strain` column; if `Strain` and `Color` don't exist the function will use a default palette and color the lines by well.
 
 	Args:
-		df: `pandas.DataFrame`.
-		x: name of column for x-axis, string.
-		y: name of column for y-axis, string.
-		ci_level: confidence interval width in precent (int; 0-100).
-		output_filename: optional filename to save the resulting figure, string.
+		- df: :py:class:`pandas.DataFrame`.
+		- x: name of column for x-axis, string.
+		- y: name of column for y-axis, string.
+		- ci_level: confidence interval width in precent (int; 0-100).
+		- output_filename: optional filename to save the resulting figure, string.
 
 	Returns:
-		`g`: seaborn.FacetGrid
+		g: :py:class:`seaborn.FacetGrid`
 	"""
 	if 'Strain' in df:
 		condition = 'Strain'
@@ -126,13 +126,13 @@ def plot_plate(df, edge_color='#888888'):
 	The function will plot the color mapping in `df`: a grid with enough columns and rows for the `Col` and `Row` columns in `df`, where the color of each grid cell given by the `Color` column.
 
 	Args:
-		df: `pandas.DataFrame`.
-		edge_color: a color hex string for the grid edges.
+		- df: :py:class:`pandas.DataFrame`.
+		- edge_color: a color hex string for the grid edges.
 
 	Returns:
-		`fig, ax` : tuple
-			- `fig` is the matplotlib.figure.Figure object
-			- `ax` is an array of axis objects.
+		fig, ax : :py:class:`tuple`
+			- fig: the :py:class:`matplotlib.figure.Figure` object
+			- ax: an array of axis objects.
 	"""
 	plate = df.pivot('Row', 'Col', 'Color').as_matrix()
 	height, width = plate.shape

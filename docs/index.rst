@@ -7,6 +7,7 @@ curveball: microbial growth curves analysis
 ===========================================
 
 Contents:
+---------
 
 .. toctree::
    :maxdepth: 1
@@ -17,7 +18,7 @@ Contents:
 
 
 Indices and tables
-==================
+------------------
 
 * :ref:`genindex`
 * :ref:`modindex`

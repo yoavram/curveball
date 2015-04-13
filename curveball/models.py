@@ -93,19 +93,20 @@ def lrtest(m0, m1, alfa=0.05):
 
     where :math:`\Lambda` is the likelihood ratio, :math:`D` is the statistic, :math:`X_{i}` are the data points, :math:`\hat{X_i}(\theta)` is the model prediction with parameters :math:`\theta`, :math:`\theta_i` is the parameters estimation for model :math:`i`, $n$ is the number of data points and :math:`\Delta` is the difference in number of parameters between the models.
 
-    The function compares between two `lmfit.ModelFit` objects. These are the results of fitting models to the same data set using the `lmfit package <lmfit.github.io/lmfit-py>`_
+    The function compares between two :py:class:`lmfit.ModelFit` objects. These are the results of fitting models to the same data set using the `lmfit <lmfit.github.io/lmfit-py>`_ package
 
-    The function compares between model fit `m0` and `m1` and assumes that `m0` is nested in `m1`, meaning that the set of varying parameters of `m0` is a subset of the varying parameters of `m1`. The property `chisqr` of the `ModelFit` objects is the sum of the square of the residuals of the fit. `ndata` is the number of data points. `nvarys` is the number of varying parameters.
+    The function compares between model fit `m0` and `m1` and assumes that `m0` is nested in `m1`, meaning that the set of varying parameters of `m0` is a subset of the varying parameters of `m1`. The property `chisqr` of the :py:class:`ModelFit` objects is the sum of the square of the residuals of the fit. `ndata` is the number of data points. `nvarys` is the number of varying parameters.
 
     Args:
-        m0, m1: `lmfit.Model` objects representing two models. `m0` is nested in `m1`.
-        alfa: The test significance level (default 5%).
+        - m0, m1: :py:class:`lmfit.Model` objects representing two models. `m0` is nested in `m1`.
+        - alfa: The test significance level (default: 5%).
 
     Returns:
-        prefer_m1: a boolean, should we prefer `m1` over `m0`.
-        pval: the test p-value
-        D: the test statistic
-        ddf: the number of degrees of freedom
+        prefer_m1, pval, D, ddf: :py:class:`tuple`
+            - prefer_m1: should we prefer `m1` over `m0`, :py:class:`bool`
+            - pval: the test p-value, :py:class:`float`
+            - D: the test statistic, :py:class:`float`
+            - ddf: the number of degrees of freedom, :py:class:`int`
 
     See also: `Generalized Likelihood Ratio Test Example <http://www.stat.sc.edu/~habing/courses/703/GLRTExample.pdf>`_, `IPython notebook <http://nbviewer.ipython.org/github/yoavram/ipython-notebooks/blob/master/likelihood%20ratio%20test.ipynb>`_
     """
@@ -131,7 +132,7 @@ def lrtest(m0, m1, alfa=0.05):
 def fit_model(df, well=None, ax=None, PLOT=True, PRINT=True):
     r"""Fit a growth model to data.
 
-    This function will attempt to fit a growth model to `OD~Time` taken from the `df` object.
+    This function will attempt to fit a growth model to `OD~Time` taken from the `df` :py:class:`pandas.DataFrame`.
     The function is still being developed.
     """
     _df = df[df.Well == well].copy() if well != None else df.copy()

@@ -1,7 +1,7 @@
 I/O Utils
 =========
 
-Example of a `pandas.DataFrame` generated using the `ioutils` module functions:
+Example of a :py:class:`pandas.DataFrame` generated using the :py:mod:`ioutils` module functions:
 
 +----+-----------+-----------------+-------------+--------+--------+-------+-------+----------+---------+--------------+--------------------+---------+----------+--------------+-------+
 |    |   Time_OD |   Temp. [°C]_OD |   Cycle Nr. | Well   |     OD | Row   | Col   | Strain   | Color   |   Time_Green |   Temp. [°C]_Green |   Green |     Time |   Temp. [°C] |   Red |
