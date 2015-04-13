@@ -68,3 +68,8 @@ venv
 
 # temp
 tmp.*
+tmp
+
+# notebooks folder
+notebooks/*.png
+notebooks/Untitled*.ipynb
