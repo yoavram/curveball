@@ -143,8 +143,8 @@ def fit_model(df, well=None, ax=None, PLOT=True, PRINT=True):
     nuguess = 1.0
     _df['dODdTime'] = np.gradient(_df.OD, _df.Time)
     rguess  = 4 * _df.dODdTime[~np.isinf(_df.dODdTime)].max() / Kguess
-
-    params = baranyi_roberts_model.make_params(y0=y0guess, K=Kguess, r=rguess, nu=nuguess, q0=1.0, v=1.0)
+    q0guess, vguess = 1.0, 1e4 # effectively no lag phase
+    params = baranyi_roberts_model.make_params(y0=y0guess, K=Kguess, r=rguess, nu=nuguess, q0=q0guess, v=vguess)
     params['y0'].set(min=1-10)
     params['K'].set(min=1-10)
     params['r'].set(min=1-10)
@@ -152,16 +152,16 @@ def fit_model(df, well=None, ax=None, PLOT=True, PRINT=True):
     params['q0'].set(min=1e-10, max=1)
     params['v'].set(min=1e-10)
 
-    # Baranyi - Roberts - full model (6 params)
+    # Baranyi-Roberts = Richards /w lag (6 params)
     result = baranyi_roberts_model.fit(data=_df.OD, t=_df.Time, params=params)
     models.append(result)
 
-    # Baranyi /w nu=1 = Logistic /w lag (5 params)
+    # Baranyi-Roberts /w nu=1 = Logistic /w lag (5 params)
     params['nu'].set(vary=False)
     result = baranyi_roberts_model.fit(data=_df.OD, t=_df.Time, params=params)
     models.append(result)
 
-    # Richards - no lag (4 params)
+    # Richards = Baranyi-Roberts /wout lag (4 params)
     params = richards_model.make_params(y0=y0guess, K=Kguess, r=rguess, nu=nuguess)
     params['y0'].set(min=1-10)
     params['K'].set(min=1-10)
@@ -170,7 +170,7 @@ def fit_model(df, well=None, ax=None, PLOT=True, PRINT=True):
     result = richards_model.fit(data=_df.OD, t=_df.Time, params=params)
     models.append(result)
 
-    # Logistic - nu=1 (3 params)
+    # Logistic = Richards /w nu=1 (3 params)
     params = logistic_model.make_params(y0=y0guess, K=Kguess, r=rguess)
     params['y0'].set(min=1-10)
     params['K'].set(min=1-10)
@@ -181,7 +181,11 @@ def fit_model(df, well=None, ax=None, PLOT=True, PRINT=True):
     # sort by increasing bic
     models.sort(key=lambda m: m.bic)
 
-    # plot
+    if PRINT:
+        print models[0].fit_report()
+        vals = models[0].best_values
+        lam = np.log(1. + 1./vals['q0']) / vals['v']
+        print "lambda:", lam
     if PLOT:
         dy = _df.OD.max()/50
         dx = _df.Time.max()/25
@@ -196,8 +200,10 @@ def fit_model(df, well=None, ax=None, PLOT=True, PRINT=True):
             else:
                 lam = 0
             ax[i].axvline(x=lam, color='k', ls='--')
-            ax[i].text(x=lam + dx, y=_df.OD.min() - 3*dy, s=r'$\lambda$')
-            ax[i].set_title('Model: %s params, BIC: %d' % (fit.nvarys, fit.bic))
+            ax[i].text(x=lam + dx, y=_df.OD.min() - 3*dy, s=r'$\lambda=$%.2f' % lam)
+            title = '%s, %d params\nBIC: %d\ny0=%.2f, K=%.2f, r=%.2g\n' + r'$\nu$=%.2g, $q_0$=%.2g, v=%.2g'
+            title = title % (fit.model.name, fit.nvarys, fit.bic, vals['y0'], vals['K'], vals['r'], vals.get('nu',0), vals.get('q0',0), vals.get('v',0))
+            ax[i].set_title(title)
             ax[i].get_legend().set_visible(False)
             ax[i].set_xlim(0, 1.1 * _df.Time.max())
             ax[i].set_ylim(0, 1.1 * _df.OD.max())
@@ -205,12 +211,9 @@ def fit_model(df, well=None, ax=None, PLOT=True, PRINT=True):
             ax[i].set_ylabel('')
         ax[0].set_ylabel('OD')
         sns.despine()
-    if PRINT:
-        print models[0].fit_report()
-        vals = models[0].best_values
-        lam = np.log(1. + 1./vals['q0']) / vals['v']
-        print "lambda:", lam
-    return models, ax
+        fig.tight_layout()
+        return models, fig, ax
+    return models
 
 
 logistic_model = Model(logistic_function)
