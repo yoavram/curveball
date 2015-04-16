@@ -77,6 +77,15 @@ def baranyi_roberts_function(t, y0, r, K, nu, q0, v):
     return K / ((1 - (1 - (K/y0)**nu) * np.exp( -r * nu * At ))**(1./nu))
 
 
+def simplified_baranyi_roberts_function(t, y0, r, K, q0):
+    r"""A four parameter model where $\nu=1$ and $v=r$.
+    """
+    nu = 1.0
+    v = r
+    At = t + (1./v) * np.log((np.exp(-v * t) + q0)/(1 + q0))
+    return K / ((1 - (1 - (K/y0)**nu) * np.exp( -r * nu * At ))**(1./nu))
+
+
 def lrtest(m0, m1, alfa=0.05):
     r"""Perform a likelihood ratio test on two nested models.
 
@@ -168,6 +177,15 @@ def fit_model(df, ax=None, PLOT=True, PRINT=True):
     result = baranyi_roberts_model.fit(data=_df.OD, t=_df.Time, params=params, weights=weights)
     models.append(result)
 
+    # Simplified Baranyi-Roberts (nu=1, v=t) (4 params)
+    # params = simplified_baranyi_roberts_model.make_params(y0=y0guess, K=Kguess, r=rguess, q0=q0guess)
+    # params['y0'].set(min=1-10)
+    # params['K'].set(min=1-10)
+    # params['r'].set(min=1-10)
+    # params['q0'].set(min=1-10, max=1)
+    # result = simplified_baranyi_roberts_model.fit(data=_df.OD, t=_df.Time, params=params, weights=weights)
+    # models.append(result)
+
     # Richards = Baranyi-Roberts /wout lag (4 params)
     params = richards_model.make_params(y0=y0guess, K=Kguess, r=rguess, nu=nuguess)
     params['y0'].set(min=1-10)
@@ -226,3 +244,4 @@ def fit_model(df, ax=None, PLOT=True, PRINT=True):
 logistic_model = Model(logistic_function)
 richards_model = Model(richards_function)
 baranyi_roberts_model = Model(baranyi_roberts_function)
+simplified_baranyi_roberts_model = Model(simplified_baranyi_roberts_function)
