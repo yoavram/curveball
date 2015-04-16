@@ -138,12 +138,14 @@ def fit_model(df, well=None, ax=None, PLOT=True, PRINT=True):
     _df = df[df.Well == well].copy() if well != None else df.copy()
     models = []
 
+    # TODO: make MyModel, inherit from Model, use Model.guess
     Kguess  = _df.OD.max()
     y0guess = _df.OD.min()
     nuguess = 1.0
     _df['dODdTime'] = np.gradient(_df.OD, _df.Time)
     rguess  = 4 * _df.dODdTime[~np.isinf(_df.dODdTime)].max() / Kguess
-    q0guess, vguess = 1.0, 1e4 # effectively no lag phase
+    q0guess, vguess = 0.1, 1
+
     params = baranyi_roberts_model.make_params(y0=y0guess, K=Kguess, r=rguess, nu=nuguess, q0=q0guess, v=vguess)
     params['y0'].set(min=1-10)
     params['K'].set(min=1-10)
@@ -201,7 +203,7 @@ def fit_model(df, well=None, ax=None, PLOT=True, PRINT=True):
                 lam = 0
             ax[i].axvline(x=lam, color='k', ls='--')
             ax[i].text(x=lam + dx, y=_df.OD.min() - 3*dy, s=r'$\lambda=$%.2f' % lam)
-            title = '%s, %d params\nBIC: %d\ny0=%.2f, K=%.2f, r=%.2g\n' + r'$\nu$=%.2g, $q_0$=%.2g, v=%.2g'
+            title = '%s %dp\nBIC: %d\ny0=%.2f, K=%.2f, r=%.2g\n' + r'$\nu$=%.2g, $q_0$=%.2g, v=%.2g'
             title = title % (fit.model.name, fit.nvarys, fit.bic, vals['y0'], vals['K'], vals['r'], vals.get('nu',0), vals.get('q0',0), vals.get('v',0))
             ax[i].set_title(title)
             ax[i].get_legend().set_visible(False)
