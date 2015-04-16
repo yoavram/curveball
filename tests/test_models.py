@@ -109,7 +109,6 @@ class ModelsTestCase(TestCase):
         func_name = sys._getframe().f_code.co_name
         fig.savefig(func_name + ".png")
         self.assertIsNotNone(models)
-        self.assertEquals(len(models), 4)
         for mod in models:
             self.assertIsInstance(mod, ModelFit)
         self.assertEquals(models[0].model, curveball.models.logistic_model)
@@ -125,7 +124,6 @@ class ModelsTestCase(TestCase):
         func_name = sys._getframe().f_code.co_name
         fig.savefig(func_name + ".png")
         self.assertIsNotNone(models)
-        self.assertEquals(len(models), 4)
         for mod in models:
             self.assertIsInstance(mod, ModelFit)
         self.assertEquals(models[0].model, curveball.models.logistic_model)
@@ -138,7 +136,6 @@ class ModelsTestCase(TestCase):
         func_name = sys._getframe().f_code.co_name
         fig.savefig(func_name + ".png")
         self.assertIsNotNone(models)
-        self.assertEquals(len(models), 4)
         for mod in models:
             self.assertIsInstance(mod, ModelFit)
         self.assertEquals(models[0].model, curveball.models.richards_model)
@@ -155,7 +152,6 @@ class ModelsTestCase(TestCase):
         func_name = sys._getframe().f_code.co_name
         fig.savefig(func_name + ".png")
         self.assertIsNotNone(models)
-        self.assertEquals(len(models), 4)
         for mod in models:
             self.assertIsInstance(mod, ModelFit)
         self.assertEquals(models[0].model, curveball.models.baranyi_roberts_model)
@@ -172,7 +168,6 @@ class ModelsTestCase(TestCase):
         func_name = sys._getframe().f_code.co_name
         fig.savefig(func_name + ".png")
         self.assertIsNotNone(models)
-        self.assertEquals(len(models), 4)
         for mod in models:
             self.assertIsInstance(mod, ModelFit)
         self.assertEquals(models[0].model, curveball.models.baranyi_roberts_model)
