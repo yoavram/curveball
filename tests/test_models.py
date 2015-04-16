@@ -163,8 +163,10 @@ class ModelsTestCase(TestCase):
 
 
     def test_fit_model_baranyi_roberts(self):
+        self.nu, _nu = 5.0, self.nu
         self.t, _t = np.linspace(0,36), self.t
         df = self._randomize_data(baranyi_roberts_ode)
+        self.nu = _nu
         self.t = _t
         models,fig,ax = curveball.models.fit_model(df, PLOT=True, PRINT=False)
         func_name = sys._getframe().f_code.co_name
