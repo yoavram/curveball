@@ -1,5 +1,6 @@
 # Curveball
 
+[![Latest Version](https://pypip.in/version/curveball/badge.svg?text=version)](https://pypi.python.org/pypi/curveball/)
 
 ## Installation
 
