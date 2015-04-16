@@ -144,6 +144,23 @@ class ModelsTestCase(TestCase):
         self.assertEquals(models[0].model, curveball.models.richards_model)
         self.assertEquals(models[0].nvarys, 4)
 
-    
+
+    def test_fit_model_logistic_lag(self):
+        self.nu, _nu = 1.0, self.nu
+        self.t, _t = np.linspace(0,36), self.t
+        df = self._randomize_data(baranyi_roberts_ode)
+        self.nu = _nu
+        self.t = _t
+        models,fig,ax = curveball.models.fit_model(df, PLOT=True, PRINT=False)
+        func_name = sys._getframe().f_code.co_name
+        fig.savefig(func_name + ".png")
+        self.assertIsNotNone(models)
+        self.assertEquals(len(models), 4)
+        for mod in models:
+            self.assertIsInstance(mod, ModelFit)
+        self.assertEquals(models[0].model, curveball.models.baranyi_roberts_model)
+        self.assertEquals(models[0].nvarys, 5)
+
+
 if __name__ == '__main__':
     main()
