@@ -43,7 +43,8 @@ class ModelsTestCase(TestCase):
         self.nu = 0.5
         self.q0 = 0.1
         self.v = 0.1
-        self.noise = 0.02
+        self.noise = 0.03 # "measurement" standard deviation
+        self.reps = 30 # replicates
 
     def tearDown(self):
         pass
@@ -93,19 +94,24 @@ class ModelsTestCase(TestCase):
     #     self.assertTrue(err < 1e-6)
 
 
-    def test_fit_model_logistic(self):
-        y = odeint(logistic_ode, self.y0, self.t, args=(self.r, self.K))
+    def _randomize_data(self, func_ode):
+        y = odeint(func_ode, self.y0, self.t, args=(self.r, self.K))
         y.resize((len(self.t),))
-        y += np.random.normal(0, self.noise, len(self.t))
-        df = pd.DataFrame({'OD':y, 'Time': self.t})
+        y = y.repeat(self.reps).reshape((len(self.t), self.reps)) + np.random.normal(0, self.noise, (len(self.t), self.reps))
+        y[y < 0] = 0
+        return pd.DataFrame({'OD': y.flatten(), 'Time': self.t.repeat(self.reps)})
+
+
+    def test_fit_model_logistic(self):
+        df = self._randomize_data(logistic_ode)
         models,fig,ax = curveball.models.fit_model(df, PLOT=True, PRINT=False)
         fig.savefig("test_fit_model_logistic.png")
         self.assertIsNotNone(models)
         self.assertEquals(len(models), 4)
         for mod in models:
             self.assertIsInstance(mod, ModelFit)
-        self.assertEquals(models[0].nvarys, 3, msg = "The simplest model should win")
-        self.assertEquals(models[0].model, curveball.models.logistic_model, msg = "The logistic model should win")
+        self.assertEquals(models[0].model, curveball.models.logistic_model)
+        self.assertEquals(models[0].nvarys, 3)
 
 
 if __name__ == '__main__':

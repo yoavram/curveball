@@ -129,13 +129,13 @@ def lrtest(m0, m1, alfa=0.05):
     return prefer_m1, pval, D, ddf
 
 
-def fit_model(df, well=None, ax=None, PLOT=True, PRINT=True):
+def fit_model(df, ax=None, PLOT=True, PRINT=True):
     r"""Fit a growth model to data.
 
     This function will attempt to fit a growth model to `OD~Time` taken from the `df` :py:class:`pandas.DataFrame`.
     The function is still being developed.
     """
-    _df = df[df.Well == well].copy() if well != None else df.copy()
+    _df = df.groupby('Time')['OD'].agg([np.mean, np.std]).reset_index().rename(columns={'mean':'OD'})
     models = []
 
     # TODO: make MyModel, inherit from Model, use Model.guess
@@ -155,12 +155,12 @@ def fit_model(df, well=None, ax=None, PLOT=True, PRINT=True):
     params['v'].set(min=1e-10)
 
     # Baranyi-Roberts = Richards /w lag (6 params)
-    result = baranyi_roberts_model.fit(data=_df.OD, t=_df.Time, params=params)
+    result = baranyi_roberts_model.fit(data=_df.OD, t=_df.Time, params=params, weights=1./_df['std'])
     models.append(result)
 
     # Baranyi-Roberts /w nu=1 = Logistic /w lag (5 params)
     params['nu'].set(vary=False)
-    result = baranyi_roberts_model.fit(data=_df.OD, t=_df.Time, params=params)
+    result = baranyi_roberts_model.fit(data=_df.OD, t=_df.Time, params=params, weights=1./_df['std'])
     models.append(result)
 
     # Richards = Baranyi-Roberts /wout lag (4 params)
@@ -169,7 +169,7 @@ def fit_model(df, well=None, ax=None, PLOT=True, PRINT=True):
     params['K'].set(min=1-10)
     params['r'].set(min=1-10)
     params['nu'].set(min=1-10)
-    result = richards_model.fit(data=_df.OD, t=_df.Time, params=params)
+    result = richards_model.fit(data=_df.OD, t=_df.Time, params=params, weights=1./_df['std'])
     models.append(result)
 
     # Logistic = Richards /w nu=1 (3 params)
@@ -177,7 +177,7 @@ def fit_model(df, well=None, ax=None, PLOT=True, PRINT=True):
     params['y0'].set(min=1-10)
     params['K'].set(min=1-10)
     params['r'].set(min=1-10)
-    result = logistic_model.fit(data=_df.OD, t=_df.Time, params=params)
+    result = logistic_model.fit(data=_df.OD, t=_df.Time, params=params, weights=1./_df['std'])
     models.append(result)
 
     # sort by increasing bic
