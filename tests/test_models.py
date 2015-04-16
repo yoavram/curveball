@@ -17,11 +17,11 @@ import pandas as pd
 from lmfit import Model
 from lmfit.model import ModelFit
 
-def logistic_ode(y, t, r, K):
+def logistic_ode(y, t, r, K, nu, q0, v):
     return r * y * (1 - y/K)
 
 
-def richards_ode(y, t, r, K, nu):
+def richards_ode(y, t, r, K, nu, q0, v):
     return r * y * (1 - (y/K)**nu)
 
 
@@ -72,7 +72,7 @@ class ModelsTestCase(TestCase):
 
     # def test_logistic(self):
     #     y_curve = curveball.models.logistic_function(self.t, self.y0, self.r, self.K)
-    #     y_ode = odeint(logistic_ode, self.y0, self.t, args=(self.r, self.K))
+    #     y_ode = odeint(logistic_ode, self.y0, self.t, args=(self.r, self.K, self.nu, self.q0, self.v))
     #     y_ode.resize((len(self.t),))
     #     err = compare_curves(y_ode, y_curve)
     #     self.assertTrue(err < 1e-6)
@@ -80,7 +80,7 @@ class ModelsTestCase(TestCase):
     #
     # def test_richards(self):
     #     y_curve = curveball.models.richards_function(self.t, self.y0, self.r, self.K, self.nu)
-    #     y_ode = odeint(richards_ode, self.y0, self.t, args=(self.r, self.K, self.nu))
+    #     y_ode = odeint(richards_ode, self.y0, self.t, args=(self.r, self.K, self.nu, self.q0, self.v))
     #     y_ode.resize((len(self.t),))
     #     err = compare_curves(y_ode, y_curve)
     #     self.assertTrue(err < 1e-6)
@@ -95,7 +95,7 @@ class ModelsTestCase(TestCase):
 
 
     def _randomize_data(self, func_ode):
-        y = odeint(func_ode, self.y0, self.t, args=(self.r, self.K))
+        y = odeint(func_ode, self.y0, self.t, args=(self.r, self.K, self.nu, self.q0, self.v))
         y.resize((len(self.t),))
         y = y.repeat(self.reps).reshape((len(self.t), self.reps)) + np.random.normal(0, self.noise, (len(self.t), self.reps))
         y[y < 0] = 0
@@ -112,6 +112,18 @@ class ModelsTestCase(TestCase):
             self.assertIsInstance(mod, ModelFit)
         self.assertEquals(models[0].model, curveball.models.logistic_model)
         self.assertEquals(models[0].nvarys, 3)
+
+
+    def test_fit_model_richards(self):
+        df = self._randomize_data(richards_ode)
+        models,fig,ax = curveball.models.fit_model(df, PLOT=True, PRINT=False)
+        fig.savefig("test_fit_model_richards.png")
+        self.assertIsNotNone(models)
+        self.assertEquals(len(models), 4)
+        for mod in models:
+            self.assertIsInstance(mod, ModelFit)
+        self.assertEquals(models[0].model, curveball.models.richards_model)
+        self.assertEquals(models[0].nvarys, 4)
 
 
 if __name__ == '__main__':
