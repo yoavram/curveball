@@ -138,6 +138,37 @@ def lrtest(m0, m1, alfa=0.05):
     return prefer_m1, pval, D, ddf
 
 
+def find_lag(model_fit, PLOT=True):
+    y0 = model_fit.params['y0'].value
+    K  = model_fit.params['K'].value
+
+    x = np.linspace(0, 24)
+    f = lambda t: fit.eval(t=t)
+    y = f(x)
+    dfdx = derivative(f, x)
+    plot(x, dfdx)
+
+    a = dfdx.max()
+    i = dfdx.argmax()
+    x1 = x[i]
+    y1 = y[i]
+    b = y1 - a * x1
+    lam = (y0 - b) / a
+
+    if PLOT:
+        plot(x, y)
+        plot(x, a * x + b)
+        xlabel('Time')
+        ylabel('OD')
+        ylim(0,1.1)
+        axhline(y=y1, color='k', ls='--')
+        axvline(x=x1, color='k', ls='--')
+        axvline(x=lam, color='k', ls='--')
+        axhline(y=y0, color='k', ls='--')
+        axhline(y=K, color='k', ls='--')
+    return lam
+
+
 def fit_model(df, ax=None, PLOT=True, PRINT=True):
     r"""Fit a growth model to data.
 
