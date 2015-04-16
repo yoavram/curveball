@@ -136,6 +136,11 @@ def fit_model(df, ax=None, PLOT=True, PRINT=True):
     The function is still being developed.
     """
     _df = df.groupby('Time')['OD'].agg([np.mean, np.std]).reset_index().rename(columns={'mean':'OD'})
+    # if there is more than one replicate, use the standard deviation as weight
+    if np.isnan(_df['std']).any():
+        weights = None
+    else:
+        weights = 1./_df['std']
     models = []
 
     # TODO: make MyModel, inherit from Model, use Model.guess
@@ -155,12 +160,12 @@ def fit_model(df, ax=None, PLOT=True, PRINT=True):
     params['v'].set(min=1e-10)
 
     # Baranyi-Roberts = Richards /w lag (6 params)
-    result = baranyi_roberts_model.fit(data=_df.OD, t=_df.Time, params=params, weights=1./_df['std'])
+    result = baranyi_roberts_model.fit(data=_df.OD, t=_df.Time, params=params, weights=weights)
     models.append(result)
 
     # Baranyi-Roberts /w nu=1 = Logistic /w lag (5 params)
     params['nu'].set(vary=False)
-    result = baranyi_roberts_model.fit(data=_df.OD, t=_df.Time, params=params, weights=1./_df['std'])
+    result = baranyi_roberts_model.fit(data=_df.OD, t=_df.Time, params=params, weights=weights)
     models.append(result)
 
     # Richards = Baranyi-Roberts /wout lag (4 params)
@@ -169,7 +174,7 @@ def fit_model(df, ax=None, PLOT=True, PRINT=True):
     params['K'].set(min=1-10)
     params['r'].set(min=1-10)
     params['nu'].set(min=1-10)
-    result = richards_model.fit(data=_df.OD, t=_df.Time, params=params, weights=1./_df['std'])
+    result = richards_model.fit(data=_df.OD, t=_df.Time, params=params, weights=weights)
     models.append(result)
 
     # Logistic = Richards /w nu=1 (3 params)
@@ -177,7 +182,7 @@ def fit_model(df, ax=None, PLOT=True, PRINT=True):
     params['y0'].set(min=1-10)
     params['K'].set(min=1-10)
     params['r'].set(min=1-10)
-    result = logistic_model.fit(data=_df.OD, t=_df.Time, params=params, weights=1./_df['std'])
+    result = logistic_model.fit(data=_df.OD, t=_df.Time, params=params, weights=weights)
     models.append(result)
 
     # sort by increasing bic

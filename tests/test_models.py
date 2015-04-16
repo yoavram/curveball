@@ -9,6 +9,7 @@
 # Copyright (c) 2015, Yoav Ram <yoavram+github@gmail.com>
 
 from unittest import TestCase, main
+import sys
 
 import curveball
 from scipy.integrate import odeint
@@ -105,7 +106,24 @@ class ModelsTestCase(TestCase):
     def test_fit_model_logistic(self):
         df = self._randomize_data(logistic_ode)
         models,fig,ax = curveball.models.fit_model(df, PLOT=True, PRINT=False)
-        fig.savefig("test_fit_model_logistic.png")
+        func_name = sys._getframe().f_code.co_name
+        fig.savefig(func_name + ".png")
+        self.assertIsNotNone(models)
+        self.assertEquals(len(models), 4)
+        for mod in models:
+            self.assertIsInstance(mod, ModelFit)
+        self.assertEquals(models[0].model, curveball.models.logistic_model)
+        self.assertEquals(models[0].nvarys, 3)
+
+
+    def test_fit_model_logistic_single_rep(self):
+        _reps = self.reps
+        self.reps = 1
+        df = self._randomize_data(logistic_ode)
+        self.reps = _reps
+        models,fig,ax = curveball.models.fit_model(df, PLOT=True, PRINT=False)
+        func_name = sys._getframe().f_code.co_name
+        fig.savefig(func_name + ".png")
         self.assertIsNotNone(models)
         self.assertEquals(len(models), 4)
         for mod in models:
@@ -117,7 +135,8 @@ class ModelsTestCase(TestCase):
     def test_fit_model_richards(self):
         df = self._randomize_data(richards_ode)
         models,fig,ax = curveball.models.fit_model(df, PLOT=True, PRINT=False)
-        fig.savefig("test_fit_model_richards.png")
+        func_name = sys._getframe().f_code.co_name
+        fig.savefig(func_name + ".png")
         self.assertIsNotNone(models)
         self.assertEquals(len(models), 4)
         for mod in models:
@@ -125,6 +144,6 @@ class ModelsTestCase(TestCase):
         self.assertEquals(models[0].model, curveball.models.richards_model)
         self.assertEquals(models[0].nvarys, 4)
 
-
+    
 if __name__ == '__main__':
     main()
