@@ -139,6 +139,21 @@ def lrtest(m0, m1, alfa=0.05):
 
 
 def find_lag(model_fit, PLOT=True):
+    """Estimates the lag duration from the model fit.
+
+    The function calculates the tangent line to the model curve at the point of maximum derivative (the inflection point). The time when this line intersects with :math:`y0` (the initial population size) is labeled :math:`\lambda` and is called the lag duration time.
+
+    Args:
+        - model_fit: :py:class:`lmfit.model.ModelFit` object.
+        - PLOT: :py:class:`bool`. If true, the function will plot a figure that illustrates the calculation. Default is :py:const:`False`.
+
+    Returns:
+        lam [, fig, ax, ax2]: :py:class:`float` or :py:class:`tuple`
+            - lam: :py:class:`float`, the lag phase duration in the unit of the model_fit `Time` varialbe.
+            - fig, ax, ax2: if the argument `PLOT` was :py:const:`True`, fig is the generated figure, ax is the left y-axis representing growth, and ax2 is the right y-axis representing growth rate.
+
+    See also: Fig. 2.2 pg. 19 in `Baranyi, J., 2010. Modelling and parameter estimation of bacterial growth with distributed lag time. <http://www2.sci.u-szeged.hu/fokozatok/PDF/Baranyi_Jozsef/Disszertacio.pdf>`_.
+    """
     y0 = model_fit.params['y0'].value
     K  = model_fit.params['K'].value
 
@@ -146,7 +161,6 @@ def find_lag(model_fit, PLOT=True):
     f = lambda t: fit.eval(t=t)
     y = f(x)
     dfdx = derivative(f, x)
-    plot(x, dfdx)
 
     a = dfdx.max()
     i = dfdx.argmax()
@@ -156,17 +170,48 @@ def find_lag(model_fit, PLOT=True):
     lam = (y0 - b) / a
 
     if PLOT:
-        plot(x, y)
-        plot(x, a * x + b)
-        xlabel('Time')
-        ylabel('OD')
-        ylim(0,1.1)
-        axhline(y=y1, color='k', ls='--')
-        axvline(x=x1, color='k', ls='--')
-        axvline(x=lam, color='k', ls='--')
-        axhline(y=y0, color='k', ls='--')
-        axhline(y=K, color='k', ls='--')
+        colors = sns.color_palette('muted', 3)
+        fig,ax = subplots()
+        ax.plot(x, y, color=colors[0])
+        ax.plot(x, y0 + a * (x - lam) , color=colors[1])
+
+        nu = model_fit.params['nu'].value
+        q0 = model_fit.params['q0'].value
+        v = model_fit.params['v'].value
+        r = model_fit.params['r'].value
+
+        ax.plot(x, richards_function(x, y0=y0, r=r, K=K, nu=nu), color=colors[1], ls='--')
+
+        ax2 = ax.twinx()
+        ax2.plot(x, dfdx, color=colors[2])
+        ax2.plot(x, baranyi_roberts_ode(y, x, r=r, K=K, nu=nu, q0=q0, v=v) , color=colors[2], ls='--')
+        ax2.set_ylabel('dOD/dt', color=colors[2])
+
+        ax.set_xlabel('Time')
+        ax.set_ylabel('OD', color=colors[0])
+        ax.set_ylim(0,1.1)
+        ax.axhline(y=y1, color='k', ls='--', alpha=0.5)
+        ax.text(x=0.1, y=y1, s="y|max(dydt)")
+        ax.axvline(x=x1, color='k', ls='--', alpha=0.5)
+        ax.text(x=x1, y=0.01, s="x|max(dydt)")
+        ax.axhline(y=y0, color='k', ls='--', alpha=0.5)
+        ax.text(x=0.1, y=y0, s="y0")
+        ax.axhline(y=K, color='k', ls='--', alpha=0.5)
+        ax.text(x=0.1, y=K, s="K")
+        ax2.axhline(y=a, color='k', ls='--', alpha=0.5)
+        ax2.text(x=14, y=a, s="max(dydt)")
+        ax2.axhline(y=r, color='k', ls='--', alpha=0.5)
+        ax2.text(x=15, y=r, s="r")
+        ax2.axhline(y=(dfdx/y).max(), color='k', ls='--', alpha=0.5)
+        ax2.text(x=14, y=(dfdx/y).max(), s="max(dydx/y)")
+        ax.axvline(x=lam, color='k', ls='--', alpha=0.5)
+        ax.text(x=lam, y=0.01, s=r'$\lambda=$%.2g' % lam)
+        sns.despine(top=True, right=False)
+        fig.tight_layout()
+        ax.set_xlim(0,16)
+        return lam,fig,ax,ax2
     return lam
+
 
 
 def fit_model(df, ax=None, PLOT=True, PRINT=True):
@@ -187,6 +232,7 @@ def fit_model(df, ax=None, PLOT=True, PRINT=True):
     Kguess  = _df.OD.max()
     y0guess = _df.OD.min()
     nuguess = 1.0
+    # TODO replace gradient with scipy.misc.derivate
     _df['dODdTime'] = np.gradient(_df.OD, _df.Time)
     rguess  = 4 * _df.dODdTime[~np.isinf(_df.dODdTime)].max() / Kguess
     q0guess, vguess = 0.1, 1
