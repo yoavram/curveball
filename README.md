@@ -6,7 +6,7 @@
 
 [![logo](https://raw.githubusercontent.com/yoavram/curveball/master/docs/_static/logo_200px.png?token=ABOnxYYTm3KXcNRrcoK7ESFDtmZ8EwyKks5VOptHwA%3D%3D)](http://www.freepik.com/free-vector/ball-of-wool_762106.htm)
 
-## Curveball analyzes microbial growth curves using ecological and evolutionary models
+Analyzing microbial growth curves using ecological and evolutionary models
 
 ## Installation
 
