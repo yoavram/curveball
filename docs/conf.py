@@ -48,7 +48,7 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'curveball'
+project = u'Curveball'
 copyright = u'2015, Yoav Ram'
 
 # The version info for the project you're documenting, acts as replacement for
@@ -109,7 +109,7 @@ html_theme = 'alabaster'
 # further.  For a list of options available for each theme, see the
 # documentation.
 html_theme_options = {
-    'description': 'curveball uses ecological and evolutionary models to analyze microbial growth curves',
+    'description': 'Curveball analyzes microbial growth curves using ecological and evolutionary models',
     'github_user': 'yoavram',
     'github_repo': 'curveball',
     'github_banner': True,
@@ -128,7 +128,7 @@ html_theme_options = {
 
 # The name of an image file (relative to this directory) to place at the top
 # of the sidebar.
-#html_logo = None
+html_logo = "logo_200px.png"
 
 # The name of an image file (within the static path) to use as favicon of the
 # docs.  This file should be a Windows icon file (.ico) being 16x16 or 32x32
