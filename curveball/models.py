@@ -13,6 +13,7 @@ import seaborn as sns
 sns.set_style("ticks")
 
 from scipy.stats import chisqprob
+from scipy.misc import derivative
 from lmfit import Model
 
 
