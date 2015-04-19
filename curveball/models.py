@@ -158,58 +158,62 @@ def find_lag(model_fit, PLOT=True):
     y0 = model_fit.params['y0'].value
     K  = model_fit.params['K'].value
 
-    x = np.linspace(0, 24)
-    f = lambda t: fit.eval(t=t)
-    y = f(x)
-    dfdx = derivative(f, x)
+    t = np.linspace(0, 24)
+    f = lambda t: model_fit.eval(t=t)
+    y = f(t)
+    dfdt = derivative(f, t)
 
-    a = dfdx.max()
-    i = dfdx.argmax()
-    x1 = x[i]
+    a = dfdt.max()
+    i = dfdt.argmax()
+    t1 = t[i]
     y1 = y[i]
-    b = y1 - a * x1
+    b = y1 - a * t1
     lam = (y0 - b) / a
 
     if PLOT:
-        colors = sns.color_palette('muted', 3)
-        fig,ax = subplots()
-        ax.plot(x, y, color=colors[0])
-        ax.plot(x, y0 + a * (x - lam) , color=colors[1])
-
-        nu = model_fit.params['nu'].value
-        q0 = model_fit.params['q0'].value
-        v = model_fit.params['v'].value
+        fig,ax = plt.subplots()
+        ax2 = ax.twinx()        
+        
         r = model_fit.params['r'].value
+        if 'nu' in model_fit.params:
+            nu = model_fit.params['nu'].value
+        else:
+            nu = 1.0       
+        v = r
+        q0 = 1./(np.exp(lam * v) - 1)
 
-        ax.plot(x, richards_function(x, y0=y0, r=r, K=K, nu=nu), color=colors[1], ls='--')
+        ax.plot(t, y, label='Fit')
+        ax.plot(t, richards_function(t, y0, r, K, nu), ls='--', lw=3, label='Richards (no lag)')
+        ax.plot(t, baranyi_roberts_function(t, y0, r, K, nu, q0, v) ,  ls='--', lw=3, label='Baranyi Roberts')        
+        ax.plot(t, y0 + a * (t - lam) , ls='--', lw=3, label='Tangent')
+        
+        ax2.plot(t, dfdt, label='Fit derivative')
+        ax2.plot(t, derivative(lambda t: richards_function(t, y0, r, K, nu), t) ,  ls='--', lw=3, label='Richards derivative')
+        ax2.plot(t, derivative(lambda t: baranyi_roberts_function(t, y0, r, K, nu, q0, v), t) ,  ls='--', lw=3, label='Baranyi Roberts derivative')        
 
-        ax2 = ax.twinx()
-        ax2.plot(x, dfdx, color=colors[2])
-        ax2.plot(x, baranyi_roberts_ode(y, x, r=r, K=K, nu=nu, q0=q0, v=v) , color=colors[2], ls='--')
-        ax2.set_ylabel('dOD/dt', color=colors[2])
-
+        
+        # TODO chance x values in text
         ax.set_xlabel('Time')
-        ax.set_ylabel('OD', color=colors[0])
+        ax.set_ylabel('OD')
+        ax2.set_ylabel('dOD/dTime')
         ax.set_ylim(0,1.1)
         ax.axhline(y=y1, color='k', ls='--', alpha=0.5)
-        ax.text(x=0.1, y=y1, s="y|max(dydt)")
-        ax.axvline(x=x1, color='k', ls='--', alpha=0.5)
-        ax.text(x=x1, y=0.01, s="x|max(dydt)")
+        ax.text(x=-0.1, y=y1, s="y|max(dydt)")
+        ax.axvline(x=t1, color='k', ls='--', alpha=0.5)
+        ax.text(x=t1, y=0.01, s="t|max(dydt)")
         ax.axhline(y=y0, color='k', ls='--', alpha=0.5)
         ax.text(x=0.1, y=y0, s="y0")
         ax.axhline(y=K, color='k', ls='--', alpha=0.5)
-        ax.text(x=0.1, y=K, s="K")
+        ax.text(x=-0.1, y=K, s="K")
         ax2.axhline(y=a, color='k', ls='--', alpha=0.5)
         ax2.text(x=14, y=a, s="max(dydt)")
-        ax2.axhline(y=r, color='k', ls='--', alpha=0.5)
-        ax2.text(x=15, y=r, s="r")
-        ax2.axhline(y=(dfdx/y).max(), color='k', ls='--', alpha=0.5)
-        ax2.text(x=14, y=(dfdx/y).max(), s="max(dydx/y)")
         ax.axvline(x=lam, color='k', ls='--', alpha=0.5)
         ax.text(x=lam, y=0.01, s=r'$\lambda=$%.2g' % lam)
         sns.despine(top=True, right=False)
         fig.tight_layout()
         ax.set_xlim(0,16)
+        ax.legend(title='OD', loc='center right', frameon=True).get_frame().set_color('w')
+        ax2.legend(title='dODdTime', loc='lower right', frameon=True).get_frame().set_color('w')
         return lam,fig,ax,ax2
     return lam
 
@@ -286,9 +290,8 @@ def fit_model(df, ax=None, PLOT=True, PRINT=True):
 
     if PRINT:
         print models[0].fit_report()
-        vals = models[0].best_values
-        lam = np.log(1. + 1./vals['q0']) / vals['v']
-        print "lambda:", lam
+        lam = find_lag(models[0], PLOT=False)
+        print "Lambda:", lam
     if PLOT:
         dy = _df.OD.max()/50
         dx = _df.Time.max()/25
@@ -297,12 +300,9 @@ def fit_model(df, ax=None, PLOT=True, PRINT=True):
             vals = fit.best_values
             fit.plot_fit(ax=ax[i], datafmt='.', fit_kws={'lw':4})
             ax[i].axhline(y=vals['y0'], color='k', ls='--')
-            ax[i].axhline(y=vals['K'], color='k', ls='--')
-            if 'q0' in vals:
-                lam = np.log(1. + 1./vals['q0']) / vals['v']
-            else:
-                lam = 0
+            ax[i].axhline(y=vals['K'], color='k', ls='--')            
             ax[i].axvline(x=lam, color='k', ls='--')
+            lam = find_lag(fit, PLOT=False)
             ax[i].text(x=lam + dx, y=_df.OD.min() - 3*dy, s=r'$\lambda=$%.2f' % lam)
             title = '%s %dp\nBIC: %d\ny0=%.2f, K=%.2f, r=%.2g\n' + r'$\nu$=%.2g, $q_0$=%.2g, v=%.2g'
             title = title % (fit.model.name, fit.nvarys, fit.bic, vals['y0'], vals['K'], vals['r'], vals.get('nu',0), vals.get('q0',0), vals.get('v',0))
