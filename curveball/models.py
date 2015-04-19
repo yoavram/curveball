@@ -168,8 +168,7 @@ def find_lag(model_fit, PLOT=True):
     t1 = t[i]
     y1 = y[i]
     b = y1 - a * t1
-    #lam = (y0 - b) / a
-    lam = -b / a
+    lam = (y0 - b) / a
 
     if PLOT:
         fig,ax = plt.subplots()
@@ -186,7 +185,7 @@ def find_lag(model_fit, PLOT=True):
         ax.plot(t, y, label='Fit')
         ax.plot(t, richards_function(t, y0, r, K, nu), ls='--', lw=3, label='Richards (no lag)')
         ax.plot(t, baranyi_roberts_function(t, y0, r, K, nu, q0, v) ,  ls='--', lw=3, label='Baranyi Roberts')        
-        ax.plot(t, y0 + a * (t - lam) , ls='--', lw=3, label='Tangent')
+        ax.plot(t, a * t + b , ls='--', lw=3, label='Tangent')
 
         ax2.plot(t, dfdt, label='Fit derivative')
         ax2.plot(t, derivative(lambda t: richards_function(t, y0, r, K, nu), t) ,  ls='--', lw=3, label='Richards derivative')
@@ -293,18 +292,19 @@ def fit_model(df, ax=None, PLOT=True, PRINT=True):
         print models[0].fit_report()
         lam = find_lag(models[0], PLOT=False)
         print "Lambda:", lam
-    if PLOT:
-        dy = _df.OD.max()/50
-        dx = _df.Time.max()/25
+    if PLOT:        
+        dy = _df.OD.max()/50.
+        dx = _df.Time.max()/25.
         fig, ax = plt.subplots(1, len(models), sharex=True, sharey=True, figsize=(16,6))
         for i,fit in enumerate(models):
             vals = fit.best_values
+            #lam = find_lag(fit, PLOT=False)
             fit.plot_fit(ax=ax[i], datafmt='.', fit_kws={'lw':4})
             ax[i].axhline(y=vals['y0'], color='k', ls='--')
-            ax[i].axhline(y=vals['K'], color='k', ls='--')            
-            ax[i].axvline(x=lam, color='k', ls='--')
-            lam = find_lag(fit, PLOT=False)
-            ax[i].text(x=lam + dx, y=_df.OD.min() - 3*dy, s=r'$\lambda=$%.2f' % lam)
+            ax[i].axhline(y=vals['K'], color='k', ls='--')
+            #lam = find_lag(fit, PLOT=False)
+            #ax[i].axvline(x=lam, color='k', ls='--')            
+            #ax[i].text(x=lam + dx, y=_df.OD.min() - 3*dy, s=r'$\lambda=$%.2f' % lam)
             title = '%s %dp\nBIC: %d\ny0=%.2f, K=%.2f, r=%.2g\n' + r'$\nu$=%.2g, $q_0$=%.2g, v=%.2g'
             title = title % (fit.model.name, fit.nvarys, fit.bic, vals['y0'], vals['K'], vals['r'], vals.get('nu',0), vals.get('q0',0), vals.get('v',0))
             ax[i].set_title(title)
