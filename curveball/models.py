@@ -168,7 +168,8 @@ def find_lag(model_fit, PLOT=True):
     t1 = t[i]
     y1 = y[i]
     b = y1 - a * t1
-    lam = (y0 - b) / a
+    #lam = (y0 - b) / a
+    lam = -b / a
 
     if PLOT:
         fig,ax = plt.subplots()
@@ -186,7 +187,7 @@ def find_lag(model_fit, PLOT=True):
         ax.plot(t, richards_function(t, y0, r, K, nu), ls='--', lw=3, label='Richards (no lag)')
         ax.plot(t, baranyi_roberts_function(t, y0, r, K, nu, q0, v) ,  ls='--', lw=3, label='Baranyi Roberts')        
         ax.plot(t, y0 + a * (t - lam) , ls='--', lw=3, label='Tangent')
-        
+
         ax2.plot(t, dfdt, label='Fit derivative')
         ax2.plot(t, derivative(lambda t: richards_function(t, y0, r, K, nu), t) ,  ls='--', lw=3, label='Richards derivative')
         ax2.plot(t, derivative(lambda t: baranyi_roberts_function(t, y0, r, K, nu, q0, v), t) ,  ls='--', lw=3, label='Baranyi Roberts derivative')        
