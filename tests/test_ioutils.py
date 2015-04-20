@@ -34,7 +34,7 @@ class IOUtilsTestCase(TestCase):
         df = curveball.ioutils.read_tecan_xlsx(self.filename, ('OD', 'Green', 'Red'))
         self.assertIsNotNone(df)
         self.assertIsInstance(df, pd.DataFrame)
-        self.assertEquals(df.shape, (8448, 15))
+        self.assertEquals(df.shape, (8352, 15))
         self.assertEquals(df.columns.tolist() , ['Time_OD', u'Temp. [\xb0C]_OD', 'Cycle Nr.', 'Well', 'OD', 'Row', 'Col', 'Strain', 'Color', 'Time_Green', u'Temp. [\xb0C]_Green', 'Green', 'Time', u'Temp. [\xb0C]', 'Red'])
 
 
