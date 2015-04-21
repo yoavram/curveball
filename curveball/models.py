@@ -418,7 +418,7 @@ def fit_model(df, ax=None, PLOT=True, PRINT=True):
 
     dydt = np.gradient(_df.OD, _df.Time)
     rguess  = 4 * dydt[~np.isinf(dydt)].max() / Kguess # assume nu==1
-    q0guess, vguess = 0.1, 1
+    q0guess, vguess = 1.0, 1.0
 
     params = baranyi_roberts_model.make_params(y0=y0guess, K=Kguess, r=rguess, nu=nuguess, q0=q0guess, v=vguess)
     params['y0'].set(min=1-10)
@@ -426,7 +426,7 @@ def fit_model(df, ax=None, PLOT=True, PRINT=True):
     params['r'].set(min=1-10)
     params['nu'].set(min=1-10)
     params['q0'].set(min=1e-10, max=1)
-    params['v'].set(min=1e-10)
+    params['v'].set(min=1e-4, max=60)
 
     # Baranyi-Roberts = Richards /w lag (6 params)
     result = baranyi_roberts_model.fit(data=_df.OD, t=_df.Time, params=params, weights=weights)
