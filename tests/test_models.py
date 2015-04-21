@@ -241,10 +241,10 @@ class FindMaxGrowthTestCase(TestCase):
         self.assertIsNotNone(ax2)
         func_name = sys._getframe().f_code.co_name
         fig.savefig(func_name + ".png")
-        self.assertTrue(relative_error(K / 2, y1) < 0.1, "y1=%.4g, K/2=%.4g" % (y1, K / 2))
-        self.assertTrue(relative_error(K * r / 4, a) < 0.1, "a=%.4g, Kr/4=%.4g" % (a, K * r / 4))
-        self.assertTrue(relative_error(y0, y2) < 0.1, "y2=%.4g, y0=%.4g" % (y2, y0))
-        self.assertTrue(relative_error(r * (1 - y0/K), mu) < 0.1, "mu=%.4g, r(1-y0/K)=%.4g" % (mu, r * (1-y0/K)))
+        self.assertTrue(relative_error(K / 2, y1) < 1, "y1=%.4g, K/2=%.4g" % (y1, K / 2))
+        self.assertTrue(relative_error(K * r / 4, a) < 1, "a=%.4g, Kr/4=%.4g" % (a, K * r / 4))
+        self.assertTrue(relative_error(y0, y2) < 1, "y2=%.4g, y0=%.4g" % (y2, y0))
+        self.assertTrue(relative_error(r * (1 - y0/K), mu) < 1, "mu=%.4g, r(1-y0/K)=%.4g" % (mu, r * (1-y0/K)))
 
 
     def test_find_max_growth_logistic_lag(self):
@@ -291,11 +291,11 @@ class FindMaxGrowthTestCase(TestCase):
         func_name = sys._getframe().f_code.co_name
         fig.savefig(func_name + ".png")
         exp_y1 = K * (nu + 1)**(-1/nu)
-        self.assertTrue(relative_error(exp_y1, y1) < 0.1, "y1=%.4g, K/(nu+1)**(1/nu)=%.4g" % (y1, exp_y1))
+        self.assertTrue(relative_error(exp_y1, y1) < 1, "y1=%.4g, K/(nu+1)**(1/nu)=%.4g" % (y1, exp_y1))
         exp_a = r * K * nu * (nu + 1)**(- 1 - 1/nu)
-        self.assertTrue(relative_error(exp_a, a) < 0.1, "a=%.4g, rKnu/(nu+1)**(1+1/nu)=%.4g" % (a, exp_a))
-        self.assertTrue(relative_error(y0, y2) < 0.1, "y2=%.4g, y0=%.4g" % (y2, y0))
-        self.assertTrue(relative_error(r * (1 - (y0/K)**nu), mu) < 0.1, "mu=%.4g, r(1-(y0/K)**nu)=%.4g" % (mu, r * (1 - (y0/K)**nu)))
+        self.assertTrue(relative_error(exp_a, a) < 1, "a=%.4g, rKnu/(nu+1)**(1+1/nu)=%.4g" % (a, exp_a))
+        self.assertTrue(relative_error(y0, y2) < 1, "y2=%.4g, y0=%.4g" % (y2, y0))
+        self.assertTrue(relative_error(r * (1 - (y0/K)**nu), mu) < 1, "mu=%.4g, r(1-(y0/K)**nu)=%.4g" % (mu, r * (1 - (y0/K)**nu)))
 
 
 class LRTestTestCase(TestCase):
@@ -376,10 +376,30 @@ class LRTestTestCase(TestCase):
         self.assertFalse(result)
 
 
-    def test_has_nu_baranyi_roberts(self):
-        df = randomize_data(baranyi_roberts_ode)
-        models = curveball.models.fit_model(df, PLOT=False, PRINT=False)
-        result = curveball.models.has_nu(models)
+    def test_has_nu_baranyi_roberts_nu_01(self):
+        df = randomize_data(baranyi_roberts_ode, t=np.linspace(0,120), nu=0.1)
+        models,fig,ax = curveball.models.fit_model(df, PLOT=True, PRINT=False)
+        func_name = sys._getframe().f_code.co_name
+        fig.savefig(func_name + ".png")
+        result = curveball.models.has_nu(models, PRINT=True)
+        self.assertTrue(result)
+
+
+    def test_has_nu_baranyi_roberts_nu_1(self):
+        df = randomize_data(baranyi_roberts_ode, t=np.linspace(0,32), nu=1.0)
+        models,fig,ax = curveball.models.fit_model(df, PLOT=True, PRINT=False)
+        func_name = sys._getframe().f_code.co_name
+        fig.savefig(func_name + ".png")
+        result = curveball.models.has_nu(models, PRINT=True)
+        self.assertFalse(result)
+
+
+    def test_has_nu_baranyi_roberts_nu_5(self):
+        df = randomize_data(baranyi_roberts_ode, t=np.linspace(0,32), nu=5.0)
+        models,fig,ax = curveball.models.fit_model(df, PLOT=True, PRINT=False)
+        func_name = sys._getframe().f_code.co_name
+        fig.savefig(func_name + ".png")
+        result = curveball.models.has_nu(models, PRINT=True)
         self.assertTrue(result)
 
 
