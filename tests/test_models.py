@@ -46,6 +46,9 @@ def randomize_data(func_ode, t=None, y0=0.1, r=0.75, K=1.0, nu=0.5, q0=0.1, v=0.
 
 
 class ModelsTestCase(TestCase):
+    _multiprocess_can_split_ = True
+
+    
     def setUp(self):
         pass
 
