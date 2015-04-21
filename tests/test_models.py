@@ -15,6 +15,7 @@ import curveball
 from scipy.integrate import odeint
 import numpy as np
 import pandas as pd
+import matplotlib.pyplot as plt
 from lmfit import Model
 from lmfit.model import ModelFit
 
@@ -85,7 +86,10 @@ class FunctionsTestCase(TestCase):
 
 
 class ModelSelectionTestCase(TestCase):
-    _multiprocess_can_split_ = True      
+    _multiprocess_can_split_ = True
+
+    def tearDown(self):
+        plt.close("all") 
 
     def test_fit_model_logistic(self):
         df = randomize_data(logistic_ode)
@@ -150,6 +154,10 @@ class ModelSelectionTestCase(TestCase):
 class FindLagTestCase(TestCase):
     _multiprocess_can_split_ = True
 
+    def tearDown(self):
+        plt.close("all")
+
+
     def test_find_lag_logistic(self):
         y0=0.1; r=0.75; K=1.0
         t = np.linspace(0,12)
@@ -211,6 +219,9 @@ class FindLagTestCase(TestCase):
 
 class FindMaxGrowthTestCase(TestCase):
     _multiprocess_can_split_ = True
+
+    def tearDown(self):
+        plt.close("all")
 
 
     def test_find_max_growth_logistic(self):
@@ -288,6 +299,12 @@ class FindMaxGrowthTestCase(TestCase):
 
 
 class LRTestTestCase(TestCase):
+    _multiprocess_can_split_ = True
+
+    def tearDown(self):
+        plt.close("all")
+
+
     def test_lrtest(self):
         a,b = 1,1
         a_init,b_init = 2,1
