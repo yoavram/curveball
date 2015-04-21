@@ -185,41 +185,44 @@ class ModelsTestCase(TestCase):
 
 
     def test_find_lag_richards(self):
-        y0=0.1; r=0.75; K=1.0; nu=2.0
+        y0=0.1; r=0.75; K=1.0
         t = np.linspace(0,12)
-        df = randomize_data(richards_ode, t=t, y0=y0, r=r, K=K, nu=nu, reps=1)
-        model_fit = curveball.models.richards_model.fit(df.OD, t=df.Time, y0=y0, K=K, r=r, nu=nu)
-        res = curveball.models.find_lag(model_fit, PLOT=True)
-        self.assertIsNotNone(res)
-        self.assertTrue(len(res) == 4)
-        lam,fig,ax1,ax2 = res
-        self.assertIsNotNone(lam)
-        self.assertIsNotNone(fig)
-        self.assertIsNotNone(ax1)
-        self.assertIsNotNone(ax2)
-        func_name = sys._getframe().f_code.co_name
-        fig.savefig(func_name + ".png")
-        self.assertTrue(lam < 1, "Lambda is " + str(lam))
+        for nu in [0.5,1.0,2.0]:
+            df = randomize_data(richards_ode, t=t, y0=y0, r=r, K=K, nu=nu, reps=1)
+            model_fit = curveball.models.richards_model.fit(df.OD, t=df.Time, y0=y0, K=K, r=r, nu=nu)
+            res = curveball.models.find_lag(model_fit, PLOT=True)
+            self.assertIsNotNone(res)
+            self.assertTrue(len(res) == 4)
+            lam,fig,ax1,ax2 = res
+            self.assertIsNotNone(lam)
+            self.assertIsNotNone(fig)
+            self.assertIsNotNone(ax1)
+            self.assertIsNotNone(ax2)
+            func_name = sys._getframe().f_code.co_name
+            fig.savefig(func_name + ".png")
+            self.assertTrue(lam < 1, "Lambda is " + str(lam))
 
 
     def test_find_lag_baranyi_roberts(self):
-        y0=0.1; r=0.75; K=1.0; nu=2.0
-        v=r; lam=3.0
-        q0 = 1/(np.exp(lam*v) - 1)
         t = np.linspace(0,16)
-        df = randomize_data(baranyi_roberts_ode, t=t, y0=y0, r=r, K=K, nu=nu, q0=q0, v=v, reps=1)
-        model_fit = curveball.models.baranyi_roberts_model.fit(df.OD, t=df.Time, y0=y0, K=K, r=r, nu=nu, q0=q0, v=v)
-        res = curveball.models.find_lag(model_fit, PLOT=True)
-        self.assertIsNotNone(res)
-        self.assertTrue(len(res) == 4)
-        lam,fig,ax1,ax2 = res
-        self.assertIsNotNone(lam)        
-        self.assertIsNotNone(fig)
-        self.assertIsNotNone(ax1)
-        self.assertIsNotNone(ax2)
-        func_name = sys._getframe().f_code.co_name
-        fig.savefig(func_name + ".png")
-        self.assertTrue(4 > lam > 2, "Lambda is " + str(lam))
+        y0=0.1; r=0.75; K=1.0
+        v=r;
+        for nu in [0.5, 1.0, 2.0]: 
+            for _lam in [2., 3., 4.]:
+                q0 = 1/(np.exp(_lam * v) - 1)
+                df = randomize_data(baranyi_roberts_ode, t=t, y0=y0, r=r, K=K, nu=nu, q0=q0, v=v, reps=1)
+                model_fit = curveball.models.baranyi_roberts_model.fit(df.OD, t=df.Time, y0=y0, K=K, r=r, nu=nu, q0=q0, v=v)
+                res = curveball.models.find_lag(model_fit, PLOT=True)
+                self.assertIsNotNone(res)
+                self.assertTrue(len(res) == 4)
+                lam,fig,ax1,ax2 = res
+                self.assertIsNotNone(lam)        
+                self.assertIsNotNone(fig)
+                self.assertIsNotNone(ax1)
+                self.assertIsNotNone(ax2)
+                func_name = sys._getframe().f_code.co_name + ".nu.%.1f.lam.%d" % (nu, lam)
+                fig.savefig(func_name + ".png")
+                self.assertTrue((_lam + 1) > lam > (_lam - 1), "Lambda is " + str(lam) + " but should be " + str(_lam))
 
 
 if __name__ == '__main__':
