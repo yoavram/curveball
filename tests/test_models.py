@@ -35,6 +35,10 @@ def compare_curves(y1, y2):
     return (abs(y1 - y2) / y1).mean()
 
 
+def relative_error(exp, obs):
+        return abs(exp - obs) / exp
+
+
 def randomize_data(func_ode, t=None, y0=0.1, r=0.75, K=1.0, nu=0.5, q0=0.1, v=0.1, reps=30, noise=0.03):
     if t is None:
         t = np.linspace(0, 12)
@@ -217,6 +221,73 @@ class ModelsTestCase(TestCase):
                 func_name = sys._getframe().f_code.co_name + ".nu.%.1f.lam.%d" % (nu, lam)
                 fig.savefig(func_name + ".png")
                 self.assertTrue((_lam + 1) > lam > (_lam - 1), "Lambda is " + str(lam) + " but should be " + str(_lam))
+
+
+    def test_find_max_growth_logistic(self):
+        y0=0.1; r=0.75; K=1.0
+        t = np.linspace(0,12)
+        df = randomize_data(logistic_ode, t=t, y0=y0, r=r, K=K, reps=10)
+        model_fit = curveball.models.logistic_model.fit(df.OD, t=df.Time, y0=y0, K=K, r=r)        
+        res = curveball.models.find_max_growth(model_fit, PLOT=True)
+        self.assertIsNotNone(res)
+        self.assertTrue(len(res) == 6)
+        t1,y1,a,fig,ax1,ax2 = res
+        self.assertIsNotNone(t1)
+        self.assertIsNotNone(y1)
+        self.assertIsNotNone(a)
+        self.assertIsNotNone(fig)
+        self.assertIsNotNone(ax1)
+        self.assertIsNotNone(ax2)
+        func_name = sys._getframe().f_code.co_name
+        fig.savefig(func_name + ".png")
+        self.assertTrue(relative_error(K / 2, y1) < 0.1, "y1=%.4g, K/2=%.4g" % (y1, K / 2))
+        self.assertTrue(relative_error(K * r / 4, a) < 0.1, "a=%.4g, Kr/4=%.4g" % (a, K * r / 4))
+
+
+    def test_find_max_growth_logistic_lag(self):
+        y0=0.1; r=0.75; K=1.0; nu=1.0
+        v=r; lam=3.0
+        q0 = 1/(np.exp(lam * v) - 1)
+        t = np.linspace(0,12)
+        df = randomize_data(baranyi_roberts_ode, t=t, y0=y0, r=r, K=K, nu=nu, q0=q0, v=v, reps=10)
+        model_fit = curveball.models.baranyi_roberts_model.fit(df.OD, t=df.Time, y0=y0, K=K, r=r, nu=nu, q0=q0, v=v)        
+        res = curveball.models.find_max_growth(model_fit, PLOT=True)
+        self.assertIsNotNone(res)
+        self.assertTrue(len(res) == 6)
+        t1,y1,a,fig,ax1,ax2 = res
+        self.assertIsNotNone(t1)
+        self.assertIsNotNone(y1)
+        self.assertIsNotNone(a)
+        self.assertIsNotNone(fig)
+        self.assertIsNotNone(ax1)
+        self.assertIsNotNone(ax2)
+        func_name = sys._getframe().f_code.co_name
+        fig.savefig(func_name + ".png")
+        self.assertTrue(K > y1 > K / 2, "y1=%.4g, K/2=%.4g" % (y1, K / 2))
+        self.assertTrue(K * r / 8 < a < K * r / 4, "a=%.4g, Kr/4=%.4g" % (a, K * r / 4))
+
+
+    def test_find_max_growth_richards(self):
+        y0=0.1; r=0.75; K=1.0; nu=2.0
+        t = np.linspace(0,12)
+        df = randomize_data(richards_ode, t=t, y0=y0, r=r, K=K, nu=nu, reps=10)
+        model_fit = curveball.models.richards_model.fit(df.OD, t=df.Time, y0=y0, K=K, r=r, nu=nu)        
+        res = curveball.models.find_max_growth(model_fit, PLOT=True)
+        self.assertIsNotNone(res)
+        self.assertTrue(len(res) == 6)
+        t1,y1,a,fig,ax1,ax2 = res
+        self.assertIsNotNone(t1)
+        self.assertIsNotNone(y1)
+        self.assertIsNotNone(a)
+        self.assertIsNotNone(fig)
+        self.assertIsNotNone(ax1)
+        self.assertIsNotNone(ax2)
+        func_name = sys._getframe().f_code.co_name
+        fig.savefig(func_name + ".png")
+        exp_y1 = K * (nu + 1)**(-1/nu)
+        self.assertTrue(relative_error(exp_y1, y1) < 0.1, "y1=%.4g, K/(nu+1)**(1/nu)=%.4g" % (y1, exp_y1))
+        exp_a = r * K * nu * (nu + 1)**(- 1 - 1/nu)
+        self.assertTrue(relative_error(exp_a, a) < 0.15, "a=%.4g, rKnu/(nu+1)**(1+1/nu)=%.4g" % (a, exp_a))
 
 
     def test_has_lag_logistic(self):

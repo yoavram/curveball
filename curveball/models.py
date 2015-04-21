@@ -139,6 +139,54 @@ def lrtest(m0, m1, alfa=0.05):
     return prefer_m1, pval, D, ddf
 
 
+def find_max_growth(model_fit, PLOT=True):
+    y0 = model_fit.params['y0'].value
+    K  = model_fit.params['K'].value
+
+    t = np.linspace(0, 24)
+    f = lambda t: model_fit.eval(t=t)
+    y = f(t)
+    dfdt = derivative(f, t)
+
+    a = dfdt.max()
+    i = dfdt.argmax()
+    t1 = t[i]
+    y1 = y[i]
+    
+    if PLOT:
+        fig,ax = plt.subplots()
+        ax2 = ax.twinx()        
+        
+        r = model_fit.params['r'].value
+        if 'nu' in model_fit.params:
+            nu = model_fit.params['nu'].value
+        else:
+            nu = 1.0               
+
+        ax.plot(t, y, label='Fit')
+        ax2.plot(t, dfdt, label='Fit derivative')
+
+        ax.set_xlabel('Time')
+        ax.set_ylabel('OD')
+        ax2.set_ylabel('dOD/dTime')
+        ax.set_ylim(0, y.max() * 1.1)
+        ax.axhline(y=y1, color='k', ls='--', alpha=0.5)
+        ax.text(x=-0.1, y=y1, s="y|max(dydt)")
+        ax.axvline(x=t1, color='k', ls='--', alpha=0.5)
+        ax.text(x=t1, y=0.01, s="t|max(dydt)")
+        ax.axhline(y=y0, color='k', ls='--', alpha=0.5)
+        ax.text(x=0.1, y=y0, s="y0")
+        ax.axhline(y=K, color='k', ls='--', alpha=0.5)
+        ax.text(x=-0.1, y=K, s="K")
+        ax2.axhline(y=a, color='k', ls='--', alpha=0.5)
+        ax2.text(x=t.max()-2, y=a, s="max(dydt)")        
+        sns.despine(top=True, right=False)
+        fig.tight_layout()
+        ax.legend(title='OD', loc='center right', frameon=True).get_frame().set_color('w')
+        ax2.legend(title='dODdTime', loc='lower right', frameon=True).get_frame().set_color('w')
+        return t1,y1,a,fig,ax,ax2
+    return t1,y1,a
+
 def find_lag(model_fit, PLOT=True):
     """Estimates the lag duration from the model fit.
 
