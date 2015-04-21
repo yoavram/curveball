@@ -48,15 +48,6 @@ def randomize_data(func_ode, t=None, y0=0.1, r=0.75, K=1.0, nu=0.5, q0=0.1, v=0.
 class ModelsTestCase(TestCase):
     _multiprocess_can_split_ = True
 
-    
-    def setUp(self):
-        pass
-
-
-    def tearDown(self):
-        pass
-
-
     def test_lrtest(self):
         a,b = 1,1
         a_init,b_init = 2,1
@@ -226,6 +217,34 @@ class ModelsTestCase(TestCase):
                 func_name = sys._getframe().f_code.co_name + ".nu.%.1f.lam.%d" % (nu, lam)
                 fig.savefig(func_name + ".png")
                 self.assertTrue((_lam + 1) > lam > (_lam - 1), "Lambda is " + str(lam) + " but should be " + str(_lam))
+
+
+    def test_has_lag_logistic(self):
+        df = randomize_data(logistic_ode)
+        models = curveball.models.fit_model(df, PLOT=False, PRINT=False)
+        lag = curveball.models.has_lag(models)
+        self.assertFalse(lag)
+
+
+    def test_has_lag_richards(self):
+        df = randomize_data(richards_ode)
+        models = curveball.models.fit_model(df, PLOT=False, PRINT=False)
+        lag = curveball.models.has_lag(models)
+        self.assertFalse(lag)
+
+
+    def test_has_lag_logistic_lag(self):
+        df = randomize_data(baranyi_roberts_ode, t=np.linspace(0,36), nu=1.0)
+        models = curveball.models.fit_model(df, PLOT=False, PRINT=False)
+        lag = curveball.models.has_lag(models)
+        self.assertTrue(lag)
+
+
+    def test_has_lag_baranyi_roberts(self):
+        df = randomize_data(baranyi_roberts_ode)
+        models = curveball.models.fit_model(df, PLOT=False, PRINT=False)
+        lag = curveball.models.has_lag(models)
+        self.assertTrue(lag)
 
 
 if __name__ == '__main__':
