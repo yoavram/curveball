@@ -14,7 +14,7 @@ TBD
 Likelihood ratio test
 ---------------------
 
-The nesting between the models is given in Fig. 1. This nesting is used for the Likelihood ratio test using the function `:py:func:curveball.models.lrtest` in which the nested model (to which the arrows point) is the first argument `m0`, and the nesting model (from which the arrow points) is the second argument `m1`.
+The nesting between the models is given in Fig. 1. This nesting is used for the Likelihood ratio test using the function :py:func:`curveball.models.lrtest` in which the nested model (to which the arrows point) is the first argument `m0`, and the nesting model (from which the arrow points) is the second argument `m1`.
 
 .. figure:: /_static/LRTest_map.png
 	
