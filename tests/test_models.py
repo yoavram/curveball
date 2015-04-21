@@ -247,5 +247,33 @@ class ModelsTestCase(TestCase):
         self.assertTrue(lag)
 
 
+    def test_has_nu_logistic(self):
+        df = randomize_data(logistic_ode)
+        models = curveball.models.fit_model(df, PLOT=False, PRINT=False)
+        result = curveball.models.has_nu(models)
+        self.assertFalse(result)
+
+
+    def test_has_nu_richards(self):
+        df = randomize_data(richards_ode)
+        models = curveball.models.fit_model(df, PLOT=False, PRINT=False)
+        result = curveball.models.has_nu(models)
+        self.assertTrue(result)
+
+
+    def test_has_nu_logistic_lag(self):
+        df = randomize_data(baranyi_roberts_ode, t=np.linspace(0,36), nu=1.0)
+        models = curveball.models.fit_model(df, PLOT=False, PRINT=False)
+        result = curveball.models.has_nu(models)
+        self.assertFalse(result)
+
+
+    def test_has_nu_baranyi_roberts(self):
+        df = randomize_data(baranyi_roberts_ode)
+        models = curveball.models.fit_model(df, PLOT=False, PRINT=False)
+        result = curveball.models.has_nu(models)
+        self.assertTrue(result)
+
+
 if __name__ == '__main__':
     main()
