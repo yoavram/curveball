@@ -195,6 +195,7 @@ def find_max_growth(model_fit, PLOT=True):
 
     dfdt_y = dfdt / y
     mu = dfdt_y.max()
+    i = dfdt_y.argmax()
     t2 = t[i]
     y2 = y[i]
     
@@ -231,8 +232,8 @@ def find_max_growth(model_fit, PLOT=True):
         ax2.text(x=t.max()-2, y=a, s="max(dydt)")
         ax2.axhline(y=mu, color='k', ls='--', alpha=0.5)
         ax2.text(x=t.max()-2, y=mu, s="max(dydt/y)")  
-        ax2.axhline(y=r-r*y0/K, color='k', ls='--', alpha=0.5)
-        ax2.text(x=t.max()-2, y=r-r*y0/K, s="r-r*y0/K")        
+        ax2.axhline(y=r*(1-(y0/K)**nu), color='k', ls='--', alpha=0.5)
+        ax2.text(x=t.max()-2, y=r*(1-(y0/K)**nu), s="r(1-(y0/K)**nu)")        
         sns.despine(top=True, right=False)
         fig.tight_layout()
         ax.legend(title='OD', loc='center right', frameon=True).get_frame().set_color('w')
