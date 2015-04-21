@@ -220,8 +220,8 @@ class FindMaxGrowthTestCase(TestCase):
         model_fit = curveball.models.logistic_model.fit(df.OD, t=df.Time, y0=y0, K=K, r=r)        
         res = curveball.models.find_max_growth(model_fit, PLOT=True)
         self.assertIsNotNone(res)
-        self.assertTrue(len(res) == 6)
-        t1,y1,a,fig,ax1,ax2 = res
+        self.assertTrue(len(res) == 9)
+        t1,y1,a,t2,y2,mu,fig,ax1,ax2 = res
         self.assertIsNotNone(t1)
         self.assertIsNotNone(y1)
         self.assertIsNotNone(a)
@@ -232,6 +232,8 @@ class FindMaxGrowthTestCase(TestCase):
         fig.savefig(func_name + ".png")
         self.assertTrue(relative_error(K / 2, y1) < 0.1, "y1=%.4g, K/2=%.4g" % (y1, K / 2))
         self.assertTrue(relative_error(K * r / 4, a) < 0.1, "a=%.4g, Kr/4=%.4g" % (a, K * r / 4))
+        self.assertTrue(relative_error(y0, y2) < 0.1, "y2=%.4g, y0=%.4g" % (y2, y0))
+        self.assertTrue(relative_error(r * (1 - y0/K), mu) < 0.1, "mu=%.4g, r(1-y0/K)=%.4g" % (mu, r * (1-y0/K)))
 
 
     def test_find_max_growth_logistic_lag(self):
@@ -243,8 +245,8 @@ class FindMaxGrowthTestCase(TestCase):
         model_fit = curveball.models.baranyi_roberts_model.fit(df.OD, t=df.Time, y0=y0, K=K, r=r, nu=nu, q0=q0, v=v)        
         res = curveball.models.find_max_growth(model_fit, PLOT=True)
         self.assertIsNotNone(res)
-        self.assertTrue(len(res) == 6)
-        t1,y1,a,fig,ax1,ax2 = res
+        self.assertTrue(len(res) == 9)
+        t1,y1,a,t2,y2,mu,fig,ax1,ax2 = res
         self.assertIsNotNone(t1)
         self.assertIsNotNone(y1)
         self.assertIsNotNone(a)
@@ -255,6 +257,9 @@ class FindMaxGrowthTestCase(TestCase):
         fig.savefig(func_name + ".png")
         self.assertTrue(K > y1 > K / 2, "y1=%.4g, K/2=%.4g" % (y1, K / 2))
         self.assertTrue(K * r / 8 < a < K * r / 4, "a=%.4g, Kr/4=%.4g" % (a, K * r / 4))
+        self.assertTrue(y0 < y2 < y1, "y0=%.4g, y1=%.4g, y2=%.4g," % (y0, y1, y2))
+        self.assertTrue(0 < t2 < t1, "t1=%.4g, t2=%.4g," % (t1, t2))
+        self.assertTrue(a < mu < r * (1 - y0/K), "a = %.4g, mu=%.4g, r(1-y0/K)=%.4g" % (a, mu, r * (1-y0/K)))
 
 
     def test_find_max_growth_richards(self):
@@ -264,8 +269,8 @@ class FindMaxGrowthTestCase(TestCase):
         model_fit = curveball.models.richards_model.fit(df.OD, t=df.Time, y0=y0, K=K, r=r, nu=nu)        
         res = curveball.models.find_max_growth(model_fit, PLOT=True)
         self.assertIsNotNone(res)
-        self.assertTrue(len(res) == 6)
-        t1,y1,a,fig,ax1,ax2 = res
+        self.assertTrue(len(res) == 9)
+        t1,y1,a,t2,y2,mu,fig,ax1,ax2 = res
         self.assertIsNotNone(t1)
         self.assertIsNotNone(y1)
         self.assertIsNotNone(a)
@@ -278,6 +283,8 @@ class FindMaxGrowthTestCase(TestCase):
         self.assertTrue(relative_error(exp_y1, y1) < 0.1, "y1=%.4g, K/(nu+1)**(1/nu)=%.4g" % (y1, exp_y1))
         exp_a = r * K * nu * (nu + 1)**(- 1 - 1/nu)
         self.assertTrue(relative_error(exp_a, a) < 0.1, "a=%.4g, rKnu/(nu+1)**(1+1/nu)=%.4g" % (a, exp_a))
+        self.assertTrue(relative_error(y0, y2) < 0.1, "y2=%.4g, y0=%.4g" % (y2, y0))
+        self.assertTrue(relative_error(r * (1 - (y0/K)**nu), mu) < 0.1, "mu=%.4g, r(1-(y0/K)**nu)=%.4g" % (mu, r * (1 - (y0/K)**nu)))
 
 
 class LRTestTestCase(TestCase):
