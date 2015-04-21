@@ -18,6 +18,7 @@ import pandas as pd
 from lmfit import Model
 from lmfit.model import ModelFit
 
+
 def logistic_ode(y, t, r, K, nu, q0, v):
     return r * y * (1 - y/K)
 
@@ -49,29 +50,8 @@ def randomize_data(func_ode, t=None, y0=0.1, r=0.75, K=1.0, nu=0.5, q0=0.1, v=0.
     return pd.DataFrame({'OD': y.flatten(), 'Time': t.repeat(reps)})
 
 
-class ModelsTestCase(TestCase):
+class FunctionsTestCase(TestCase):
     _multiprocess_can_split_ = True
-
-    def test_lrtest(self):
-        a,b = 1,1
-        a_init,b_init = 2,1
-    
-        alfa = 0.05
-        noise = 0.03
-        t = np.linspace(0,12)
-        f = lambda t,a,b: b + np.exp(-a * t)
-        y = f(t,a,b) + np.random.normal(0, noise, len(t))
-        model = Model(f)
-        params = model.make_params(a=a_init, b=b_init)
-    
-        two_var_fit = model.fit(y, t=t, params=params)
-    
-        params['a'].set(vary=False)
-        params['b'].set(vary=True)
-        one_var_fit = model.fit(y, t=t, params=params)
-    
-        prefer_m1,pval,D,ddf = curveball.models.lrtest(one_var_fit, two_var_fit, alfa)
-        self.assertTrue(prefer_m1)
 
 
     def test_logistic(self):
@@ -101,8 +81,11 @@ class ModelsTestCase(TestCase):
         y_ode = odeint(baranyi_roberts_ode, y0, t, args=(r, K, nu, q0, v))
         y_ode.resize((len(t),))
         err = compare_curves(y_ode, y_curve)
-        self.assertTrue(err < 1e-6)   
-      
+        self.assertTrue(err < 1e-6)  
+
+
+class ModelSelectionTestCase(TestCase):
+    _multiprocess_can_split_ = True      
 
     def test_fit_model_logistic(self):
         df = randomize_data(logistic_ode)
@@ -164,6 +147,9 @@ class ModelsTestCase(TestCase):
         self.assertEquals(models[0].nvarys, 6)
 
 
+class FindLagTestCase(TestCase):
+    _multiprocess_can_split_ = True
+
     def test_find_lag_logistic(self):
         y0=0.1; r=0.75; K=1.0
         t = np.linspace(0,12)
@@ -221,6 +207,10 @@ class ModelsTestCase(TestCase):
                 func_name = sys._getframe().f_code.co_name + ".nu.%.1f.lam.%d" % (nu, lam)
                 fig.savefig(func_name + ".png")
                 self.assertTrue((_lam + 1) > lam > (_lam - 1), "Lambda is " + str(lam) + " but should be " + str(_lam))
+
+
+class FindMaxGrowthTestCase(TestCase):
+    _multiprocess_can_split_ = True
 
 
     def test_find_max_growth_logistic(self):
@@ -288,6 +278,29 @@ class ModelsTestCase(TestCase):
         self.assertTrue(relative_error(exp_y1, y1) < 0.1, "y1=%.4g, K/(nu+1)**(1/nu)=%.4g" % (y1, exp_y1))
         exp_a = r * K * nu * (nu + 1)**(- 1 - 1/nu)
         self.assertTrue(relative_error(exp_a, a) < 0.1, "a=%.4g, rKnu/(nu+1)**(1+1/nu)=%.4g" % (a, exp_a))
+
+
+class LRTestTestCase(TestCase):
+    def test_lrtest(self):
+        a,b = 1,1
+        a_init,b_init = 2,1
+    
+        alfa = 0.05
+        noise = 0.03
+        t = np.linspace(0,12)
+        f = lambda t,a,b: b + np.exp(-a * t)
+        y = f(t,a,b) + np.random.normal(0, noise, len(t))
+        model = Model(f)
+        params = model.make_params(a=a_init, b=b_init)
+    
+        two_var_fit = model.fit(y, t=t, params=params)
+    
+        params['a'].set(vary=False)
+        params['b'].set(vary=True)
+        one_var_fit = model.fit(y, t=t, params=params)
+    
+        prefer_m1,pval,D,ddf = curveball.models.lrtest(one_var_fit, two_var_fit, alfa)
+        self.assertTrue(prefer_m1)
 
 
     def test_has_lag_logistic(self):
