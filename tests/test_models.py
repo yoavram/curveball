@@ -268,7 +268,7 @@ class ModelsTestCase(TestCase):
 
 
     def test_find_max_growth_richards(self):
-        y0=0.1; r=0.75; K=1.0; nu=2.0
+        y0=0.1; r=0.75; K=1.0; nu=0.5
         t = np.linspace(0,12)
         df = randomize_data(richards_ode, t=t, y0=y0, r=r, K=K, nu=nu, reps=10)
         model_fit = curveball.models.richards_model.fit(df.OD, t=df.Time, y0=y0, K=K, r=r, nu=nu)        
@@ -287,7 +287,7 @@ class ModelsTestCase(TestCase):
         exp_y1 = K * (nu + 1)**(-1/nu)
         self.assertTrue(relative_error(exp_y1, y1) < 0.1, "y1=%.4g, K/(nu+1)**(1/nu)=%.4g" % (y1, exp_y1))
         exp_a = r * K * nu * (nu + 1)**(- 1 - 1/nu)
-        self.assertTrue(relative_error(exp_a, a) < 0.15, "a=%.4g, rKnu/(nu+1)**(1+1/nu)=%.4g" % (a, exp_a))
+        self.assertTrue(relative_error(exp_a, a) < 0.1, "a=%.4g, rKnu/(nu+1)**(1+1/nu)=%.4g" % (a, exp_a))
 
 
     def test_has_lag_logistic(self):
