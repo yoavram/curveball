@@ -191,8 +191,6 @@ def find_lag(model_fit, PLOT=True):
         ax2.plot(t, derivative(lambda t: richards_function(t, y0, r, K, nu), t) ,  ls='--', lw=3, label='Richards derivative')
         ax2.plot(t, derivative(lambda t: baranyi_roberts_function(t, y0, r, K, nu, q0, v), t) ,  ls='--', lw=3, label='Baranyi Roberts derivative')        
 
-        
-        # TODO chance x values in text
         ax.set_xlabel('Time')
         ax.set_ylabel('OD')
         ax2.set_ylabel('dOD/dTime')
@@ -206,12 +204,11 @@ def find_lag(model_fit, PLOT=True):
         ax.axhline(y=K, color='k', ls='--', alpha=0.5)
         ax.text(x=-0.1, y=K, s="K")
         ax2.axhline(y=a, color='k', ls='--', alpha=0.5)
-        ax2.text(x=14, y=a, s="max(dydt)")
+        ax2.text(x=t.max()-2, y=a, s="max(dydt)")
         ax.axvline(x=lam, color='k', ls='--', alpha=0.5)
         ax.text(x=lam, y=0.01, s=r'$\lambda=$%.2g' % lam)
         sns.despine(top=True, right=False)
         fig.tight_layout()
-        ax.set_xlim(0,16)
         ax.legend(title='OD', loc='center right', frameon=True).get_frame().set_color('w')
         ax2.legend(title='dODdTime', loc='lower right', frameon=True).get_frame().set_color('w')
         return lam,fig,ax,ax2
