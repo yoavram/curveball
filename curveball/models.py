@@ -415,9 +415,9 @@ def fit_model(df, ax=None, PLOT=True, PRINT=True):
     Kguess  = _df.OD.max()
     y0guess = _df.OD.min()
     nuguess = 1.0
-    # TODO replace gradient with scipy.misc.derivate
-    _df['dODdTime'] = np.gradient(_df.OD, _df.Time)
-    rguess  = 4 * _df.dODdTime[~np.isinf(_df.dODdTime)].max() / Kguess
+
+    dydt = np.gradient(_df.OD, _df.Time)
+    rguess  = 4 * dydt[~np.isinf(dydt)].max() / Kguess # assume nu==1
     q0guess, vguess = 0.1, 1
 
     params = baranyi_roberts_model.make_params(y0=y0guess, K=Kguess, r=rguess, nu=nuguess, q0=q0guess, v=vguess)
