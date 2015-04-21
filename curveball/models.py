@@ -218,7 +218,7 @@ def find_lag(model_fit, PLOT=True):
     return lam
 
 
-def has_lag(model_fits, alfa=0.05, PLOT=False):
+def has_lag(model_fits, alfa=0.05, PRINT=False):
     best_fit = model_fits[0]
     if best_fit.model.name in (richards_model.name, logistic_model.name):
         # no lag in these models
@@ -234,11 +234,37 @@ def has_lag(model_fits, alfa=0.05, PLOT=False):
             ## m1 is BR6, m0 is R4
             m0 = filter(lambda m: m.model.name == richards_model.name, model_fits)[0]
         prefer_m1, pval, D, ddf = lrtest(m0, m1, alfa=alfa)
-        if PLOT:
+        if PRINT:
             print "Tested H0: %s vs. H1: %s; D=%.2g, ddf=%d, p-value=%.2g" % (m0.model.name, m1.model.name, D, ddf, pval)
         return prefer_m1
     else:
         raise ValueError("Unknown model: %s" % best_fit.model.name)
+
+
+def has_nu(model_fits, alfa=0.05, PRINT=False):
+    best_fit = model_fits[0]
+    if best_fit.model.name == logistic_model.name:
+        # no lag in these models
+        return False
+    elif best_fit.model.name == richards_model.name:
+        # m1 is R4, m0 is L3
+        m0 = filter(lambda m: m.model.name == logistic_model.name, model_fits)[0]
+    elif best_fit.model.name == baranyi_roberts_model.name:                   
+        # choose the null hypothesis model
+        nu = best_fit.params['nu']
+        if nu.value == 1 and not nu.vary:            
+            return False
+        else:
+            ## m1 is BR6, m0 is BR5
+            m0 = filter(lambda m: m.model.name == baranyi_roberts_model.name and m.nvarys == 5 and m.params['nu'] == 1, model_fits)[0]
+    else:
+        raise ValueError("Unknown model: %s" % best_fit.model.name)
+    
+    m1 = best_fit
+    prefer_m1, pval, D, ddf = lrtest(m0, m1, alfa=alfa)
+    if PRINT:
+        print "Tested H0: %s vs. H1: %s; D=%.2g, ddf=%d, p-value=%.2g" % (m0.model.name, m1.model.name, D, ddf, pval)
+    return prefer_m1
 
 
 
