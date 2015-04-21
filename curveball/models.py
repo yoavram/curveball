@@ -140,6 +140,46 @@ def lrtest(m0, m1, alfa=0.05):
 
 
 def find_max_growth(model_fit, PLOT=True):
+    r"""Estimates the maximum population growth rate from the model fit.
+
+    The function calculates the maximum population growth rate :math:`a=\max{\frac{dy}{dt}}` as the derivative of the model curve and calculates its maximum. 
+    It also calculates the maximum of the per capita growth rate :math:`\mu = \max{\frac{dy}{y \cdot dt}}`.
+    The latter is more useful as a metric to compare different strains or treatments as it does not depend on the population size/density.
+
+    For example, for the logistic model the population growth rate is a quadratic function of :math:`y` so the maximum is realized when the 2nd derivative is zero:
+
+    .. math::
+
+        \frac{dy}{dt} = r y (1 - \frac{y}{K}) \Rightarrow
+
+        \frac{d^2 y}{dt^2} = r - 2\frac{r}{K}y \Rightarrow
+
+        \frac{d^2 y}{dt^2} = 0 \Rightarrow y = \frac{K}{2} \Rightarrow
+
+        \max{\frac{dy}{dt}} = \frac{r K}{4}
+
+    In contrast, the per capita growth rate a linear function of :math:`y` and so its maximum is realized when :math:`y=y_0`:
+
+    .. math::
+
+        \frac{dy}{y \cdot dt} = r (1 - \frac{y}{K}) \Rightarrow
+
+        \max{\frac{dy}{y \cdot dt}} = \frac{dy}{y \cdot dt}(y=y_0) = r (1 - \frac{y_0}{K})     
+
+    Args:
+        - model_fit: :py:class:`lmfit.model.ModelFit` object.
+        - PLOT: :py:class:`bool`. If true, the function will plot a figure that illustrates the calculation. Default is :py:const:`False`.
+
+    Returns:
+        t1, y1, a, t2, y2, mu [, fig, ax, ax2]: :py:class:`tuple`
+            - t1: :py:class:`float`, the time when the maximum population growth rate is achieved in the units of the model_fit `Time` variable.
+            - y1: :py:class:`float`, the population size or density (OD) for which the maximum population growth rate is achieved.
+            - a: :py:class:`float`, the maximum population growth rate.
+            - t2: :py:class:`float`, the time when the maximum per capita growth rate is achieved in the units of the model_fit `Time` variable.
+            - y2: :py:class:`float`, the population size or density (OD) for which the maximum per capita growth rate is achieved.
+            - mu: :py:class:`float`, the the maximum per capita growth rate.
+            - fig, ax, ax2: if the argument `PLOT` was :py:const:`True`, fig is the generated figure, ax is the left y-axis representing growth, and ax2 is the right y-axis representing growth rate.
+    """
     y0 = model_fit.params['y0'].value
     K  = model_fit.params['K'].value
 
@@ -152,6 +192,11 @@ def find_max_growth(model_fit, PLOT=True):
     i = dfdt.argmax()
     t1 = t[i]
     y1 = y[i]
+
+    dfdt_y = dfdt / y
+    mu = dfdt_y.max()
+    t2 = t[i]
+    y2 = y[i]
     
     if PLOT:
         fig,ax = plt.subplots()
@@ -165,27 +210,36 @@ def find_max_growth(model_fit, PLOT=True):
 
         ax.plot(t, y, label='Fit')
         ax2.plot(t, dfdt, label='Fit derivative')
-
+        ax2.plot(t, dfdt_y, label='Fit growth per capita')
         ax.set_xlabel('Time')
         ax.set_ylabel('OD')
         ax2.set_ylabel('dOD/dTime')
         ax.set_ylim(0, y.max() * 1.1)
         ax.axhline(y=y1, color='k', ls='--', alpha=0.5)
         ax.text(x=-0.1, y=y1, s="y|max(dydt)")
+        ax.axhline(y=y2, color='k', ls='--', alpha=0.5)
+        ax.text(x=-0.1, y=y1, s="y|max(dydt/y)")
         ax.axvline(x=t1, color='k', ls='--', alpha=0.5)
         ax.text(x=t1, y=0.01, s="t|max(dydt)")
+        ax.axvline(x=t2, color='k', ls='--', alpha=0.5)
+        ax.text(x=t1, y=0.01, s="t|max(dydt/y)")
         ax.axhline(y=y0, color='k', ls='--', alpha=0.5)
         ax.text(x=0.1, y=y0, s="y0")
         ax.axhline(y=K, color='k', ls='--', alpha=0.5)
         ax.text(x=-0.1, y=K, s="K")
         ax2.axhline(y=a, color='k', ls='--', alpha=0.5)
-        ax2.text(x=t.max()-2, y=a, s="max(dydt)")        
+        ax2.text(x=t.max()-2, y=a, s="max(dydt)")
+        ax2.axhline(y=mu, color='k', ls='--', alpha=0.5)
+        ax2.text(x=t.max()-2, y=mu, s="max(dydt/y)")  
+        ax2.axhline(y=r-r*y0/K, color='k', ls='--', alpha=0.5)
+        ax2.text(x=t.max()-2, y=r-r*y0/K, s="r-r*y0/K")        
         sns.despine(top=True, right=False)
         fig.tight_layout()
         ax.legend(title='OD', loc='center right', frameon=True).get_frame().set_color('w')
         ax2.legend(title='dODdTime', loc='lower right', frameon=True).get_frame().set_color('w')
-        return t1,y1,a,fig,ax,ax2
-    return t1,y1,a
+        return t1,y1,a,t2,y2,mu,fig,ax,ax2
+    return t1,y1,a,t2,y2,mu
+
 
 def find_lag(model_fit, PLOT=True):
     """Estimates the lag duration from the model fit.
@@ -198,7 +252,7 @@ def find_lag(model_fit, PLOT=True):
 
     Returns:
         lam [, fig, ax, ax2]: :py:class:`float` or :py:class:`tuple`
-            - lam: :py:class:`float`, the lag phase duration in the unit of the model_fit `Time` varialbe.
+            - lam: :py:class:`float`, the lag phase duration in the units of the model_fit `Time` variable.
             - fig, ax, ax2: if the argument `PLOT` was :py:const:`True`, fig is the generated figure, ax is the left y-axis representing growth, and ax2 is the right y-axis representing growth rate.
 
     See also: Fig. 2.2 pg. 19 in `Baranyi, J., 2010. Modelling and parameter estimation of bacterial growth with distributed lag time. <http://www2.sci.u-szeged.hu/fokozatok/PDF/Baranyi_Jozsef/Disszertacio.pdf>`_.
