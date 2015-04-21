@@ -279,7 +279,7 @@ def fit_model(df, ax=None, PLOT=True, PRINT=True):
     if np.isnan(_df['std']).any():
         weights = None
     else:
-        weights = 1./_df['std'] # TODO check if need to square (**2)
+        weights = 1./_df['std']
     models = []
 
     # TODO: make MyModel, inherit from Model, use Model.guess
