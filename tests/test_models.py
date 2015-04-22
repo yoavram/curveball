@@ -349,7 +349,7 @@ class LRTestTestCase(TestCase):
 
 
     def test_has_lag_baranyi_roberts(self):
-        df = randomize_data(baranyi_roberts_ode)
+        df = randomize_data(baranyi_roberts_ode, t=np.linspace(0,32))
         models = curveball.models.fit_model(df, PLOT=False, PRINT=False)
         lag = curveball.models.has_lag(models)
         self.assertTrue(lag)
