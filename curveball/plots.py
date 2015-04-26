@@ -34,7 +34,7 @@ def plot_wells(df, x='Time', y='OD', plot_func=plt.plot, output_filename=None):
 	"""
 	if 'Strain' in df:
 		hue = 'Strain'
-		palette = df.Color.unique()
+		palette = df.Color.unique() if 'Color' in df else sns.color_palette()
 		hue_order = df.Strain.unique()
 		palette[palette == '#ffffff'] = '#000000'
 	else:
@@ -59,7 +59,7 @@ def plot_wells(df, x='Time', y='OD', plot_func=plt.plot, output_filename=None):
 	return g
 
 
-def plot_strains(df, x='Time', y='OD', plot_func=plt.plot, agg_func=np.mean, output_filename=None):
+def plot_strains(df, x='Time', y='OD', plot_func=plt.plot, by=('Strain', 'Cycle Nr.'), agg_func=np.mean, output_filename=None):
 	"""Aggregate by strain and plot the results on one figure with different color for each strain.
 
 	The grouping of the data is done by the `Strain` and `Cycle Nr.` columns; the aggregation is done by the `agg_func`, which defaults to `mean`.
@@ -70,15 +70,16 @@ def plot_strains(df, x='Time', y='OD', plot_func=plt.plot, agg_func=np.mean, out
 		- x: name of column for x-axis, string.
 		- y: name of column for y-axis, string.
 		- plot_func: a function to use for plotting, defaults to :py:func:`matplotlib.pyplot.plot`.
+		- by: a :py:class:tuple to use for grouping the data, defaults to `('Strain', 'Cycle Nr.')`.
 		- agg_func: a function to use for aggregating the data, defaults to :py:func:`numpy.mean`.
 		- output_filename: optional filename to save the resulting figure, string.
 
 	Returns:
 		g: :py:class:`seaborn.FacetGrid`
 	"""
-	palette = df.Color.unique()
+	palette = df.Color.unique() if 'Color' in df else sns.color_palette()
 	palette[palette == '#ffffff'] = '#000000'
-	grp = df.groupby(by=('Strain', 'Cycle Nr.'))
+	grp = df.groupby(by=by)
 	agg = grp.aggregate(agg_func).reset_index()
 	g = sns.FacetGrid(agg, hue='Strain', size=5, aspect=1.5, palette=palette, hue_order=df.Strain.unique())
 	g.map(plot_func, x, y);
@@ -107,7 +108,7 @@ def tsplot(df, x='Time', y='OD', ci_level=95, output_filename=None):
 	"""
 	if 'Strain' in df:
 		condition = 'Strain'
-		palette = df.Color.unique()
+		palette = df.Color.unique() if 'Color' in df else sns.color_palette()
 		palette[palette == '#ffffff'] = '#000000'
 	else:
 		condition = 'Well'
