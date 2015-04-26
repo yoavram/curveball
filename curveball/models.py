@@ -468,22 +468,16 @@ def fit_model(df, ax=None, PLOT=True, PRINT=True):
 
     if PRINT:
         print models[0].fit_report()
-        lam = find_lag(models[0], PLOT=False)
-        print "Lambda:", lam
     if PLOT:        
         dy = _df.OD.max()/50.
         dx = _df.Time.max()/25.
         fig, ax = plt.subplots(1, len(models), sharex=True, sharey=True, figsize=(16,6))
         for i,fit in enumerate(models):
             vals = fit.best_values
-            #lam = find_lag(fit, PLOT=False)
             fit.plot_fit(ax=ax[i], datafmt='.', fit_kws={'lw':4})
             ax[i].axhline(y=vals['y0'], color='k', ls='--')
-            ax[i].axhline(y=vals['K'], color='k', ls='--')
-            #lam = find_lag(fit, PLOT=False)
-            #ax[i].axvline(x=lam, color='k', ls='--')            
-            #ax[i].text(x=lam + dx, y=_df.OD.min() - 3*dy, s=r'$\lambda=$%.2f' % lam)
-            title = '%s %dp\nBIC: %d\ny0=%.2f, K=%.2f, r=%.2g\n' + r'$\nu$=%.2g, $q_0$=%.2g, v=%.2g'
+            ax[i].axhline(y=vals['K'], color='k', ls='--')          
+            title = '%s %dp\nBIC: %.3f\ny0=%.2f, K=%.2f, r=%.2g\n' + r'$\nu$=%.2g, $q_0$=%.2g, v=%.2g'
             title = title % (fit.model.name, fit.nvarys, fit.bic, vals['y0'], vals['K'], vals['r'], vals.get('nu',0), vals.get('q0',0), vals.get('v',0))
             ax[i].set_title(title)
             ax[i].get_legend().set_visible(False)
