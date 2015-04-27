@@ -467,7 +467,7 @@ def fit_model(df, ax=None, PLOT=True, PRINT=True):
     models.sort(key=lambda m: m.bic)
 
     if PRINT:
-        print models[0].fit_report()
+        print models[0].fit_report(show_correl=False)
     if PLOT:        
         dy = _df.OD.max()/50.
         dx = _df.Time.max()/25.
