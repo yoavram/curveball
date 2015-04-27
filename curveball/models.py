@@ -15,6 +15,7 @@ sns.set_style("ticks")
 from scipy.stats import chisqprob
 from scipy.misc import derivative
 from lmfit import Model
+import sympy
 
 
 def logistic_function(t, y0, r, K):
@@ -74,15 +75,6 @@ def baranyi_roberts_function(t, y0, r, K, nu, q0, v):
 
     See also: `Baranyi, J., Roberts, T. a., 1994. A dynamic approach to predicting bacterial growth in food. Int. J. Food Microbiol. 23, 277–294. <www.ncbi.nlm.nih.gov/pubmed/7873331>`_
     """
-    At = t + (1./v) * np.log((np.exp(-v * t) + q0)/(1 + q0))
-    return K / ((1 - (1 - (K/y0)**nu) * np.exp( -r * nu * At ))**(1./nu))
-
-
-def simplified_baranyi_roberts_function(t, y0, r, K, q0):
-    r"""A four parameter model where $\nu=1$ and $v=r$.
-    """
-    nu = 1.0
-    v = r
     At = t + (1./v) * np.log((np.exp(-v * t) + q0)/(1 + q0))
     return K / ((1 - (1 - (K/y0)**nu) * np.exp( -r * nu * At ))**(1./nu))
 
@@ -396,6 +388,33 @@ def has_nu(model_fits, alfa=0.05, PRINT=False):
     return prefer_m1
 
 
+def make_Dfun(expr, t, args):
+    partial_derivs = [None]*len(args)
+    for i,v in enumerate(args):
+        dydv = expr.diff(v)
+        dydv = sympy.lambdify(args=(t,) + args, expr=dydv, modules="numpy")
+        partial_derivs[i] = dydv
+    
+    def Dfun(params, y, a, t):
+        values = [ x.value for x in params.values() ]        
+        return np.array([dydv(t, *values) for dydv in partial_derivs])
+    return Dfun
+
+
+def make_model_Dfuns():
+    t, y0, r, K, nu, q0, v = sympy.symbols('t y0 r K nu q0 v')
+    logistic = K/( 1 - (1 - K/y0) * sympy.exp(-r * t) )
+    logistic_Dfun = make_Dfun(logistic, t, (y0, r, K))
+
+    richards = K/( 1 - (1 - (K/y0)**nu) * sympy.exp(-r * nu * t) )**(1/nu)
+    richards_Dfun = make_Dfun(richards, t, (y0, r, K, nu)) 
+
+    A = t + 1/v * sympy.log( (sympy.exp(-v * t) + q0) / (1 + q0)  )
+    baranyi_roberts = K/( 1 - (1 - (K/y0)**nu) * sympy.exp(-r * nu * A) )**(1/nu)
+    baranyi_roberts_Dfun = make_Dfun(baranyi_roberts, t, (y0, r, K, nu, q0, v))
+    
+    return logistic_Dfun, richards_Dfun, baranyi_roberts_Dfun
+
 
 def fit_model(df, ax=None, PLOT=True, PRINT=True):
     r"""Fit a growth model to data.
@@ -429,22 +448,13 @@ def fit_model(df, ax=None, PLOT=True, PRINT=True):
     params['v'].set(min=1e-4, max=60)
 
     # Baranyi-Roberts = Richards /w lag (6 params)
-    result = baranyi_roberts_model.fit(data=_df.OD, t=_df.Time, params=params, weights=weights)
+    result = baranyi_roberts_model.fit(data=_df.OD, t=_df.Time, params=params, weights=weights, fit_kws={'Dfun': baranyi_roberts_Dfun, "col_deriv":True})
     models.append(result)
 
     # Baranyi-Roberts /w nu=1 = Logistic /w lag (5 params)
     params['nu'].set(vary=False)
-    result = baranyi_roberts_model.fit(data=_df.OD, t=_df.Time, params=params, weights=weights)
+    result = baranyi_roberts_model.fit(data=_df.OD, t=_df.Time, params=params, weights=weights, fit_kws={'Dfun': baranyi_roberts_Dfun, "col_deriv":True})
     models.append(result)
-
-    # Simplified Baranyi-Roberts (nu=1, v=t) (4 params)
-    # params = simplified_baranyi_roberts_model.make_params(y0=y0guess, K=Kguess, r=rguess, q0=q0guess)
-    # params['y0'].set(min=1-10)
-    # params['K'].set(min=1-10)
-    # params['r'].set(min=1-10)
-    # params['q0'].set(min=1-10, max=1)
-    # result = simplified_baranyi_roberts_model.fit(data=_df.OD, t=_df.Time, params=params, weights=weights)
-    # models.append(result)
 
     # Richards = Baranyi-Roberts /wout lag (4 params)
     params = richards_model.make_params(y0=y0guess, K=Kguess, r=rguess, nu=nuguess)
@@ -452,7 +462,7 @@ def fit_model(df, ax=None, PLOT=True, PRINT=True):
     params['K'].set(min=1-10)
     params['r'].set(min=1-10)
     params['nu'].set(min=1-10)
-    result = richards_model.fit(data=_df.OD, t=_df.Time, params=params, weights=weights)
+    result = richards_model.fit(data=_df.OD, t=_df.Time, params=params, weights=weights, fit_kws={'Dfun': richards_Dfun, "col_deriv":True})
     models.append(result)
 
     # Logistic = Richards /w nu=1 (3 params)
@@ -460,7 +470,7 @@ def fit_model(df, ax=None, PLOT=True, PRINT=True):
     params['y0'].set(min=1-10)
     params['K'].set(min=1-10)
     params['r'].set(min=1-10)
-    result = logistic_model.fit(data=_df.OD, t=_df.Time, params=params, weights=weights)
+    result = logistic_model.fit(data=_df.OD, t=_df.Time, params=params, weights=weights, fit_kws={'Dfun': logistic_Dfun, "col_deriv":True})
     models.append(result)
 
     # sort by increasing bic
@@ -495,4 +505,4 @@ def fit_model(df, ax=None, PLOT=True, PRINT=True):
 logistic_model = Model(logistic_function)
 richards_model = Model(richards_function)
 baranyi_roberts_model = Model(baranyi_roberts_function)
-simplified_baranyi_roberts_model = Model(simplified_baranyi_roberts_function)
+logistic_Dfun, richards_Dfun, baranyi_roberts_Dfun = make_model_Dfuns()
