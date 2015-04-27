@@ -396,7 +396,7 @@ def make_Dfun(expr, t, args):
         partial_derivs[i] = dydv
     
     def Dfun(params, y, a, t):
-        values = [ x.value for x in params.values() ]        
+        values = [ par.value for par in params.values() if par.vary ]        
         return np.array([dydv(t, *values) for dydv in partial_derivs])
     return Dfun
 
@@ -410,10 +410,14 @@ def make_model_Dfuns():
     richards_Dfun = make_Dfun(richards, t, (y0, r, K, nu)) 
 
     A = t + 1/v * sympy.log( (sympy.exp(-v * t) + q0) / (1 + q0)  )
-    baranyi_roberts = K/( 1 - (1 - (K/y0)**nu) * sympy.exp(-r * nu * A) )**(1/nu)
-    baranyi_roberts_Dfun = make_Dfun(baranyi_roberts, t, (y0, r, K, nu, q0, v))
+    baranyi_roberts5 = K/( 1 - (1 - K/y0) * sympy.exp(-r * A) )
+    baranyi_roberts5_Dfun = make_Dfun(baranyi_roberts5, t, (y0, r, K, q0, v))
+
+    A = t + 1/v * sympy.log( (sympy.exp(-v * t) + q0) / (1 + q0)  )
+    baranyi_roberts6 = K/( 1 - (1 - (K/y0)**nu) * sympy.exp(-r * nu * A) )**(1/nu)
+    baranyi_roberts6_Dfun = make_Dfun(baranyi_roberts6, t, (y0, r, K, nu, q0, v))
     
-    return logistic_Dfun, richards_Dfun, baranyi_roberts_Dfun
+    return logistic_Dfun, richards_Dfun, baranyi_roberts5_Dfun, baranyi_roberts6_Dfun
 
 
 def fit_model(df, ax=None, PLOT=True, PRINT=True):
@@ -448,12 +452,12 @@ def fit_model(df, ax=None, PLOT=True, PRINT=True):
     params['v'].set(min=1e-4, max=60)
 
     # Baranyi-Roberts = Richards /w lag (6 params)
-    result = baranyi_roberts_model.fit(data=_df.OD, t=_df.Time, params=params, weights=weights, fit_kws={'Dfun': baranyi_roberts_Dfun, "col_deriv":True})
+    result = baranyi_roberts_model.fit(data=_df.OD, t=_df.Time, params=params, weights=weights, fit_kws={'Dfun': baranyi_roberts6_Dfun, "col_deriv":True})
     models.append(result)
 
     # Baranyi-Roberts /w nu=1 = Logistic /w lag (5 params)
     params['nu'].set(vary=False)
-    result = baranyi_roberts_model.fit(data=_df.OD, t=_df.Time, params=params, weights=weights, fit_kws={'Dfun': baranyi_roberts_Dfun, "col_deriv":True})
+    result = baranyi_roberts_model.fit(data=_df.OD, t=_df.Time, params=params, weights=weights, fit_kws={'Dfun': baranyi_roberts5_Dfun, "col_deriv":True})
     models.append(result)
 
     # Richards = Baranyi-Roberts /wout lag (4 params)
@@ -505,4 +509,4 @@ def fit_model(df, ax=None, PLOT=True, PRINT=True):
 logistic_model = Model(logistic_function)
 richards_model = Model(richards_function)
 baranyi_roberts_model = Model(baranyi_roberts_function)
-logistic_Dfun, richards_Dfun, baranyi_roberts_Dfun = make_model_Dfuns()
+logistic_Dfun, richards_Dfun, baranyi_roberts5_Dfun, baranyi_roberts6_Dfun = make_model_Dfuns()
