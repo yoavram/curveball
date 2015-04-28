@@ -420,7 +420,7 @@ def make_model_Dfuns():
     return logistic_Dfun, richards_Dfun, baranyi_roberts5_Dfun, baranyi_roberts6_Dfun
 
 
-def fit_model(df, ax=None, PLOT=True, PRINT=True):
+def fit_model(df, ax=None, use_Dfun=False, PLOT=True, PRINT=True):
     r"""Fit a growth model to data.
 
     This function will attempt to fit a growth model to `OD~Time` taken from the `df` :py:class:`pandas.DataFrame`.
@@ -452,12 +452,14 @@ def fit_model(df, ax=None, PLOT=True, PRINT=True):
     params['v'].set(min=1e-4, max=60)
 
     # Baranyi-Roberts = Richards /w lag (6 params)
-    result = baranyi_roberts_model.fit(data=_df.OD, t=_df.Time, params=params, weights=weights, fit_kws={'Dfun': baranyi_roberts6_Dfun, "col_deriv":True})
+    fit_kws = {'Dfun': baranyi_roberts6_Dfun, "col_deriv":True} if use_Dfun else {}
+    result = baranyi_roberts_model.fit(data=_df.OD, t=_df.Time, params=params, weights=weights, fit_kws=fit_kws)
     models.append(result)
 
     # Baranyi-Roberts /w nu=1 = Logistic /w lag (5 params)
     params['nu'].set(vary=False)
-    result = baranyi_roberts_model.fit(data=_df.OD, t=_df.Time, params=params, weights=weights, fit_kws={'Dfun': baranyi_roberts5_Dfun, "col_deriv":True})
+    fit_kws = {'Dfun': baranyi_roberts5_Dfun, "col_deriv":True} if use_Dfun else {}
+    result = baranyi_roberts_model.fit(data=_df.OD, t=_df.Time, params=params, weights=weights, fit_kws=fit_kws)
     models.append(result)
 
     # Richards = Baranyi-Roberts /wout lag (4 params)
@@ -466,7 +468,8 @@ def fit_model(df, ax=None, PLOT=True, PRINT=True):
     params['K'].set(min=1-10)
     params['r'].set(min=1-10)
     params['nu'].set(min=1-10)
-    result = richards_model.fit(data=_df.OD, t=_df.Time, params=params, weights=weights, fit_kws={'Dfun': richards_Dfun, "col_deriv":True})
+    fit_kws = {'Dfun': richards_Dfun, "col_deriv":True} if use_Dfun else {}
+    result = richards_model.fit(data=_df.OD, t=_df.Time, params=params, weights=weights, fit_kws=fit_kws)
     models.append(result)
 
     # Logistic = Richards /w nu=1 (3 params)
@@ -474,7 +477,8 @@ def fit_model(df, ax=None, PLOT=True, PRINT=True):
     params['y0'].set(min=1-10)
     params['K'].set(min=1-10)
     params['r'].set(min=1-10)
-    result = logistic_model.fit(data=_df.OD, t=_df.Time, params=params, weights=weights, fit_kws={'Dfun': logistic_Dfun, "col_deriv":True})
+    fit_kws = {'Dfun': logistic_Dfun, "col_deriv":True} if use_Dfun else {}
+    result = logistic_model.fit(data=_df.OD, t=_df.Time, params=params, weights=weights, fit_kws=fit_kws)
     models.append(result)
 
     # sort by increasing bic
