@@ -432,6 +432,16 @@ def fit_model(df, ax=None, use_Dfun=False, PLOT=True, PRINT=True):
         weights = None
     else:
         weights = 1./_df['std']
+        # if any weight is nan, raise error
+        idx = np.isnan(weights)
+        if idx.any():
+            raise ValueError("NaN weights are illegal, indices: " + str(idx))
+        # if any weight is infinite, change to the max
+        idx = np.isinf(weights)
+        if idx.any():
+            print "Warning: found infinite weight, changing to maximum (%d occurences)" % idx.sum()
+            weights[idx] = weights[~idx].max()
+
     models = []
 
     # TODO: make MyModel, inherit from Model, use Model.guess
