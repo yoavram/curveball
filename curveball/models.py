@@ -420,15 +420,19 @@ def make_model_Dfuns():
     return logistic_Dfun, richards_Dfun, baranyi_roberts5_Dfun, baranyi_roberts6_Dfun
 
 
-def fit_model(df, ax=None, use_Dfun=False, PLOT=True, PRINT=True):
+def fit_model(df, ax=None, use_weights=True, use_Dfun=False, PLOT=True, PRINT=True):
     r"""Fit a growth model to data.
 
     This function will attempt to fit a growth model to `OD~Time` taken from the `df` :py:class:`pandas.DataFrame`.
     The function is still being developed.
     """
     _df = df.groupby('Time')['OD'].agg([np.mean, np.std]).reset_index().rename(columns={'mean':'OD'})
+
     # if there is more than one replicate, use the standard deviation as weight
+    if not use_weights:
+        weights = None
     if np.isnan(_df['std']).any():
+        print "Warning: NaN in standard deviation, can't use weights"
         weights = None
     else:
         weights = 1./_df['std']
@@ -447,17 +451,21 @@ def fit_model(df, ax=None, use_Dfun=False, PLOT=True, PRINT=True):
     # TODO: make MyModel, inherit from Model, use Model.guess
     Kguess  = _df.OD.max()
     y0guess = _df.OD.min()
+    assert y0guess > 0
+    assert Kguess > y0guess
     nuguess = 1.0
 
     dydt = np.gradient(_df.OD, _df.Time)
-    rguess  = 4 * dydt[~np.isinf(dydt)].max() / Kguess # assume nu==1
+    idx = (~np.isinf(dydt)) & (~np.isnan(dydt)) # dydt not nan or inf
+    rguess  = 4 * dydt[idx].max() / Kguess # assume nu==1
+    assert rguess > 0
     q0guess, vguess = 1.0, 1.0
 
     params = baranyi_roberts_model.make_params(y0=y0guess, K=Kguess, r=rguess, nu=nuguess, q0=q0guess, v=vguess)
-    params['y0'].set(min=1-10)
-    params['K'].set(min=1-10)
-    params['r'].set(min=1-10)
-    params['nu'].set(min=1-10)
+    params['y0'].set(min=1e-10)
+    params['K'].set(min=1e-10)
+    params['r'].set(min=1e-10)
+    params['nu'].set(min=1e-10)
     params['q0'].set(min=1e-10, max=1)
     params['v'].set(min=1e-4, max=60)
 
@@ -474,19 +482,19 @@ def fit_model(df, ax=None, use_Dfun=False, PLOT=True, PRINT=True):
 
     # Richards = Baranyi-Roberts /wout lag (4 params)
     params = richards_model.make_params(y0=y0guess, K=Kguess, r=rguess, nu=nuguess)
-    params['y0'].set(min=1-10)
-    params['K'].set(min=1-10)
-    params['r'].set(min=1-10)
-    params['nu'].set(min=1-10)
+    params['y0'].set(min=1e-10)
+    params['K'].set(min=1e-10)
+    params['r'].set(min=1e-10)
+    params['nu'].set(min=1e-10)
     fit_kws = {'Dfun': richards_Dfun, "col_deriv":True} if use_Dfun else {}
     result = richards_model.fit(data=_df.OD, t=_df.Time, params=params, weights=weights, fit_kws=fit_kws)
     models.append(result)
 
     # Logistic = Richards /w nu=1 (3 params)
     params = logistic_model.make_params(y0=y0guess, K=Kguess, r=rguess)
-    params['y0'].set(min=1-10)
-    params['K'].set(min=1-10)
-    params['r'].set(min=1-10)
+    params['y0'].set(min=1e-10)
+    params['K'].set(min=1e-10)
+    params['r'].set(min=1e-10)
     fit_kws = {'Dfun': logistic_Dfun, "col_deriv":True} if use_Dfun else {}
     result = logistic_model.fit(data=_df.OD, t=_df.Time, params=params, weights=weights, fit_kws=fit_kws)
     models.append(result)
