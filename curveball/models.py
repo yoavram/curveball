@@ -577,6 +577,7 @@ def fit_model(df, ax=None, use_weights=True, use_Dfun=False, PLOT=True, PRINT=Tr
         return models, fig, ax
     return models
 
+
 linear_model = LinearModel()
 linear_model.name = 'linear-benchmark'
 logistic_model = Model(logistic_function)

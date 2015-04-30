@@ -442,5 +442,6 @@ class BenchmarkTestCase(TestCase):
         fig.savefig(func_name + ".png")                
         self.assertEquals(success, True)
         
+        
 if __name__ == '__main__':
     main()
