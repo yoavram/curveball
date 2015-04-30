@@ -20,10 +20,6 @@ from lmfit import Model
 from lmfit.model import ModelFit
 
 
-def linear_ode(y, t, r, K, nu, q0, v):
-    return r
-
-
 def logistic_ode(y, t, r, K, nu, q0, v):
     return r * y * (1 - y/K)
 
@@ -94,18 +90,6 @@ class ModelSelectionTestCase(TestCase):
 
     def tearDown(self):
         plt.close("all")
-
-
-    def test_fit_model_linear(self):
-        df = randomize_data(linear_ode)
-        models,fig,ax = curveball.models.fit_model(df, PLOT=True, PRINT=False)
-        func_name = sys._getframe().f_code.co_name
-        fig.savefig(func_name + ".png")
-        self.assertIsNotNone(models)
-        for mod in models:
-            self.assertIsInstance(mod, ModelFit)
-        self.assertTrue('linear-benchmark' in models[0].model.name)
-        self.assertEquals(models[0].nvarys, 2)
 
 
     def test_fit_model_logistic(self):
