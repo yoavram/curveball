@@ -404,5 +404,43 @@ class LRTestTestCase(TestCase):
         self.assertTrue(result)
 
 
+class BenchmarkTestCase(TestCase):
+    _multiprocess_can_split_ = True
+
+    def tearDown(self):
+        plt.close("all")
+
+
+    def test_benchmark_success(self):
+        y0=0.1; r=0.75; K=1.0; nu=5.0
+        v=r; lam=3.0
+        q0 = 1/(np.exp(lam * v) - 1)
+        t = np.linspace(0,12)
+        df = randomize_data(baranyi_roberts_ode, t=t, r=r, y0=y0, K=K, nu=nu, q0=q0, v=v, reps=1)
+        params = curveball.models.baranyi_roberts_model.make_params(r=0.1, y0=df.OD.min(), K=df.OD.max(), nu=1.0, q0=1.0, v=1.0)
+        model_fit = curveball.models.baranyi_roberts_model.fit(data=df.OD, t=df.Time, params=params)
+        result = curveball.models.benchmark(model_fit, PLOT=True)
+        self.assertEquals(len(result), 3)
+        success,fig,ax = result
+        func_name = sys._getframe().f_code.co_name
+        fig.savefig(func_name + ".png")                
+        self.assertEquals(success, True)
+        
+
+    def test_benchmark_failure(self):
+        y0=0.1; r=0.75; K=1.0; nu=5.0
+        v=r; lam=3.0
+        q0 = 1/(np.exp(lam * v) - 1)
+        t = np.linspace(0,12)
+        df = randomize_data(baranyi_roberts_ode, t=t, r=r, y0=y0, K=K, nu=nu, q0=q0, v=v, reps=1)
+        params = curveball.models.logistic_model.make_params(r=0.1, y0=df.OD.min(), K=df.OD.max())
+        model_fit = curveball.models.logistic_model.fit(data=df.OD, t=df.Time, params=params)
+        result = curveball.models.benchmark(model_fit, PLOT=True)
+        self.assertEquals(len(result), 3)
+        success,fig,ax = result
+        func_name = sys._getframe().f_code.co_name
+        fig.savefig(func_name + ".png")                
+        self.assertEquals(success, True)
+        
 if __name__ == '__main__':
     main()
