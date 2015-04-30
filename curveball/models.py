@@ -423,7 +423,7 @@ def make_model_Dfuns():
     return logistic_Dfun, richards_Dfun, baranyi_roberts5_Dfun, baranyi_roberts6_Dfun
 
 
-def benchmark(model_fits, deltaBIC=6, PLOT=False):
+def benchmark(model_fits, deltaBIC=6, PRINT=False, PLOT=False):
     """Benchmark a model fit (or the best fit out of a sequence of fits).
 
     The benchmark is successful -- the model fit is considered "better" then the benchmark fit -- if the `BIC <http://en.wikipedia.org/wiki/Bayesian_information_criterion>`_ of the benchmark fit is higher then the BIC of the model fit by at least `deltaBIC`.
@@ -449,18 +449,24 @@ def benchmark(model_fits, deltaBIC=6, PLOT=False):
     # Linear model used as benchmark
     params = linear_model.guess(data=y, x=t)
     linear_fit = linear_model.fit(data=y, x=t, params=params, weights=weights)
-    
+    success = best_fit.bic + deltaBIC < linear_fit.bic
+
+    if PRINT:
+        print "Model fit: %s, BIC %.2f" % (best_fit.model.name, best_fit.bic)
+        print "Benchmark: %s, BIC %.2f" % (linear_fit.model.name, linear_fit.bic)
+        print "Fit success: %s" % success
     if PLOT:
-        ax = best_fit.plot_fit()
-        linear_fit.plot_fit(ax)
+        fig,ax = plt.subplots(1,1)
+        ax = best_fit.plot_fit(ax=ax, init_kws={'ls':''})
+        linear_fit.plot_fit(ax=ax, init_kws={'ls':''})
         ax.get_legend().set_visible(False)
         ax.set_xlim(0, 1.1 * t.max())
-        ax.set_ylim(0, 1.1 * y.max())
+        ax.set_ylim(0.9 * y.min(), 1.1 * y.max())
         ax.set_xlabel('Time')        
         ax.set_ylabel('OD')
-        sns.despine()       
-
-    return best_fit.bic + deltaBIC < linear_fit.bic
+        sns.despine()     
+        return success, fig, ax
+    return success
 
 
 def fit_model(df, ax=None, use_weights=True, use_Dfun=False, PLOT=True, PRINT=True):
@@ -562,7 +568,7 @@ def fit_model(df, ax=None, use_weights=True, use_Dfun=False, PLOT=True, PRINT=Tr
             ax[i].set_title(title)
             ax[i].get_legend().set_visible(False)
             ax[i].set_xlim(0, 1.1 * _df.Time.max())
-            ax[i].set_ylim(0, 1.1 * _df.OD.max())
+            ax[i].set_ylim(0.9 * _df.OD.min(), 1.1 * _df.OD.max())
             ax[i].set_xlabel('Time')
             ax[i].set_ylabel('')
         ax[0].set_ylabel('OD')
