@@ -15,6 +15,7 @@ sns.set_style("ticks")
 from scipy.stats import chisqprob
 from scipy.misc import derivative
 from lmfit import Model
+from lmfit.models import LinearModel
 import sympy
 
 
@@ -499,6 +500,13 @@ def fit_model(df, ax=None, use_weights=True, use_Dfun=False, PLOT=True, PRINT=Tr
     result = logistic_model.fit(data=_df.OD, t=_df.Time, params=params, weights=weights, fit_kws=fit_kws)
     models.append(result)
 
+    # Linear model used as benchmark
+    linear_model = LinearModel()
+    linear_model.name = 'linear-benchmark'
+    params = linear_model.guess(_df.OD, x=_df.Time)
+    result = linear_model.fit(data=_df.OD, x=_df.Time, params=params, weights=weights)
+    models.append(result)
+
     # sort by increasing bic
     models.sort(key=lambda m: m.bic)
 
@@ -511,10 +519,10 @@ def fit_model(df, ax=None, use_weights=True, use_Dfun=False, PLOT=True, PRINT=Tr
         for i,fit in enumerate(models):
             vals = fit.best_values
             fit.plot_fit(ax=ax[i], datafmt='.', fit_kws={'lw':4})
-            ax[i].axhline(y=vals['y0'], color='k', ls='--')
-            ax[i].axhline(y=vals['K'], color='k', ls='--')          
+            ax[i].axhline(y=vals.get('y0', 0), color='k', ls='--')
+            ax[i].axhline(y=vals.get('K', 0), color='k', ls='--')          
             title = '%s %dp\nBIC: %.3f\ny0=%.2f, K=%.2f, r=%.2g\n' + r'$\nu$=%.2g, $q_0$=%.2g, v=%.2g'
-            title = title % (fit.model.name, fit.nvarys, fit.bic, vals['y0'], vals['K'], vals['r'], vals.get('nu',0), vals.get('q0',0), vals.get('v',0))
+            title = title % (fit.model.name, fit.nvarys, fit.bic, vals.get('y0', 0), vals.get('K', 0), vals.get('r', 0), vals.get('nu',0), vals.get('q0',0), vals.get('v',0))
             ax[i].set_title(title)
             ax[i].get_legend().set_visible(False)
             ax[i].set_xlim(0, 1.1 * _df.Time.max())
