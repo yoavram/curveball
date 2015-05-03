@@ -12,3 +12,4 @@ from .version import __version__  # NOQA
 import ioutils
 import plots
 import models
+import competitions
