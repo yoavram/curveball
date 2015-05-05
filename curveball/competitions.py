@@ -36,7 +36,7 @@ def double_baranyi_roberts_ode(y, t, r, K, nu, q0, v):
     return dydt
 
 
-def compete(m1, m2, hours=24, num_of_points=100):
+def compete(m1, m2, hours=24, num_of_points=100, ax=None, PLOT=False):
 	t = np.linspace(0, hours, num_of_points)
 	y0 = np.array(m1.best_values['y0'], m2.best_values['y0'])
 	y0 = np.mean(y0), np.mean(y0)
@@ -48,6 +48,37 @@ def compete(m1, m2, hours=24, num_of_points=100):
 
 	y = odeint(double_baranyi_roberts_ode, y0, t, args=(r, K, nu, q0, v))
 
+	if PLOT:
+		if ax is None:
+			fig,ax = plt.subplots(1,1)
+		else:
+			fig = ax.get_figure()
+		ax.plot(t, y)
+		ax.set_xlabel('Time (hour)')
+		ax.set_ylabel('OD')
+		sns.despine()
+		return t,y,fig,ax
+
 	return t,y
+
+
+def selection_coefs_ts(t, y, ax=None, PLOT=False):
+	svals = np.gradient(np.log(y[:,0]/y[:,1]), t)
+	svals[np.isinf(svals)] = svals[np.isfinite(svals)].max()
+
+	if PLOT:
+		if ax is None:
+			fig,ax = plt.subplots(1,1)
+		else:
+			fig = ax.get_figure()
+		ax.plot(t, svals)
+		ax.set_ylabel('Selection coefficient')
+		ax.set_xlabel('Time (hour)')		
+		sns.despine()
+		return svals,fig,ax
+
+	return svals
+
+
 
 
