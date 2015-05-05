@@ -43,7 +43,7 @@ def read_tecan_xlsx(filename, label, sheet=None, max_time=None, plate=None):
     Example:
 
     >>> plate = pd.read_csv("plate_templates/G-RG-R.csv")
-    >>> df = curveball.io.read_tecan_xlsx("data/yoavram/210115.xlsx", ('OD','Green','Red'), max_time=12, plate=plate)
+    >>> df = curveball.ioutils.read_tecan_xlsx("data/yoavram/210115.xlsx", ('OD','Green','Red'), max_time=12, plate=plate)
     >>> df.columns
     Index([u'Time_OD', u'Temp. [°C]_OD', u'Cycle Nr.', u'Well', u'OD', u'Row', u'Col', u'Strain', u'Color', u'Time_Green', u'Temp. [°C]_Green', u'Green', u'Time', u'Temp. [°C]', u'Red'], dtype='object')
     """
