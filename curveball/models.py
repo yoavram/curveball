@@ -480,7 +480,7 @@ def fit_model(df, ax=None, use_weights=True, use_Dfun=False, PLOT=True, PRINT=Tr
     # if there is more than one replicate, use the standard deviation as weight
     if not use_weights:
         weights = None
-    if np.isnan(_df['std']).any():
+    elif use_weights and np.isnan(_df['std']).any():
         print "Warning: NaN in standard deviation, can't use weights"
         weights = None
     else:
