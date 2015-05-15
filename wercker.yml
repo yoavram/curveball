@@ -15,7 +15,7 @@ build:
 
     - script:
         name: install binary dependencies
-        code: sudo apt-get install libfreetype6-dev
+        code: sudo apt-get install libfreetype2-devel
 
     # A step that executes `pip install` command.
     - pip-install
