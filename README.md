@@ -4,7 +4,7 @@
 [![Supported Python versions](https://pypip.in/py_versions/curveball/badge.svg)](https://pypi.python.org/pypi/curveball/)
 [![License](https://pypip.in/license/curveball/badge.svg)](https://pypi.python.org/pypi/curveball/)
 
-[![logo](https://raw.githubusercontent.com/yoavram/curveball/master/docs/_static/logo_200px.png?token=ABOnxYYTm3KXcNRrcoK7ESFDtmZ8EwyKks5VOptHwA%3D%3D)](http://www.freepik.com/free-vector/ball-of-wool_762106.htm)
+[![wercker status](https://app.wercker.com/status/ccdaa657b94c79e9a1fe194353613c13/m/master "wercker status")](https://app.wercker.com/project/bykey/ccdaa657b94c79e9a1fe194353613c13)
 
 Analyzing microbial growth curves using ecological and evolutionary models
 
