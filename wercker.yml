@@ -27,3 +27,7 @@ build:
         code: |
           echo "python version $(python --version) running"
           echo "pip version $(pip --version) running"
+
+    - script:
+          name: nosetests
+          code: nosetests
