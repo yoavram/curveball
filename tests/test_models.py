@@ -21,7 +21,6 @@ from lmfit.model import ModelFit
 
 
 CI = os.environ.get('CI', 'false').lower() == 'true'
-PLOT = not CI
 
 
 def logistic_ode(y, t, r, K, nu, q0, v):
@@ -397,7 +396,7 @@ class LRTestTestCase(TestCase):
             func_name = sys._getframe().f_code.co_name
             fig.savefig(func_name + ".png")
         else:
-            models,fig,ax = curveball.models.fit_model(df, PLOT=False, PRINT=False)
+            models = curveball.models.fit_model(df, PLOT=False, PRINT=False)
         result = curveball.models.has_nu(models, PRINT=True)
         self.assertTrue(result)
 
