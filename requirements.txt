@@ -11,7 +11,7 @@ ipdb==0.8
 ipython==3.1.0
 Jinja2==2.7.3
 jsonschema==2.4.0
-lmfit===0.8.3
+lmfit==0.8.3
 MarkupSafe==0.23
 matplotlib==1.4.3
 mock==1.0.1
