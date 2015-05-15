@@ -12,12 +12,6 @@ build:
     #     name: setup virtual environment
     #     python_location: /usr/bin/python3.2
 
-    - script: 
-        name: install binary dependencies
-        code: |
-            sudo apt-get update
-            sudo apt-get install python-numpy python-scipy python-matplotlib ipython python-pandas python-nose python-sympy
-
     # A step that executes `pip install` command.
     - pip-install
 
