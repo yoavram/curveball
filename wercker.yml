@@ -23,4 +23,4 @@ build:
 
         - script:
             name: test
-            code: nosetests
+            code: nosetests tests\test_ioutils.py
