@@ -15,7 +15,7 @@ build:
 
     - script:
         name: install binary dependencies
-        code: sudo apt-get install libfreetype2-devel
+        code: sudo apt-get install python-numpy python-scipy python-matplotlib ipython python-pandas python-nose
 
     # A step that executes `pip install` command.
     - pip-install
