@@ -27,7 +27,7 @@ class XLSXTestCase(TestCase):
         df = curveball.ioutils.read_tecan_xlsx(self.filename, 'OD')
         self.assertIsNotNone(df)
         self.assertIsInstance(df, pd.DataFrame)
-        self.assertEquals(df.shape, (8448, 9))
+        self.assertEquals(df.shape, (8544, 9))
         self.assertEquals(df.columns.tolist() , ['Time', u'Temp. [\xb0C]', 'Cycle Nr.', 'Well', 'OD', 'Row', 'Col', 'Strain', 'Color'])
 
 
@@ -52,7 +52,7 @@ class XLSXTestCase(TestCase):
         df = curveball.ioutils.read_tecan_xlsx(self.filename, 'OD', plate=self.plate)
         self.assertIsNotNone(df)
         self.assertIsInstance(df, pd.DataFrame)
-        self.assertEquals(df.shape, (8448, 9))
+        self.assertEquals(df.shape, (8544, 9))
         self.assertEquals(df.columns.tolist() , ['Time', u'Temp. [\xb0C]', 'Cycle Nr.', 'Well', 'OD', 'Row', 'Col', 'Strain', 'Color'])
 
 
@@ -78,10 +78,6 @@ class XMLTestCase(TestCase):
     def tearDown(self):
         for f in self.zipfile.filelist:
             os.remove(os.path.join(self.folder, f.filename))
-
-
-    def test_read_tecan_xml(self):
-        pass
 
 
 if __name__ == '__main__':
