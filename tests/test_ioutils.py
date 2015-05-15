@@ -9,17 +9,18 @@
 # Copyright (c) 2015, Yoav Ram <yoavram+github@gmail.com>
 
 from unittest import TestCase, main
-import os.path
+import os
+import zipfile
 
 import curveball
 import pandas as pd
 
-class IOUtilsTestCase(TestCase):
+class XLSXTestCase(TestCase):
     def setUp(self):
-        self.filename = 'data/yoavram/Tecan_210115.xlsx'
+        self.filename = os.path.join("data", "yoavram", "Tecan_210115.xlsx")
         if not os.path.exists(self.filename):
             raise IOError("Data file not found: %s" % self.filename)
-        self.plate = pd.read_csv("plate_templates/G-RG-R.csv")
+        self.plate = pd.read_csv(os.path.join("plate_templates", "G-RG-R.csv"))       
 
 
     def test_read_tecan_xlsx_OD(self):
@@ -53,6 +54,34 @@ class IOUtilsTestCase(TestCase):
         self.assertIsInstance(df, pd.DataFrame)
         self.assertEquals(df.shape, (8448, 9))
         self.assertEquals(df.columns.tolist() , ['Time', u'Temp. [\xb0C]', 'Cycle Nr.', 'Well', 'OD', 'Row', 'Col', 'Strain', 'Color'])
+
+
+class XMLTestCase(TestCase):
+    def setUp(self):            
+        self.folder = os.path.join("data", "dorith")
+        self.zip_filename = os.path.join(self.folder, "20140911_dorit.zip")
+        if not os.path.exists(self.zip_filename):
+            raise IOError("Data file not found: %s" % self.zip_filename)
+        self.zipfile = zipfile.ZipFile(self.zip_filename)
+        self.zipfile.extractall(self.folder)
+        self.plate = pd.read_csv(os.path.join("plate_templates", "checkerboard.csv"))
+
+
+    def test_read_tecan_xml_with_plate(self):
+        df = curveball.ioutils.read_tecan_xml(os.path.join(self.folder, "*.xml"), 'OD', plate=self.plate)
+        self.assertIsNotNone(df)
+        self.assertIsInstance(df, pd.DataFrame)
+        self.assertEquals(df.shape, (2016, 8))
+        self.assertEquals(df.columns.tolist() , ['OD', 'Well', 'Row', 'Col', 'Time', 'Filename', 'Strain', 'Color'])
+
+
+    def tearDown(self):
+        for f in self.zipfile.filelist:
+            os.remove(os.path.join(self.folder, f.filename))
+
+
+    def test_read_tecan_xml(self):
+        pass
 
 
 if __name__ == '__main__':
