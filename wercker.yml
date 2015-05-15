@@ -2,17 +2,17 @@ box: somada141/python-miniconda@0.0.4
 # Build definition
 build:
   # The steps that will be executed on build
-steps:
-    - script:
-        name: python environment
-        code: |
-          echo "python version $(python --version) running"
-          echo "conda version $(conda --version) running"
-    - script:
-        name: create and activate Python 2.7 virtual environment with the full Anaconda distro
-        code: |
-          conda create --yes -n py27 python=2.7 anaconda
-          source activate py27
-    - script:
-        name: test
-        code: nosetests
+    steps:
+        - script:
+            name: python environment
+            code: |
+              echo "python version $(python --version) running"
+              echo "conda version $(conda --version) running"
+        - script:
+            name: create and activate Python 2.7 virtual environment with the full Anaconda distro
+            code: |
+              conda create --yes -n py27 python=2.7 anaconda
+              source activate py27
+        - script:
+            name: test
+            code: nosetests
