@@ -13,6 +13,10 @@ build:
     #     name: setup virtual environment
     #     python_location: /usr/bin/python3.2
 
+    - script:
+        name: install binary dependencies
+        code: sudo apt-get install libfreetype6-dev
+
     # A step that executes `pip install` command.
     - pip-install
 
