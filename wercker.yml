@@ -1,32 +1,18 @@
-box: wercker/python
+box: somada141/python-miniconda@0.0.4
 # Build definition
 build:
   # The steps that will be executed on build
-  steps:
-    # A step that sets up the python virtual environment
-    - virtualenv:
-        name: setup virtual environment
-
-    # # Use this virtualenv step for python 3.2
-    # - virtualenv
-    #     name: setup virtual environment
-    #     python_location: /usr/bin/python3.2
-
-    # A step that executes `pip install` command.
-    - pip-install
-
-    # # This pip-install clears the local wheel cache
-    # - pip-install:
-    #     clean_wheel_dir: true
-
-    # A custom script step, name value is used in the UI
-    # and the code value contains the command that get executed
+steps:
     - script:
-        name: echo python information
+        name: python environment
         code: |
           echo "python version $(python --version) running"
-          echo "pip version $(pip --version) running"
-
+          echo "conda version $(conda --version) running"
     - script:
-          name: nosetests
-          code: nosetests
+        name: create and activate Python 2.7 virtual environment with the full Anaconda distro
+        code: |
+          conda create --yes -n py27 python=2.7 anaconda
+          source activate py27
+    - script:
+        name: test
+        code: nosetests
