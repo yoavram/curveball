@@ -5,13 +5,14 @@ certifi==14.5.14
 colorama==0.3.3
 coverage==3.7.1
 coveralls==0.5
+-e git+git@gitlab.com:yoavram/curveball.git@ce331d2fdf51b3cc86171f50ec484ab75a7b8ec2#egg=curveball-master
 docopt==0.6.2
 docutils==0.12
 ipdb==0.8
 ipython==3.1.0
 Jinja2==2.7.3
 jsonschema==2.4.0
-lmfit==0.8.3
+lmfit===3bf4298df13990eaf493a038d9a4e4914995507f
 lxml==3.4.4
 MarkupSafe==0.23
 matplotlib==1.4.3
@@ -20,7 +21,6 @@ mock==1.0.1
 nose==1.3.6
 numpy==1.9.2
 pandas==0.16.0
-Pint==0.6
 py==1.4.26
 Pygments==2.0.2
 pyparsing==2.0.3
