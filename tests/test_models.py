@@ -21,6 +21,7 @@ from lmfit.model import ModelFit
 
 
 CI = os.environ.get('CI', 'false').lower() == 'true'
+RANDOM_SEED = int(os.environ.get('RANDOM_SEED', 0))
 
 
 def logistic_ode(y, t, r, K, nu, q0, v):
@@ -45,11 +46,12 @@ def relative_error(exp, obs):
 
 
 def randomize_data(func_ode, t=None, y0=0.1, r=0.75, K=1.0, nu=0.5, q0=0.1, v=0.1, reps=30, noise=0.03):
+    rng = np.random.RandomState(RANDOM_SEED)
     if t is None:
         t = np.linspace(0, 12)
     y = odeint(func_ode, y0, t, args=(r, K, nu, q0, v))
     y.resize((len(t),))
-    y = y.repeat(reps).reshape((len(t), reps)) + np.random.normal(0, noise, (len(t), reps))
+    y = y.repeat(reps).reshape((len(t), reps)) + rng.normal(0, noise, (len(t), reps))
     y[y < 0] = 0
     return pd.DataFrame({'OD': y.flatten(), 'Time': t.repeat(reps)})
 
@@ -295,6 +297,7 @@ class LRTestTestCase(TestCase):
 
 
     def test_lrtest(self):
+        rng = np.random.RandomState(RANDOM_SEED)
         a,b = 1,1
         a_init,b_init = 2,1
     
@@ -302,7 +305,7 @@ class LRTestTestCase(TestCase):
         noise = 0.03
         t = np.linspace(0,12)
         f = lambda t,a,b: b + np.exp(-a * t)
-        y = f(t,a,b) + np.random.normal(0, noise, len(t))
+        y = f(t,a,b) + rng.normal(0, noise, len(t))
         model = Model(f)
         params = model.make_params(a=a_init, b=b_init)
     
