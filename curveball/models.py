@@ -486,12 +486,12 @@ def cooks_distance(df, model_fit):
     return D
 
 
-def find_outliers(df, model_fit, ax=None, PLOT=False):
+def find_outliers(df, model_fit, deviation=2, ax=None, PLOT=False):
     D = cooks_distance(df, model_fit)
     D = sorted(D.items())
     distances = [x[1] for x in D]        
     dist_mean, dist_std = np.mean(distances), np.std(distances)
-    outliers = [well for well,dist in D if (dist_mean - 2 * dist_std) < dist > (dist_mean + 2 * dist_std)]    
+    outliers = [well for well,dist in D if abs(dist_mean - dist) <  deviation * dist_std]
     if PLOT:
         if ax is None:
             fig,ax = plt.subplots(1,1)
@@ -500,8 +500,8 @@ def find_outliers(df, model_fit, ax=None, PLOT=False):
         wells = [x[0] for x in D]            
         ax.stem(distances, linefmt='k-', basefmt='')
         ax.axhline(y=dist_mean, ls='-', color='k')
-        ax.axhline(y=dist_mean + 2 * dist_std, ls='--', color='k')
-        ax.axhline(y=dist_mean - 2 * dist_std, ls='--', color='k')
+        ax.axhline(y=dist_mean + deviation * dist_std, ls='--', color='k')
+        ax.axhline(y=dist_mean - deviation * dist_std, ls='--', color='k')
         ax.set_xticks(range(len(wells)))
         ax.set_xticklabels(wells, rotation=90)
         ax.set_xlabel('Well')
@@ -511,12 +511,12 @@ def find_outliers(df, model_fit, ax=None, PLOT=False):
     return outliers
 
 
-def find_all_outliers(df, model_fit, PLOT=False):    
+def find_all_outliers(df, model_fit, deviation=2, PLOT=False):    
     outliers = []
     df = copy.deepcopy(df)
     if PLOT:
         fig = plt.figure()
-    o, fig, ax = find_outliers(df, model_fit, ax=fig.add_subplot(), PLOT=PLOT)
+    o, fig, ax = find_outliers(df, model_fit, deviation=deviation, ax=fig.add_subplot(), PLOT=PLOT)
     outliers.append(o)
     while len(outliers[-1]) != 0:
         df = df[~df.Well.isin(outliers[-1])]
