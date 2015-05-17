@@ -12,6 +12,7 @@ import matplotlib.pyplot as plt
 import collections
 from scipy.stats import chisqprob
 from scipy.misc import derivative
+import copy
 from lmfit import Model
 from lmfit.models import LinearModel
 import sympy
@@ -468,6 +469,66 @@ def benchmark(model_fits, deltaBIC=6, PRINT=False, PLOT=False):
         return success, fig, ax
     return success
 
+
+def cooks_distance(df, model_fit):
+    p = model_fit.nvarys
+    MSE = model_fit.chisqr / model_fit.ndata
+    wells = df.Well.unique()
+    D = {}
+    
+    for well in wells:    
+        _df = df[df.Well != well]
+        _df = _df.groupby('Time')['OD'].agg([np.mean, np.std]).reset_index()
+        assert np.isfinite(1./_df['std']).all()
+        model_fit_i = copy.deepcopy(model_fit)
+        model_fit_i.fit(_df['mean'], weights=1./_df['std'])
+        D[well] = model_fit_i.chisqr / (p * MSE)
+    return D
+
+
+def find_outliers(df, model_fit, ax=None, PLOT=False):
+    D = cooks_distance(df, model_fit)
+    D = sorted(D.items())
+    distances = [x[1] for x in D]        
+    dist_mean, dist_std = np.mean(distances), np.std(distances)
+    outliers = [well for well,dist in D if (dist_mean - 2 * dist_std) < dist > (dist_mean + 2 * dist_std)]    
+    if PLOT:
+        if ax is None:
+            fig,ax = plt.subplots(1,1)
+        else:
+            fig = ax.get_figure()
+        wells = [x[0] for x in D]            
+        ax.stem(distances, linefmt='k-', basefmt='')
+        ax.axhline(y=dist_mean, ls='-', color='k')
+        ax.axhline(y=dist_mean + 2 * dist_std, ls='--', color='k')
+        ax.axhline(y=dist_mean - 2 * dist_std, ls='--', color='k')
+        ax.set_xticks(range(len(wells)))
+        ax.set_xticklabels(wells, rotation=90)
+        ax.set_xlabel('Well')
+        ax.set_ylabel("Cook's distance")
+        sns.despine()
+        return outliers,fig,ax
+    return outliers
+
+
+def find_all_outliers(df, model_fit, PLOT=False):    
+    outliers = []
+    df = copy.deepcopy(df)
+    if PLOT:
+        fig = plt.figure()
+    o, fig, ax = find_outliers(df, model_fit, ax=fig.add_subplot(), PLOT=PLOT)
+    outliers.append(o)
+    while len(outliers[-1]) != 0:
+        df = df[~df.Well.isin(outliers[-1])]
+        model_fit = fit_model(df, PLOT=False, PRINT=False)[0]
+        if PLOT:
+            o, fig, ax = find_outliers(df, model_fit, ax=fig.add_subplot(), PLOT=PLOT)
+            outliers.append(o)
+        else:
+            outliers.append(find_outliers(D, PLOT=PLOT))
+    if PLOT:
+        return outliers[:-1],fig,ax
+    return outliers[:-1]
 
 def fit_model(df, ax=None, use_weights=True, use_Dfun=False, PLOT=True, PRINT=True):
     r"""Fit a growth model to data.
