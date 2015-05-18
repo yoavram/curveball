@@ -45,7 +45,7 @@ def relative_error(exp, obs):
         return abs(exp - obs) / exp
 
 
-def randomize_data(func_ode, t=None, y0=0.1, r=0.75, K=1.0, nu=0.5, q0=0.1, v=0.1, reps=30, noise=0.03):
+def randomize_data(func_ode, t=None, y0=0.1, r=0.75, K=1.0, nu=0.5, q0=0.1, v=0.1, reps=30, noise=0.02):
     rng = np.random.RandomState(RANDOM_SEED)
     if t is None:
         t = np.linspace(0, 12)
@@ -158,7 +158,7 @@ class ModelSelectionTestCase(TestCase):
 
 
     def test_fit_model_baranyi_roberts(self):        
-        df = randomize_data(baranyi_roberts_ode, t=np.linspace(0,36), nu=5.0)
+        df = randomize_data(baranyi_roberts_ode, t=np.linspace(0,30), nu=2.5)
         if not CI:
             models,fig,ax = curveball.models.fit_model(df, PLOT=True, PRINT=False)
             func_name = sys._getframe().f_code.co_name
