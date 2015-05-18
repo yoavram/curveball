@@ -12,6 +12,7 @@ import matplotlib.pyplot as plt
 import collections
 from scipy.stats import chisqprob
 from scipy.misc import derivative
+import pandas as pd
 import copy
 from lmfit import Model
 from lmfit.models import LinearModel
@@ -80,6 +81,15 @@ def baranyi_roberts_function(t, y0, r, K, nu, q0, v):
     At = t + (1./v) * np.log((np.exp(-v * t) + q0)/(1 + q0))
     return K / ((1 - (1 - (K/y0)**nu) * np.exp( -r * nu * At ))**(1./nu))
 
+
+def sample_params(model_fit, nsamples):
+    names = [p.name for p in model_fit.params.values() if p.vary]
+    means = [p.value for p in model_fit.params.values() if p.vary]
+    cov = model_fit.covar
+    param_samples = np.random.multivariate_normal(means, cov, nsamples)
+    param_samples = pd.DataFrame(param_samples, columns=names)
+    return param_samples
+    
 
 def lrtest(m0, m1, alfa=0.05):
     r"""Perform a likelihood ratio test on two nested models.

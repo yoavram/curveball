@@ -491,5 +491,19 @@ class OutliersTestCase(TestCase):
         self.assertTrue(len(sum(outliers, [])) < len(self.df.Well.unique()))
 
 
+class SamplingTestCase(TestCase):
+    _multiprocess_can_split_ = True
+
+
+    def test_sample_params(self):
+        df = randomize_data(logistic_ode)
+        params = curveball.models.logistic_model.make_params(r=0.1, y0=df.OD.min(), K=df.OD.max())
+        model_fit = curveball.models.logistic_model.fit(data=df.OD, t=df.Time, params=params)
+        sample_params = curveball.models.sample_params(df, model_fit, 100)
+        self.assertIsNotNone(sample_params)
+        self.assertEquals(sample_params.shape, (100, 3))
+
+        
+
 if __name__ == '__main__':
     main()
