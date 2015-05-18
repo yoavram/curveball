@@ -444,6 +444,52 @@ class BenchmarkTestCase(TestCase):
             success = curveball.models.benchmark(model_fit, PLOT=False)     
         self.assertEquals(success, True)
         
-        
+
+class OutliersTestCase(TestCase):
+    _multiprocess_can_split_ = True
+
+    def setUp(self):
+        self.filename = os.path.join("data", "yoavram" "Tecan_210115.csv")
+        self.df = pd.read_csv(self.filename)
+        self.df = self.df[self.df.Strain == 'R']
+        self.model_fit = curveball.models.fit_model(df_RG, PLOT=False, PRINT=False)[0]
+
+
+    def tearDown(self):
+        plt.close("all")        
+
+
+    def test_cooks_distance(self):
+        D = curveball.models.cooks_distance(self.df, self.model_fit)
+        self.assertEquals(set(D.keys()), set(self.df.Well))
+        self.assertTrue( (np.array(D.values()) < 14).all() )
+        self.assertTrue( (np.array(D.values()) > 11).all() )
+
+
+    def test_find_outliers(self):
+        if not CI:
+            outliers,fig,ax = curveball.models.find_outliers(df_RG, model_fit, PLOT=True)
+            func_name = sys._getframe().f_code.co_name
+            fig.savefig(func_name + ".png")
+        else:
+            outliers = curveball.models.find_outliers(df_RG, model_fit, PLOT=False)
+        self.assertTrue(pd.Series(outliers).isin(df.Well).all())
+        self.assertTrue(len(outliers) < len(df.Well.unique()))
+
+
+    def test_find_all_outliers(self):
+        if not CI:
+            outliers,fig,ax = curveball.models.find_all_outliers(df_RG, model_fit, PLOT=True)
+            func_name = sys._getframe().f_code.co_name
+            fig.savefig(func_name + ".png")
+        else:
+            outliers = curveball.models.find_all_outliers(df_RG, model_fit, PLOT=False)
+        self.assertIsNotNone(outliers)
+        self.assertTrue(len(outliers) > 0)
+        for v in outliers: self.assertTrue(len(v) > 0)
+        self.assertTrue(pd.Series(sum(outliers, [])).isin(df.Well).all())
+        self.assertTrue(len(sum(outliers, [])) < len(df.Well.unique()))
+
+
 if __name__ == '__main__':
     main()
