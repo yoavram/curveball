@@ -327,7 +327,7 @@ def has_lag(model_fits, alfa=0.05, PRINT=False):
         - PRINT: :py:class:`bool`. If :py:const:`True`, the function will print the result of the underlying statistical test.
 
     Returns:
-        has_nu: :py:class:`bool`
+        has_lag: :py:class:`bool`
     """
     best_fit = model_fits[0]
     if best_fit.model.name in (richards_model.name, logistic_model.name):
@@ -345,7 +345,7 @@ def has_lag(model_fits, alfa=0.05, PRINT=False):
             m0 = filter(lambda m: m.model.name == richards_model.name, model_fits)[0]
         prefer_m1, pval, D, ddf = lrtest(m0, m1, alfa=alfa)
         if PRINT:
-            print "Tested H0: %s vs. H1: %s; D=%.2g, ddf=%d, p-value=%.2g" % (m0.model.name, m1.model.name, D, ddf, pval)
+            print "Tested H0: %s vs. H1: %s; D=%.2g, ddf=%d, p-value=%.2g" % (m0.model.name, m1.model.name, D, ddf, pval)    
         return prefer_m1
     else:
         raise ValueError("Unknown model: %s" % best_fit.model.name)
@@ -387,8 +387,8 @@ def has_nu(model_fits, alfa=0.05, PRINT=False):
     
     m1 = best_fit
     prefer_m1, pval, D, ddf = lrtest(m0, m1, alfa=alfa)
-    if PRINT:
-        print "Tested H0: %s vs. H1: %s; D=%.2g, ddf=%d, p-value=%.2g" % (m0.model.name, m1.model.name, D, ddf, pval)
+    msg = "Tested H0: %s (nu=%.2g) vs. H1: %s (nu=%.2g); D=%.2g, ddf=%d, p-value=%.2g"  
+    print msg % (m0.model.name, m0.best_values.get('nu', 1), m1.model.name, m1.best_values.get('nu', 1), D, ddf, pval)
     return prefer_m1
 
 
@@ -486,12 +486,12 @@ def cooks_distance(df, model_fit, use_weights=True):
     return D
 
 
-def find_outliers(df, model_fit, deviation=2, use_weights=True, ax=None, PLOT=False):
+def find_outliers(df, model_fit, deviations=2, use_weights=True, ax=None, PLOT=False):
     D = cooks_distance(df, model_fit, use_weights=use_weights)
     D = sorted(D.items())
     distances = [x[1] for x in D]        
     dist_mean, dist_std = np.mean(distances), np.std(distances)
-    outliers = [well for well,dist in D if abs(dist_mean - dist) > deviation * dist_std]
+    outliers = [well for well,dist in D if dist > dist_mean + deviations * dist_std]
     if PLOT:
         if ax is None:
             fig,ax = plt.subplots(1,1)
@@ -500,8 +500,8 @@ def find_outliers(df, model_fit, deviation=2, use_weights=True, ax=None, PLOT=Fa
         wells = [x[0] for x in D]            
         ax.stem(distances, linefmt='k-', basefmt='')
         ax.axhline(y=dist_mean, ls='-', color='k')
-        ax.axhline(y=dist_mean + deviation * dist_std, ls='--', color='k')
-        ax.axhline(y=dist_mean - deviation * dist_std, ls='--', color='k')
+        ax.axhline(y=dist_mean + deviations * dist_std, ls='--', color='k')
+        ax.axhline(y=dist_mean - deviations * dist_std, ls='--', color='k')
         ax.set_xticks(range(len(wells)))
         ax.set_xticklabels(wells, rotation=90)
         ax.set_xlabel('Well')
@@ -511,14 +511,15 @@ def find_outliers(df, model_fit, deviation=2, use_weights=True, ax=None, PLOT=Fa
     return outliers
 
 
-def find_all_outliers(df, model_fit, deviation=2, use_weights=True, PLOT=False):    
+def find_all_outliers(df, model_fit, deviations=2, max_outlier_fraction=0.1, use_weights=True, PLOT=False):    
     outliers = []
+    num_wells = len(df.Well.unique())
     df = copy.deepcopy(df)
     if PLOT:
         fig = plt.figure()
-    o, fig, ax = find_outliers(df, model_fit, deviation=deviation, use_weights=use_weights, ax=fig.add_subplot(), PLOT=PLOT)
+    o, fig, ax = find_outliers(df, model_fit, deviations=deviations, use_weights=use_weights, ax=fig.add_subplot(), PLOT=PLOT)
     outliers.append(o)
-    while len(outliers[-1]) != 0:
+    while len(outliers[-1]) != 0 and len(sum(outliers, [])) <  max_outlier_fraction * num_wells:
         df = df[~df.Well.isin(outliers[-1])]
         assert df.shape[0] > 0
         model_fit = fit_model(df, use_weights=use_weights, PLOT=False, PRINT=False)[0]
@@ -533,10 +534,10 @@ def find_all_outliers(df, model_fit, deviation=2, use_weights=True, PLOT=False):
 
 
 def _calc_weights(df):
-    """if there is more than one replicate, use the standard deviation as weight
+    """if there is more than one replicate, use the standard deviations as weight
     """
     if np.isnan(df['std']).any():
-        print "Warning: NaN in standard deviation, can't use weights"
+        print "Warning: NaN in standard deviations, can't use weights"
         weights = None
     else:
         weights = 1./df['std']
