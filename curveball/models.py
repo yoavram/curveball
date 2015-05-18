@@ -470,7 +470,7 @@ def benchmark(model_fits, deltaBIC=6, PRINT=False, PLOT=False):
     return success
 
 
-def cooks_distance(df, model_fit):
+def cooks_distance(df, model_fit, use_weights=True):
     p = model_fit.nvarys
     MSE = model_fit.chisqr / model_fit.ndata
     wells = df.Well.unique()
@@ -479,15 +479,15 @@ def cooks_distance(df, model_fit):
     for well in wells:    
         _df = df[df.Well != well]
         _df = _df.groupby('Time')['OD'].agg([np.mean, np.std]).reset_index()
-        assert np.isfinite(1./_df['std']).all()
+        weights =  _calc_weights(_df) if use_weights else None
         model_fit_i = copy.deepcopy(model_fit)
-        model_fit_i.fit(_df['mean'], weights=1./_df['std'])
+        model_fit_i.fit(_df['mean'], weights=weights)
         D[well] = model_fit_i.chisqr / (p * MSE)
     return D
 
 
-def find_outliers(df, model_fit, deviation=2, ax=None, PLOT=False):
-    D = cooks_distance(df, model_fit)
+def find_outliers(df, model_fit, deviation=2, use_weights=True, ax=None, PLOT=False):
+    D = cooks_distance(df, model_fit, use_weights=use_weights)
     D = sorted(D.items())
     distances = [x[1] for x in D]        
     dist_mean, dist_std = np.mean(distances), np.std(distances)
@@ -511,41 +511,35 @@ def find_outliers(df, model_fit, deviation=2, ax=None, PLOT=False):
     return outliers
 
 
-def find_all_outliers(df, model_fit, deviation=2, PLOT=False):    
+def find_all_outliers(df, model_fit, deviation=2, use_weights=True, PLOT=False):    
     outliers = []
     df = copy.deepcopy(df)
     if PLOT:
         fig = plt.figure()
-    o, fig, ax = find_outliers(df, model_fit, deviation=deviation, ax=fig.add_subplot(), PLOT=PLOT)
+    o, fig, ax = find_outliers(df, model_fit, deviation=deviation, use_weights=use_weights, ax=fig.add_subplot(), PLOT=PLOT)
     outliers.append(o)
     while len(outliers[-1]) != 0:
         df = df[~df.Well.isin(outliers[-1])]
-        model_fit = fit_model(df, PLOT=False, PRINT=False)[0]
+        assert df.shape[0] > 0
+        model_fit = fit_model(df, use_weights=use_weights, PLOT=False, PRINT=False)[0]
         if PLOT:
-            o, fig, ax = find_outliers(df, model_fit, ax=fig.add_subplot(), PLOT=PLOT)
+            o, fig, ax = find_outliers(df, model_fit, use_weights=use_weights, ax=fig.add_subplot(), PLOT=PLOT)
             outliers.append(o)
         else:
-            outliers.append(find_outliers(D, PLOT=PLOT))
+            outliers.append(find_outliers(D, use_weights=use_weights, PLOT=PLOT))
     if PLOT:
         return outliers[:-1],fig,ax
     return outliers[:-1]
 
-def fit_model(df, ax=None, use_weights=True, use_Dfun=False, PLOT=True, PRINT=True):
-    r"""Fit a growth model to data.
 
-    This function will attempt to fit a growth model to `OD~Time` taken from the `df` :py:class:`pandas.DataFrame`.
-    The function is still being developed.
+def _calc_weights(df):
+    """if there is more than one replicate, use the standard deviation as weight
     """
-    _df = df.groupby('Time')['OD'].agg([np.mean, np.std]).reset_index().rename(columns={'mean':'OD'})
-
-    # if there is more than one replicate, use the standard deviation as weight
-    if not use_weights:
-        weights = None
-    elif use_weights and np.isnan(_df['std']).any():
+    if np.isnan(df['std']).any():
         print "Warning: NaN in standard deviation, can't use weights"
         weights = None
     else:
-        weights = 1./_df['std']
+        weights = 1./df['std']
         # if any weight is nan, raise error
         idx = np.isnan(weights)
         if idx.any():
@@ -555,6 +549,18 @@ def fit_model(df, ax=None, use_weights=True, use_Dfun=False, PLOT=True, PRINT=Tr
         if idx.any():
             print "Warning: found infinite weight, changing to maximum (%d occurences)" % idx.sum()
             weights[idx] = weights[~idx].max()
+    return weights
+
+
+def fit_model(df, ax=None, use_weights=True, use_Dfun=False, PLOT=True, PRINT=True):
+    r"""Fit a growth model to data.
+
+    This function will attempt to fit a growth model to `OD~Time` taken from the `df` :py:class:`pandas.DataFrame`.
+    The function is still being developed.
+    """
+    _df = df.groupby('Time')['OD'].agg([np.mean, np.std]).reset_index().rename(columns={'mean':'OD'})
+
+    weights =  _calc_weights(_df) if use_weights else None
 
     models = []
 
