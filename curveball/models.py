@@ -491,7 +491,7 @@ def find_outliers(df, model_fit, deviation=2, use_weights=True, ax=None, PLOT=Fa
     D = sorted(D.items())
     distances = [x[1] for x in D]        
     dist_mean, dist_std = np.mean(distances), np.std(distances)
-    outliers = [well for well,dist in D if abs(dist_mean - dist) <  deviation * dist_std]
+    outliers = [well for well,dist in D if abs(dist_mean - dist) > deviation * dist_std]
     if PLOT:
         if ax is None:
             fig,ax = plt.subplots(1,1)
