@@ -527,17 +527,19 @@ def find_all_outliers(df, model_fit, deviations=2, max_outlier_fraction=0.1, use
     df = copy.deepcopy(df)
     if PLOT:
         fig = plt.figure()
-    o, fig, ax = find_outliers(df, model_fit, deviations=deviations, use_weights=use_weights, ax=fig.add_subplot(), PLOT=PLOT)
+        o, fig, ax = find_outliers(df, model_fit, deviations=deviations, use_weights=use_weights, ax=fig.add_subplot(), PLOT=PLOT)
+    else:
+        o = find_outliers(df, model_fit, deviations=deviations, use_weights=use_weights, PLOT=PLOT)
     outliers.append(o)
     while len(outliers[-1]) != 0 and len(sum(outliers, [])) <  max_outlier_fraction * num_wells:
         df = df[~df.Well.isin(outliers[-1])]
         assert df.shape[0] > 0
         model_fit = fit_model(df, use_weights=use_weights, PLOT=False, PRINT=False)[0]
         if PLOT:
-            o, fig, ax = find_outliers(df, model_fit, use_weights=use_weights, ax=fig.add_subplot(), PLOT=PLOT)
-            outliers.append(o)
+            o, fig, ax = find_outliers(df, model_fit, deviations=deviations, use_weights=use_weights, ax=fig.add_subplot(), PLOT=PLOT)            
         else:
-            outliers.append(find_outliers(D, use_weights=use_weights, PLOT=PLOT))
+            o = find_outliers(df, model_fit, D, deviations=deviations, use_weights=use_weights, PLOT=PLOT)
+        outliers.append(o)
     if PLOT:
         return outliers[:-1],fig,ax
     return outliers[:-1]
