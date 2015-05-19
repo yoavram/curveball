@@ -17,6 +17,11 @@ Curveball can be installed with:
 pip install git+https://github.com/yoavram/curveball.git#egg=curveball
 ```
 
+You might need to install the `lxml` dependencies. On _Ubuntu_ you'll need to [setup `libxml` on the global environment](http://stackoverflow.com/a/15761014/1063612) before running `pip`::
+```
+sudo apt-get install libxml2-dev libxslt1-dev
+```
+
 ## Contribute
 **curveball** is an open-source software. Everyone is welcome to contribute! Please Use issues and pull requests in the official [Github repository](https://github.com/yoavram/curveball)
 
