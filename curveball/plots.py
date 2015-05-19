@@ -164,3 +164,14 @@ def plot_plate(df, edge_color='#888888'):
 	ax.yaxis.tick_left()
 	ax.tick_params(length=0, width=0)
 	return fig, ax
+
+
+def plot_params_distribution(param_samples, alpha=None):
+	nsamples = param_samples.shape[0]
+	g = sns.PairGrid(param_samples)
+	if alpha is None:
+		alpha = 1/np.power(nsamples, 1./4)
+	g.map_upper(plt.scatter, alpha=alpha)
+	g.map_lower(sns.kdeplot, cmap="Blues_d", legend=False)
+	g.map_diag(plt.hist)
+	return g
