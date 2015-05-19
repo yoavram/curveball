@@ -538,7 +538,7 @@ def find_all_outliers(df, model_fit, deviations=2, max_outlier_fraction=0.1, use
         if PLOT:
             o, fig, ax = find_outliers(df, model_fit, deviations=deviations, use_weights=use_weights, ax=fig.add_subplot(), PLOT=PLOT)            
         else:
-            o = find_outliers(df, model_fit, D, deviations=deviations, use_weights=use_weights, PLOT=PLOT)
+            o = find_outliers(df, model_fit, deviations=deviations, use_weights=use_weights, PLOT=PLOT)
         outliers.append(o)
     if PLOT:
         return outliers[:-1],fig,ax
