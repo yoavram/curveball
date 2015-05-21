@@ -14,6 +14,7 @@ from string import ascii_uppercase
 from scipy.io import loadmat
 from lxml import etree
 import re
+import datetime
 import dateutil.parser
 from glob import glob
 import os.path
@@ -211,8 +212,59 @@ def read_tecan_xml(filename, label='OD', max_time=None, plate=None):
     min_time = df.Time.min()
     df.Time = map(lambda t: (t - min_time).total_seconds()/3600., df.Time)
     if plate is None:
-            df['Strain'] = 0
-            df['Color'] = '#000000'
+        df['Strain'] = 0
+        df['Color'] = '#000000'
+    else:
+        df = pd.merge(df, plate, on=('Row','Col'))
+    if not max_time is None:
+        df = df[df.Time <= max_time]
+    return df
+
+
+def read_sunrise_xlsx(filename, label='OD', max_time=None, plate=None):
+    dataframes = []
+    for filename in glob(filename):
+        wb = xlrd.open_workbook(filename)
+        for sh in wb.sheets():
+            if sh.nrows > 0:
+                break
+        parse_data = False # start with metadata
+        index = []
+        data = []
+
+        for i in range(sh.nrows):
+            row = sh.row_values(i)
+            if row[0] == 'Date:':
+                date = filter(lambda x: isinstance(x,float), row[1:])[0]
+                date = xlrd.xldate_as_tuple(date, 0)        
+            elif row[0] == 'Time:':
+                time = filter(lambda x: isinstance(x,float), row[1:])[0]
+                time = xlrd.xldate_as_tuple(time, 0)
+            elif row[0] == '<>':
+                columns = map(int,row[1:])
+                parse_data = True
+            elif row[0] == '' and parse_data:
+                break
+            elif parse_data:
+                index.append(row[0])
+                data.append(map(float, row[1:]))
+                
+        dateandtime = date[:3] + time[-3:]
+        dateandtime = datetime.datetime(*dateandtime)
+        
+        df = pd.DataFrame(data, columns=columns, index=index)
+        df['Row'] = index
+        df = pd.melt(df, id_vars='Row', var_name='Col', value_name=label)
+        df['Time'] = dateandtime
+        df['Well'] = map(lambda x: x[0] + str(x[1]), zip(df.Row,df.Col))
+        df['Filename'] = os.path.split(filename)[-1]
+        dataframes.append(df)
+    df = pd.concat(dataframes)
+    min_time = df.Time.min()
+    df.Time = map(lambda t: (t - min_time).total_seconds()/3600., df.Time)
+    if plate is None:
+        df['Strain'] = 0
+        df['Color'] = '#000000'
     else:
         df = pd.merge(df, plate, on=('Row','Col'))
     if not max_time is None:
