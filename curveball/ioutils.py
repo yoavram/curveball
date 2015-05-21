@@ -223,7 +223,10 @@ def read_tecan_xml(filename, label='OD', max_time=None, plate=None):
 
 def read_sunrise_xlsx(filename, label='OD', max_time=None, plate=None):
     dataframes = []
-    for filename in glob(filename):
+    files = glob(filename)
+    if not files:
+        return pd.DataFrame()
+    for filename in files:
         wb = xlrd.open_workbook(filename)
         for sh in wb.sheets():
             if sh.nrows > 0:
