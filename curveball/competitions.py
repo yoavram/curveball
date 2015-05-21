@@ -36,10 +36,11 @@ def double_baranyi_roberts_ode(y, t, r, K, nu, q0, v):
     return dydt
 
 
-def compete(m1, m2, hours=24, num_of_points=100, ax=None, PLOT=False):
+def compete(m1, m2, y0=None, hours=24, num_of_points=100, ax=None, PLOT=False):
 	t = np.linspace(0, hours, num_of_points)
-	y0 = np.array(m1.best_values['y0'], m2.best_values['y0'])
-	y0 = np.mean(y0), np.mean(y0)
+	if y0 is None:
+		y0 = np.array(m1.best_values['y0'], m2.best_values['y0'])
+		y0 = np.mean(y0)/2, np.mean(y0)/2
 	K = m1.best_values['K'], m2.best_values['K']
 	r = m1.best_values['r'], m2.best_values['r']
 	nu = m1.best_values.get('nu', 1.0), m1.best_values.get('nu', 1.0)
