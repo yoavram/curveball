@@ -43,9 +43,9 @@ def compete(m1, m2, y0=None, hours=24, num_of_points=100, ax=None, PLOT=False):
 		y0 = np.mean(y0)/2, np.mean(y0)/2
 	K = m1.best_values['K'], m2.best_values['K']
 	r = m1.best_values['r'], m2.best_values['r']
-	nu = m1.best_values.get('nu', 1.0), m1.best_values.get('nu', 1.0)
-	q0 = m1.best_values.get('q0', 1.0), m1.best_values.get('q0', 1.0)
-	v = m1.best_values.get('v', 1e6), m1.best_values.get('v', 1e6)
+	nu = m1.best_values.get('nu', 1.0), m2.best_values.get('nu', 1.0)
+	q0 = m1.best_values.get('q0', 1.0), m2.best_values.get('q0', 1.0)
+	v = m1.best_values.get('v', 1e6), m2.best_values.get('v', 1e6)
 
 	y = odeint(double_baranyi_roberts_ode, y0, t, args=(r, K, nu, q0, v))
 
