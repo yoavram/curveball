@@ -55,6 +55,7 @@ def read_tecan_xlsx(filename, label, sheet=None, max_time=None, plate=None):
     (8544, 9)
     """
     wb = xlrd.open_workbook(filename)
+    dateandtime = datetime.datetime.now() # default
     if sheet == None:
         for sh in wb.sheets():
             if sh.nrows > 0:
@@ -69,6 +70,13 @@ def read_tecan_xlsx(filename, label, sheet=None, max_time=None, plate=None):
     for lbl in label:
         for i in range(sh.nrows):
             row = sh.row_values(i)
+
+            if row[0].startswith('Date'): 
+                date = str.join('', row[1:])
+                next_row = sh.row_values(i+1)                
+                time = str.join('', next_row[1:])
+                dateandtime = dateutil.parser.parse("%s %s" % (date, time))
+
             if row[0] == lbl:
                 break
 
@@ -86,7 +94,7 @@ def read_tecan_xlsx(filename, label, sheet=None, max_time=None, plate=None):
         df = pd.DataFrame(data)
         df = pd.melt(df, id_vars=('Time [s]',u'Temp. [°C]','Cycle Nr.'), var_name='Well', value_name=lbl)
         df.rename(columns={'Time [s]': 'Time'}, inplace=True)
-        df.Time = df.Time / 3600.
+        df.Time = map(lambda t: dateandtime + datetime.timedelta(0, t), df.Time)        
         df['Row'] = map(lambda x: x[0], df.Well)
         df['Col'] = map(lambda x: int(x[1:]), df.Well)
         if plate is None:
@@ -94,6 +102,8 @@ def read_tecan_xlsx(filename, label, sheet=None, max_time=None, plate=None):
             df['Color'] = '#000000'
         else:
             df = pd.merge(df, plate, on=('Row','Col'))
+        min_time = df.Time.min()
+        df.Time = map(lambda t: (t - min_time).total_seconds()/3600., df.Time)
         if not max_time is None:
             df = df[df.Time <= max_time]
         dataframes.append((lbl,df))
