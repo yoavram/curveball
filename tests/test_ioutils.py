@@ -36,7 +36,7 @@ class XLSXTestCase(TestCase):
         self.assertIsNotNone(df)
         self.assertIsInstance(df, pd.DataFrame)
         self.assertEquals(df.shape, (8352, 15))
-        self.assertEquals(df.columns.tolist() , ['Time_OD', u'Temp. [\xb0C]_OD', 'Cycle Nr.', 'Well', 'OD', 'Row', 'Col', 'Strain', 'Color', 'Time_Green', u'Temp. [\xb0C]_Green', 'Green', 'Time', u'Temp. [\xb0C]', 'Red'])
+        self.assertEquals(sorted(df.columns.tolist()) , sorted(['Time_OD', u'Temp. [\xb0C]_OD', 'Cycle Nr.', 'Well', 'OD', 'Row', 'Col', 'Strain', 'Color', 'Time_Green', u'Temp. [\xb0C]_Green', 'Green', 'Time', u'Temp. [\xb0C]', 'Red']))
 
 
     def test_read_tecan_xlsx_12hrs(self):

@@ -56,70 +56,80 @@ def read_tecan_xlsx(filename, label, sheet=None, max_time=None, plate=None):
     """
     wb = xlrd.open_workbook(filename)
     dateandtime = datetime.datetime.now() # default
-    if sheet == None:
-        for sh in wb.sheets():
-            if sh.nrows > 0:
-                break
-    else:
-        sh = wb.sheets()[sheet]
 
     if isinstance(label, str):
         label = [label]
 
-    dataframes = []
+    label_dataframes = []
     for lbl in label:
-        for i in range(sh.nrows):
-            row = sh.row_values(i)
+        sheet_dataframes = []
+        for sh in wb.sheets():
+            if sh.nrows == 0:
+                continue # to next sheet
+    ## FOR sheet
+            for i in range(sh.nrows):
+                ## FOR row
+                row = sh.row_values(i)
 
-            if row[0].startswith('Date'): 
-                date = str.join('', row[1:])
-                next_row = sh.row_values(i+1)                
-                time = str.join('', next_row[1:])
-                dateandtime = dateutil.parser.parse("%s %s" % (date, time))
+                if row[0].startswith('Date'): 
+                    date = str.join('', row[1:])
+                    next_row = sh.row_values(i+1)                
+                    time = str.join('', next_row[1:])
+                    dateandtime = dateutil.parser.parse("%s %s" % (date, time))
 
-            if row[0] == lbl:
-                break
+                if row[0] == lbl:
+                    break
+                ## FOR row ENDS
 
-        data = {}
-        for i in range(i+1, sh.nrows):
-            row = sh.row(i)
-            if row[0].value == '':
-                break
-            data[row[0].value] = [x.value for x in row[1:] if x.ctype == 2]
+            data = {}
+            for i in range(i+1, sh.nrows):
+                row = sh.row(i)
+                if row[0].value == '':
+                    break
+                data[row[0].value] = [x.value for x in row[1:] if x.ctype == 2]
 
-        min_length = min(map(len, data.values()))
-        for k,v in data.items():
-            data[k] =  v[:min_length]
+            min_length = min(map(len, data.values()))
+            for k,v in data.items():
+                data[k] =  v[:min_length]
 
-        df = pd.DataFrame(data)
-        df = pd.melt(df, id_vars=('Time [s]',u'Temp. [°C]','Cycle Nr.'), var_name='Well', value_name=lbl)
-        df.rename(columns={'Time [s]': 'Time'}, inplace=True)
-        df.Time = map(lambda t: dateandtime + datetime.timedelta(0, t), df.Time)        
-        df['Row'] = map(lambda x: x[0], df.Well)
-        df['Col'] = map(lambda x: int(x[1:]), df.Well)
-        if plate is None:
-            df['Strain'] = 0
-            df['Color'] = '#000000'
+            df = pd.DataFrame(data)
+            df = pd.melt(df, id_vars=('Time [s]',u'Temp. [°C]','Cycle Nr.'), var_name='Well', value_name=lbl)
+            df.rename(columns={'Time [s]': 'Time'}, inplace=True)
+            df.Time = map(lambda t: dateandtime + datetime.timedelta(0, t), df.Time)        
+            df['Row'] = map(lambda x: x[0], df.Well)
+            df['Col'] = map(lambda x: int(x[1:]), df.Well)
+            sheet_dataframes.append(df)
+    ## FOR sheet ENDS
+        if len(sheet_dataframes) == 0:
+            df = pd.DataFrame()
+        elif len(sheet_dataframes) == 1:
+            df = sheet_dataframes[0]
         else:
-            df = pd.merge(df, plate, on=('Row','Col'))
+            df = pd.concat(sheet_dataframes)
+
         min_time = df.Time.min()
         df.Time = map(lambda t: (t - min_time).total_seconds()/3600., df.Time)
         if not max_time is None:
             df = df[df.Time <= max_time]
-        dataframes.append((lbl,df))
+        label_dataframes.append((lbl,df))
 
-    if len(dataframes) == 0:
+    if len(label_dataframes) == 0: # dataframes
         return pd.DataFrame()
-    if len(dataframes) == 1:
-        return dataframes[0][1]
-    else:
+    if len(label_dataframes) == 1: # just one dataframe
+        df = label_dataframes[0][1]
+    else: # multiple dataframes, merge together
         # FIXME last label isn't used as a suffix, not sure why
-        lbl,df = dataframes[0]
+        lbl,df = label_dataframes[0]
         lbl = '_' + lbl
-        for lbli,dfi in dataframes[1:]:
+        for lbli,dfi in label_dataframes[1:]:
             lbli = '_' + lbli
-            df = pd.merge(df, dfi, on=('Cycle Nr.','Well','Row','Col','Strain','Color'), suffixes=(lbl,lbli))
-        return df
+            df = pd.merge(df, dfi, on=('Cycle Nr.','Well','Row','Col'), suffixes=(lbl,lbli))
+    if plate is None:
+        df['Strain'] = 0
+        df['Color'] = '#000000'
+    else:
+        df = pd.merge(df, plate, on=('Row','Col'))
+    return df
 
 
 def read_tecan_mat(filename, time_label='tps', value_label='plate_mat', value_name='OD', plate_width=12, max_time=None, plate=None):
