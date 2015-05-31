@@ -55,12 +55,15 @@ def read_tecan_xlsx(filename, label, sheet=None, max_time=None, plate=None):
     (8544, 9)
     """
     wb = xlrd.open_workbook(filename)
-    if sheet == None:
+    if sheet is None:
         for sh in wb.sheets():
             if sh.nrows > 0:
                 break
     else:
         sh = wb.sheets()[sheet]
+        if sh.nrows == 0:
+            print "Warning: sheet %d contains zero rows" % sheet
+            return pd.DataFrame()
 
     if isinstance(label, str):
         label = [label]
