@@ -1,0 +1,65 @@
+body{
+	background: #e14f43;
+	padding-top:40px;
+	color:#fff;
+}
+
+.main {
+	width:600px;
+	max-width:100%;
+	margin:0 auto;
+	background:rgba(0,0,0,0.05);
+	padding-bottom:30px;
+	border-radius:5px;
+	overflow: hidden;
+}
+
+.b{
+ font-size: 70px;
+}
+.text-center{
+text-align:center;
+}
+
+.logo{
+	margin:0 auto;
+}
+
+#contact-form{
+	width:400px;
+	max-width:100%;
+	margin:0 auto;
+	
+}
+
+.form-control {
+	color: #62c462;
+}
+
+
+.btn [class*=icon]{
+	margin-right:15px;
+}
+
+/* ==========================================================================
+   Social Links
+   ========================================================================== */
+#social {
+	width: 100%;
+	padding-top: 20px;
+}
+
+#social i {
+	font-size: 80px;
+	color:#fff;
+}
+
+#social .col-md-3:hover{
+	background-color: #62c462;
+}
+
+#social .col-md-3 {
+	padding:30px;
+}
+   
+   
