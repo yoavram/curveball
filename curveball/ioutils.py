@@ -66,16 +66,19 @@ def read_tecan_xlsx(filename, label, sheet=None, max_time=None, plate=None):
         for sh in wb.sheets():
             if sh.nrows == 0:
                 continue # to next sheet
-    ## FOR sheet
+        ## FOR sheet
             for i in range(sh.nrows):
                 ## FOR row
                 row = sh.row_values(i)
 
-                if row[0].startswith('Date'): 
-                    date = str.join('', row[1:])
-                    next_row = sh.row_values(i+1)                
-                    time = str.join('', next_row[1:])
-                    dateandtime = dateutil.parser.parse("%s %s" % (date, time))
+                if row[0].startswith('Date'):
+                    if isinstance(row[1], str):                        
+                        date = str.join('', row[1:])
+                        next_row = sh.row_values(i+1)                
+                        time = str.join('', next_row[1:])
+                        dateandtime = dateutil.parser.parse("%s %s" % (date, time))
+                    else:
+                        print "Warning: date row contained non-string:", row[1]
 
                 if row[0] == lbl:
                     break
