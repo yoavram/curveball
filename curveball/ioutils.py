@@ -72,13 +72,13 @@ def read_tecan_xlsx(filename, label, sheet=None, max_time=None, plate=None):
                 row = sh.row_values(i)
 
                 if row[0].startswith('Date'):
-                    if isinstance(row[1], str):                        
+                    if isinstance(row[1], str) or isinstance(row[1], unicode):                        
                         date = str.join('', row[1:])
                         next_row = sh.row_values(i+1)                
                         time = str.join('', next_row[1:])
                         dateandtime = dateutil.parser.parse("%s %s" % (date, time))
                     else:
-                        print "Warning: date row contained non-string:", row[1]
+                        print "Warning: date row contained non-string:", row[1], type(row[1])
 
                 if row[0] == lbl:
                     break
