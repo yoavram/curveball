@@ -565,7 +565,7 @@ def _calc_weights(df):
     return weights
 
 
-def fit_model(df, ax=None, use_weights=True, use_Dfun=False, PLOT=True, PRINT=True):
+def fit_model(df, ax=None, param_guess=None, use_weights=True, use_Dfun=False, PLOT=True, PRINT=True):
     r"""Fit a growth model to data.
 
     This function will attempt to fit a growth model to `OD~Time` taken from the `df` :py:class:`pandas.DataFrame`.
@@ -578,17 +578,20 @@ def fit_model(df, ax=None, use_weights=True, use_Dfun=False, PLOT=True, PRINT=Tr
     models = []
 
     # TODO: make MyModel, inherit from Model, use Model.guess
-    Kguess  = _df.OD.max()
-    y0guess = _df.OD.min()
+    if param_guess is None:
+        param_guess = {}
+    Kguess  = param_guess.get('K', _df.OD.max())
+    y0guess = param_guess.get('y0', _df.OD.min())
     assert y0guess > 0
     assert Kguess > y0guess
-    nuguess = 1.0
+    nuguess = param_guess.get('nu', 1.0)
 
     dydt = np.gradient(_df.OD, _df.Time)
     idx = (~np.isinf(dydt)) & (~np.isnan(dydt)) # dydt not nan or inf
-    rguess  = 4 * dydt[idx].max() / Kguess # assume nu==1
+    rguess  = param_guess.get('r', 4 * dydt[idx].max() / Kguess) # assume nu==1
     assert rguess > 0
-    q0guess, vguess = 1.0, 1.0
+    q0guess = param_guess.get('q0', 1.0)
+    vguess = param_guess.get('v', 1.0)
 
     params = baranyi_roberts_model.make_params(y0=y0guess, K=Kguess, r=rguess, nu=nuguess, q0=q0guess, v=vguess)
     params['y0'].set(min=1e-10)
