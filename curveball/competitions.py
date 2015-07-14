@@ -32,7 +32,7 @@ def baranyi_roberts_ode(y, t, r, K, nu, q0, v):
 
 def double_baranyi_roberts_ode(y, t, r, K, nu, q0, v):
     alfa = q0[0] / (q0[0] + np.exp(-v[0] * t)), q0[1] / (q0[1] + np.exp(-v[1] * t))
-    dydt = alfa[0] * r[0] * y[0] * (1 - (y.sum() / K[0])**nu[0]), alfa[1] * r[1] * y[1] * (1 - (y.sum() / K[1])**nu[1])
+    dydt = alfa[0] * r[0] * y[0] * (1 - (y[0] / K[0] + y[1] / K[1])**nu[0]), alfa[1] * r[1] * y[1] * (1 - (y[0] / K[0] + y[1] / K[1])**nu[1])
     return dydt
 
 
