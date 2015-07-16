@@ -12,6 +12,7 @@ import matplotlib.pyplot as plt
 import collections
 from scipy.stats import chisqprob
 from scipy.misc import derivative
+from scipy.optimize import broyden1 as solve
 import pandas as pd
 import copy
 from lmfit import Model
@@ -565,6 +566,27 @@ def _calc_weights(df):
     return weights
 
 
+def guess_nu(t, N, K=None):
+    dNdt = np.gradient(N, t[1]-t[0])   
+    i = dNdt.argmax()
+    Nmax = N[i] 
+    if K is None:
+        K = N.max()
+    def target(nu):
+        return (1+nu)**(-1/nu) - Nmax/K
+    return solve(target, 1, f_tol=1e-14).flatten()[0]
+
+
+def guess_r(t, N, nu=None, K=None):
+    dNdt = np.gradient(N, t[1]-t[0])
+    dNdtmax = dNdt.max()    
+    if K is None:
+        K = N.max()
+    if nu is None:
+        nu = guess_nu(t, N, K)
+    return dNdtmax / (K * nu * (1 + nu)**(-(1 + nu) / nu))
+
+
 def fit_model(df, ax=None, param_guess=None, use_weights=True, use_Dfun=False, PLOT=True, PRINT=True):
     r"""Fit a growth model to data.
 
@@ -584,13 +606,10 @@ def fit_model(df, ax=None, param_guess=None, use_weights=True, use_Dfun=False, P
     y0guess = param_guess.get('y0', _df.OD.min())
     assert y0guess > 0
     assert Kguess > y0guess
-    nuguess = param_guess.get('nu', 1.0)
-
-    dydt = np.gradient(_df.OD, _df.Time)
-    idx = (~np.isinf(dydt)) & (~np.isnan(dydt)) # dydt not nan or inf
-    rguess  = param_guess.get('r', 4 * dydt[idx].max() / Kguess) # assume nu==1
+    nuguess = param_guess.get('nu', guess_nu(_df.Time, _df.OD, K=Kguess))
+    rguess  = param_guess.get('r', guess_r(_df.Time, _df.OD, nu=nuguess, K=Kguess))
     assert rguess > 0
-    q0guess = param_guess.get('q0', 1.0)
+    q0guess = param_guess.get('q0', 0.01)
     vguess = param_guess.get('v', 1.0)
 
     params = baranyi_roberts_model.make_params(y0=y0guess, K=Kguess, r=rguess, nu=nuguess, q0=q0guess, v=vguess)
