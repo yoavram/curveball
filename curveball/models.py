@@ -587,7 +587,7 @@ def guess_r(t, N, nu=None, K=None):
     return dNdtmax / (K * nu * (1 + nu)**(-(1 + nu) / nu))
 
 
-def fit_model(df, ax=None, param_guess=None, use_weights=True, use_Dfun=False, PLOT=True, PRINT=True):
+def fit_model(df, ax=None, param_guess=None, param_max=None, use_weights=True, use_Dfun=False, PLOT=True, PRINT=True):
     r"""Fit a growth model to data.
 
     This function will attempt to fit a growth model to `OD~Time` taken from the `df` :py:class:`pandas.DataFrame`.
@@ -602,6 +602,8 @@ def fit_model(df, ax=None, param_guess=None, use_weights=True, use_Dfun=False, P
     # TODO: make MyModel, inherit from Model, use Model.guess
     if param_guess is None:
         param_guess = {}
+    if param_max is None:
+        param_max = {}
     Kguess  = param_guess.get('K', _df.OD.max())
     y0guess = param_guess.get('y0', _df.OD.min())
     assert y0guess > 0
@@ -616,9 +618,9 @@ def fit_model(df, ax=None, param_guess=None, use_weights=True, use_Dfun=False, P
     params['y0'].set(min=1e-10)
     params['K'].set(min=1e-10)
     params['r'].set(min=1e-10)
-    params['nu'].set(min=1e-10, max=1)
-    params['q0'].set(min=1e-10, max=1)
-    params['v'].set(min=1e-4, max=60)
+    params['nu'].set(min=1e-10, max=param_max.get('nu', 1))
+    params['q0'].set(min=1e-10, max=param_max.get('q0', 1))
+    params['v'].set(min=1e-4, max=param_max.get('v', 60))
 
     # Baranyi-Roberts = Richards /w lag (6 params)
     fit_kws = {'Dfun': baranyi_roberts6_Dfun, "col_deriv":True} if use_Dfun else {}
@@ -636,7 +638,7 @@ def fit_model(df, ax=None, param_guess=None, use_weights=True, use_Dfun=False, P
     params['y0'].set(min=1e-10)
     params['K'].set(min=1e-10)
     params['r'].set(min=1e-10)
-    params['nu'].set(min=1e-10, max=1)
+    params['nu'].set(min=1e-10, max=param_max.get('nu', 1))
     fit_kws = {'Dfun': richards_Dfun, "col_deriv":True} if use_Dfun else {}
     result = richards_model.fit(data=_df.OD, t=_df.Time, params=params, weights=weights, fit_kws=fit_kws)
     models.append(result)
