@@ -15,13 +15,17 @@ import seaborn as sns
 sns.set_style("ticks")
 
 
+def double_logistic_ode(y, t, r, K):
+    dydt = r[0] * y[0] * (1 - (y[0] / K[0] + y[1] / K[1])), r[1] * y[1] * (1 - (y[0] / K[0] + y[1] / K[1]))
+    return dydt
+
+
 # def richards_ode(y, t, r, K, nu):    
 #     return r * y * (1 - (y/K)**nu)
 
 
 # def double_richards_ode(y, t, r, K, nu):    
-#     dydt = r[0] * y[0] * (1 - (y.sum() / K[0])**nu), r[1] * y[1] * (1 - (y.sum() / K[1])**nu[1])
-#     assert dydt.shape == y.shape
+#     dydt = r[0] * y[0] * (1 - (y.sum() / K[0])**nu[0]), r[1] * y[1] * (1 - (y.sum() / K[1])**nu[1])
 #     return dydt
 
 
@@ -32,11 +36,11 @@ def baranyi_roberts_ode(y, t, r, K, nu, q0, v):
 
 def double_baranyi_roberts_ode(y, t, r, K, nu, q0, v):
     alfa = q0[0] / (q0[0] + np.exp(-v[0] * t)), q0[1] / (q0[1] + np.exp(-v[1] * t))
-    dydt = alfa[0] * r[0] * y[0] * (1 - (y[0] / K[0] + y[1] / K[1])**nu[0]), alfa[1] * r[1] * y[1] * (1 - (y[0] / K[0] + y[1] / K[1])**nu[1])
+    dydt = alfa[0] * r[0] * y[0] * (1 - (y[0] / K[0])**nu[0] - (y[1] / K[1])**nu[1]), alfa[1] * r[1] * y[1] * (1 - (y[0] / K[0])**nu[0] - (y[1] / K[1])**nu[1])
     return dydt
 
 
-def compete(m1, m2, y0=None, hours=24, num_of_points=100, ax=None, PLOT=False):
+def compete(m1, m2, y0=None, hours=24, lag_phase=True, num_of_points=100, ax=None, PLOT=False):
 	t = np.linspace(0, hours, num_of_points)
 	if y0 is None:
 		y0 = np.array(m1.best_values['y0'], m2.best_values['y0'])
@@ -46,6 +50,9 @@ def compete(m1, m2, y0=None, hours=24, num_of_points=100, ax=None, PLOT=False):
 	nu = m1.best_values.get('nu', 1.0), m2.best_values.get('nu', 1.0)
 	q0 = m1.best_values.get('q0', 1.0), m2.best_values.get('q0', 1.0)
 	v = m1.best_values.get('v', 1e6), m2.best_values.get('v', 1e6)
+	if not lag_phase:
+		q0 = 1.0,1.0
+		v = 1e6,1e6
 
 	y = odeint(double_baranyi_roberts_ode, y0, t, args=(r, K, nu, q0, v))
 
