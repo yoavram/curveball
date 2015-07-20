@@ -40,34 +40,65 @@ def double_baranyi_roberts_ode(y, t, r, K, nu, q0, v):
     return dydt
 
 
-def compete(m1, m2, y0=None, hours=24, lag_phase=True, num_of_points=100, ax=None, PLOT=False):
-	t = np.linspace(0, hours, num_of_points)
-	if y0 is None:
-		y0 = np.array(m1.best_values['y0'], m2.best_values['y0'])
-		y0 = np.mean(y0)/2, np.mean(y0)/2
-	K = m1.best_values['K'], m2.best_values['K']
-	r = m1.best_values['r'], m2.best_values['r']
-	nu = m1.best_values.get('nu', 1.0), m2.best_values.get('nu', 1.0)
-	q0 = m1.best_values.get('q0', 1.0), m2.best_values.get('q0', 1.0)
-	v = m1.best_values.get('v', 1e6), m2.best_values.get('v', 1e6)
-	if not lag_phase:
-		q0 = 1.0,1.0
-		v = 1e6,1e6
+from scipy.integrate import odeint
 
-	y = odeint(double_baranyi_roberts_ode, y0, t, args=(r, K, nu, q0, v))
+def compete(m1, m2, y0=None, hours=24, nsamples=1, lag_phase=True, num_of_points=100, colors=None, ax=None, PLOT=False):
+    t = np.linspace(0, hours, num_of_points)
+    if y0 is None:
+        y0 = np.array(m1.best_values['y0'], m2.best_values['y0'])
+        y0 = np.mean(y0)/2, np.mean(y0)/2
+    if nsamples > 1:
+        m1_samples = curveball.models.sample_params(m1, nsamples)
+        m2_samples = curveball.models.sample_params(m2, nsamples)
+    else:
+        nsamples = 1
+        m1_samples = pd.DataFrame([m1.best_values])
+        m2_samples = pd.DataFrame([m2.best_values])
 
-	if PLOT:
-		if ax is None:
-			fig,ax = plt.subplots(1,1)
-		else:
-			fig = ax.get_figure()
-		ax.plot(t, y)
-		ax.set_xlabel('Time (hour)')
-		ax.set_ylabel('OD')
-		sns.despine()
-		return t,y,fig,ax
+    y = np.zeros((num_of_points, 2, nsamples))
+    #infodict = [None]*nsamples # DEBUG
+    
+    for i in range(nsamples):
+        r = max(m1_samples.iloc[i]['r'],1e-6), max(m2_samples.iloc[i]['r'],1e-6)
+        K = max(m1_samples.iloc[i]['K'],y0[0]), max(m2_samples.iloc[i]['K'],y0[1])
+        nu = max(m1_samples.iloc[i].get('nu', 1.0),1e-6), max(m2_samples.iloc[i].get('nu', 1.0),1e-6)
+        q0 = 1.0,1.0
+        v = 1e6,1e6
+        if lag_phase:
+            q0 = max(m1_samples.iloc[i].get('q0', 1.0), 1e-6), max(m2_samples.iloc[i].get('q0', 1.0), 1e-6)
+            v = max(m1_samples.iloc[i].get('v', 1e6), 1e-6), max(m2_samples.iloc[i].get('v', 1e6), 1e-6)
+        args = (r, K, nu, q0, v)
+        
+        y[:,:,i] = odeint(double_baranyi_roberts_ode, y0, t, args=args)
 
-	return t,y
+        # DEBUG
+        #_y_,info = odeint(double_baranyi_roberts_ode, y0, t, args=args, full_output=1)        
+        #if info['message'] != 'Integration successful.':
+        #    info['args'] = (y0,) + args
+        #    infodict[i] = info
+        #else:
+        #    y[:,:,i] = _y_
+    
+    if PLOT:
+        if ax is None:
+            fig,ax = plt.subplots(1, 1)
+        else:
+            fig = ax.get_figure()
+        for i in range(nsamples):
+            ax.plot(t, y[:,:,i], alpha=nsamples**(-0.2))
+            if not colors is None:
+                ax.get_lines()[-2].set_color(colors[0])
+                ax.get_lines()[-1].set_color(colors[1])
+        ax.plot(t, y.mean(axis=2), lw=5)
+        if not colors is None:
+        	ax.get_lines()[-2].set_color(colors[0])
+        	ax.get_lines()[-1].set_color(colors[1])
+        ax.set_xlabel('Time (hour)')
+        ax.set_ylabel('OD')
+        sns.despine()
+        return t,y,fig,ax
+
+    return t,y
 
 
 def selection_coefs_ts(t, y, ax=None, PLOT=False):
