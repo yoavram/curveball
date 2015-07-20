@@ -119,5 +119,31 @@ def selection_coefs_ts(t, y, ax=None, PLOT=False):
 	return svals
 
 
+def fitness_LTEE(y, ref_strain=0, assay_strain=1, t0=0, t1=-1):
+	r'''Calculate relative fitness according to the definition used in the Long Term Evolutionary Experiment (LTEE):
+
+	.. math::
+
+		\omega = \frac{\log{(A(t)/A(0))}}{\log{(B(t)/B(0))}}
+
+
+	where :math:`A(t), B(t)` are population densities of assay strain :math:`A` and reference strain :math:`B` at time :math:`t`.
+
+	Args:
+        - y: :py:class:`numpy.ndarray` array of population densities, as produced by :py:func:`curveball.competitions.compete`, where the first axis is time and the second axis is strain.
+        - ref_strain: :py:class:`int` of the index of the reference strain within `y`. This strain's fitness is set to 1 by definition.
+        - assay_strain: :py:class:`int` of the index of the assay strain within `y`. The result will be the fitness of this strain relative to the fitness of the reference strain.
+        - t0: :py:class:`int` the index of the time point from which to start the calculation of the relative fitness. 0 by default.
+        - t1: :py:class:`int` the index of the time point at which to end the calculation of the relative fitness. -1 (last) by default.
+
+    Returns:
+        w: :py:class:`float`, the fitness of the assay strain relative to the reference strain. Note that this may depend on the choice of `t0` and `t1` as well as the reference strain.
+    
+
+	See also: `Wiser, M. J. & Lenski, R. E., 2015 A Comparison of Methods to Measure Fitness in *Escherichia coli*. PLoS One 10, e0126210. <http://dx.plos.org/10.1371/journal.pone.0126210>`_
+	'''
+	return np.log(y[t1, assay_strain]/(y[t0, assay_strain])) / np.log(y[t1, ref_strain]/y[t0, ref_strain])
+
+
 
 
