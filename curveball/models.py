@@ -77,7 +77,7 @@ def baranyi_roberts_function(t, y0, r, K, nu, q0, v):
     - :math:`q_0`: initial adjustment to current environment
     - v: adjustment rate
 
-    See also: `Baranyi, J., Roberts, T. a., 1994. A dynamic approach to predicting bacterial growth in food. Int. J. Food Microbiol. 23, 277–294. <www.ncbi.nlm.nih.gov/pubmed/7873331>`_
+    See also: `Baranyi, J., Roberts, T. A., 1994. A dynamic approach to predicting bacterial growth in food. Int. J. Food Microbiol. 23, 277–294. <www.ncbi.nlm.nih.gov/pubmed/7873331>`_
     """
     At = t + (1./v) * np.log((np.exp(-v * t) + q0)/(1 + q0))
     return K / ((1 - (1 - (K/y0)**nu) * np.exp( -r * nu * At ))**(1./nu))
@@ -89,7 +89,11 @@ def sample_params(model_fit, nsamples):
     cov = model_fit.covar
     param_samples = np.random.multivariate_normal(means, cov, nsamples)
     param_samples = pd.DataFrame(param_samples, columns=names)
-    return param_samples
+    idx = np.zeros(nsamples) == 0
+    for p in model_fit.params.values():
+        if not p.vary: continue
+        idx = idx & (param_samples[p.name] >= p.min) & (param_samples[p.name] <= p.max)
+    return param_samples[idx].copy()
     
 
 def lrtest(m0, m1, alfa=0.05):
