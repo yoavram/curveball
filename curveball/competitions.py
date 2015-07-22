@@ -12,6 +12,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy.integrate import odeint
 import pandas as pd
+import lmfit
 import seaborn as sns
 sns.set_style("ticks")
 
@@ -44,62 +45,70 @@ def double_baranyi_roberts_ode(y, t, r, K, nu, q0, v):
 from scipy.integrate import odeint
 
 def compete(m1, m2, y0=None, hours=24, nsamples=1, lag_phase=True, num_of_points=100, colors=None, ax=None, PLOT=False):
-    t = np.linspace(0, hours, num_of_points)
-    if y0 is None:
-        y0 = np.array(m1.best_values['y0'], m2.best_values['y0'])
-        y0 = np.mean(y0)/2, np.mean(y0)/2
-    if nsamples > 1:
-        m1_samples = curveball.models.sample_params(m1, nsamples)
-        m2_samples = curveball.models.sample_params(m2, nsamples)
-    else:
-        nsamples = 1
-        m1_samples = pd.DataFrame([m1.best_values])
-        m2_samples = pd.DataFrame([m2.best_values])
+	if not isinstance(m1, lmfit.model.ModelFit):
+		raise ValueError("m1 must be %s, instead it is %s", lmfit.model.ModelFit, type(m1))
+	if not isinstance(m2, lmfit.model.ModelFit):
+		raise ValueError("m2 must be %s, instead it is %s", lmfit.model.ModelFit, type(m2))
 
-    y = np.zeros((num_of_points, 2, nsamples))
-    #infodict = [None]*nsamples # DEBUG
+	t = np.linspace(0, hours, num_of_points)
+	if y0 is None:		
+		y0 = np.array([m1.best_values['y0'], m2.best_values['y0']])		
+		y0 = y0.mean()/2, y0.mean()/2
+		assert y0[0] == y0[1]		
+	if nsamples > 1:
+		m1_samples = curveball.models.sample_params(m1, nsamples)
+		m2_samples = curveball.models.sample_params(m2, nsamples)
+		# TODO 
+		nsamples = min(len(m1_samples), len(m2_samples))
+	else:
+		nsamples = 1
+		m1_samples = pd.DataFrame([m1.best_values])
+		m2_samples = pd.DataFrame([m2.best_values])
+		assert len(m1_samples) == len(m2_samples)
+
+	y = np.zeros((num_of_points, 2, nsamples))
+	#infodict = [None]*nsamples # DEBUG
     
-    for i in range(nsamples):
-        r = max(m1_samples.iloc[i]['r'],1e-6), max(m2_samples.iloc[i]['r'],1e-6)
-        K = max(m1_samples.iloc[i]['K'],y0[0]), max(m2_samples.iloc[i]['K'],y0[1])
-        nu = max(m1_samples.iloc[i].get('nu', 1.0),1e-6), max(m2_samples.iloc[i].get('nu', 1.0),1e-6)
-        q0 = 1.0,1.0
-        v = 1e6,1e6
-        if lag_phase:
-            q0 = max(m1_samples.iloc[i].get('q0', 1.0), 1e-6), max(m2_samples.iloc[i].get('q0', 1.0), 1e-6)
-            v = max(m1_samples.iloc[i].get('v', 1e6), 1e-6), max(m2_samples.iloc[i].get('v', 1e6), 1e-6)
-        args = (r, K, nu, q0, v)
-        
-        y[:,:,i] = odeint(double_baranyi_roberts_ode, y0, t, args=args)
+	for i in range(nsamples):
+	    r = m1_samples.iloc[i]['r'], m2_samples.iloc[i]['r']
+	    K = m1_samples.iloc[i]['K'], m2_samples.iloc[i]['K']
+	    nu = m1_samples.iloc[i].get('nu', 1.0), m2_samples.iloc[i].get('nu', 1.0)
+	    q0 = 1.0,1.0
+	    v = 1e6,1e6
+	    if lag_phase:
+	        q0 = m1_samples.iloc[i].get('q0', 1.0), m2_samples.iloc[i].get('q0', 1.0)
+	        v = m1_samples.iloc[i].get('v', 1e6), m2_samples.iloc[i].get('v', 1e6)
+	    args = (r, K, nu, q0, v)
+	    
+	    y[:,:,i] = odeint(double_baranyi_roberts_ode, y0, t, args=args)
 
-        # DEBUG
-        #_y_,info = odeint(double_baranyi_roberts_ode, y0, t, args=args, full_output=1)        
-        #if info['message'] != 'Integration successful.':
-        #    info['args'] = (y0,) + args
-        #    infodict[i] = info
-        #else:
-        #    y[:,:,i] = _y_
-    
-    if PLOT:
-        if ax is None:
-            fig,ax = plt.subplots(1, 1)
-        else:
-            fig = ax.get_figure()
-        for i in range(nsamples):
-            ax.plot(t, y[:,:,i], alpha=nsamples**(-0.2))
-            if not colors is None:
-                ax.get_lines()[-2].set_color(colors[0])
-                ax.get_lines()[-1].set_color(colors[1])
-        ax.plot(t, y.mean(axis=2), lw=5)
-        if not colors is None:
-        	ax.get_lines()[-2].set_color(colors[0])
-        	ax.get_lines()[-1].set_color(colors[1])
-        ax.set_xlabel('Time (hour)')
-        ax.set_ylabel('OD')
-        sns.despine()
-        return t,y,fig,ax
+	    # DEBUG
+	    # _y_,info = odeint(double_baranyi_roberts_ode, y0, t, args=args, full_output=1)        
+	    # info['args'] = (y0,) + args
+	    # infodict[i] = info
+	    # if info['message'] == 'Integration successful.':
+	    #    y[:,:,i] = _y_
 
-    return t,y
+	if PLOT:
+	    if ax is None:
+	        fig,ax = plt.subplots(1, 1)
+	    else:
+	        fig = ax.get_figure()
+	    for i in range(nsamples):
+	        ax.plot(t, y[:,:,i], alpha=nsamples**(-0.2))
+	        if not colors is None:
+	            ax.get_lines()[-2].set_color(colors[0])
+	            ax.get_lines()[-1].set_color(colors[1])
+	    ax.plot(t, y.mean(axis=2), lw=5)
+	    if not colors is None:
+	    	ax.get_lines()[-2].set_color(colors[0])
+	    	ax.get_lines()[-1].set_color(colors[1])
+	    ax.set_xlabel('Time (hour)')
+	    ax.set_ylabel('OD')
+	    sns.despine()
+	    return t,y,fig,ax
+
+	return t,y#,infodict
 
 
 def selection_coefs_ts(t, y, ax=None, PLOT=False):
@@ -143,7 +152,9 @@ def fitness_LTEE(y, ref_strain=0, assay_strain=1, t0=0, t1=-1):
 
 	See also: `Wiser, M. J. & Lenski, R. E., 2015 A Comparison of Methods to Measure Fitness in *Escherichia coli*. PLoS One 10, e0126210. <http://dx.plos.org/10.1371/journal.pone.0126210>`_
 	'''
-	return np.log(y[t1, assay_strain]/(y[t0, assay_strain])) / np.log(y[t1, ref_strain]/y[t0, ref_strain])
+	At0,Bt0 = y[t0,assay_strain],y[t0,ref_strain]
+	At1,Bt1 = y[t1,assay_strain],y[t1,ref_strain]
+	return np.log(At1/At0) / np.log(Bt1/Bt0)
 
 
 
