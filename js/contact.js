@@ -1,6 +1,7 @@
 $(document).ready(function() {
 	$('#contact-form').submit(function() {
 		var hasError = false;
+		mixpanel.track("Form submit");
 		
 		$('#contact-form .error-message').remove();
 		
