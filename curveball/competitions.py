@@ -45,10 +45,10 @@ def double_baranyi_roberts_ode(y, t, r, K, nu, q0, v):
 from scipy.integrate import odeint
 
 def compete(m1, m2, y0=None, hours=24, nsamples=1, lag_phase=True, num_of_points=100, colors=None, ax=None, PLOT=False):
-	if not isinstance(m1, lmfit.model.ModelFit):
-		raise ValueError("m1 must be %s, instead it is %s", lmfit.model.ModelFit, type(m1))
-	if not isinstance(m2, lmfit.model.ModelFit):
-		raise ValueError("m2 must be %s, instead it is %s", lmfit.model.ModelFit, type(m2))
+	if not isinstance(m1, lmfit.model.ModelResult):
+		raise ValueError("m1 must be %s, instead it is %s", lmfit.model.ModelResult, type(m1))
+	if not isinstance(m2, lmfit.model.ModelResult):
+		raise ValueError("m2 must be %s, instead it is %s", lmfit.model.ModelResult, type(m2))
 
 	t = np.linspace(0, hours, num_of_points)
 	if y0 is None:		
