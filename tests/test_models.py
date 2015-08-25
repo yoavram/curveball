@@ -17,7 +17,7 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 from lmfit import Model
-from lmfit.model import ModelFit
+from lmfit.model import ModelResult
 
 
 CI = os.environ.get('CI', 'false').lower() == 'true'
@@ -107,7 +107,7 @@ class ModelSelectionTestCase(TestCase):
             models = curveball.models.fit_model(df, PLOT=False, PRINT=False)
         self.assertIsNotNone(models)
         for mod in models:
-            self.assertIsInstance(mod, ModelFit)
+            self.assertIsInstance(mod, ModelResult)
         self.assertEquals(models[0].model, curveball.models.logistic_model)
         self.assertEquals(models[0].nvarys, 3)
 
@@ -122,7 +122,7 @@ class ModelSelectionTestCase(TestCase):
             models = curveball.models.fit_model(df, PLOT=False, PRINT=False)        
         self.assertIsNotNone(models)
         for mod in models:
-            self.assertIsInstance(mod, ModelFit)
+            self.assertIsInstance(mod, ModelResult)
         self.assertEquals(models[0].model, curveball.models.logistic_model)
         self.assertEquals(models[0].nvarys, 3)
 
@@ -137,7 +137,7 @@ class ModelSelectionTestCase(TestCase):
             models = curveball.models.fit_model(df, PLOT=False, PRINT=False)
         self.assertIsNotNone(models)
         for mod in models:
-            self.assertIsInstance(mod, ModelFit)
+            self.assertIsInstance(mod, ModelResult)
         self.assertEquals(models[0].model, curveball.models.richards_model)
         self.assertEquals(models[0].nvarys, 4)
 
@@ -152,7 +152,7 @@ class ModelSelectionTestCase(TestCase):
             models = curveball.models.fit_model(df, PLOT=False, PRINT=False)
         self.assertIsNotNone(models)
         for mod in models:
-            self.assertIsInstance(mod, ModelFit)
+            self.assertIsInstance(mod, ModelResult)
         self.assertEquals(models[0].model, curveball.models.baranyi_roberts_model)
         self.assertEquals(models[0].nvarys, 5)
 
@@ -167,7 +167,7 @@ class ModelSelectionTestCase(TestCase):
             models = curveball.models.fit_model(df, PLOT=False, PRINT=False)
         self.assertIsNotNone(models)
         for mod in models:
-            self.assertIsInstance(mod, ModelFit)
+            self.assertIsInstance(mod, ModelResult)
         self.assertEquals(models[0].model, curveball.models.baranyi_roberts_model)
         self.assertEquals(models[0].nvarys, 6)
 
