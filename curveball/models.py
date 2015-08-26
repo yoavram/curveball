@@ -572,7 +572,8 @@ def _calc_weights(df):
 
 def guess_nu(t, N, K=None):
     dNdt = np.gradient(N, t[1]-t[0])   
-    i = dNdt.argmax()
+    p = np.poly1d(np.polyfit(t,dNdt, 3))  # smoothing
+    i = p(t).argmax()
     Nmax = N[i] 
     if K is None:
         K = N.max()
@@ -583,7 +584,8 @@ def guess_nu(t, N, K=None):
 
 def guess_r(t, N, nu=None, K=None):
     dNdt = np.gradient(N, t[1]-t[0])
-    dNdtmax = dNdt.max()    
+    p = np.poly1d(np.polyfit(t,dNdt, 3))  # smoothing
+    dNdtmax = p(t).max()    
     if K is None:
         K = N.max()
     if nu is None:
@@ -613,6 +615,7 @@ def fit_model(df, ax=None, param_guess=None, param_max=None, use_weights=True, u
     assert y0guess > 0, y0guess
     assert Kguess > y0guess, (Kguess, y0guess)
     nuguess = param_guess.get('nu', guess_nu(_df.Time, _df.OD, K=Kguess))
+    assert nuguess > 0, nuguess
     rguess  = param_guess.get('r', guess_r(_df.Time, _df.OD, nu=nuguess, K=Kguess))
     assert rguess > 0, rguess
     q0guess = param_guess.get('q0', 1.0)
