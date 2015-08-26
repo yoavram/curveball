@@ -449,7 +449,7 @@ class OutliersTestCase(TestCase):
     _multiprocess_can_split_ = True
 
     def setUp(self):
-        self.filename = os.path.join("data", "yoavram", "Tecan_210115.csv")
+        self.filename = os.path.join("data", "Tecan_210115.csv")
         self.df = pd.read_csv(self.filename)
         self.df = self.df[self.df.Strain == 'R']
         self.model_fit = curveball.models.fit_model(self.df, PLOT=False, PRINT=False)[0]
