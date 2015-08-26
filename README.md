@@ -22,7 +22,7 @@ You might need to install the `lxml` dependencies. On _Ubuntu_ you'll need to [s
 sudo apt-get install libxml2-dev libxslt1-dev
 ```
 
-To test the package on Windows inside a virtualenv you might need to [set the Tcl environment variables](https://github.com/pypa/virtualenv/issues/93):
+	To test the package on Windows inside a virtualenv you might need to [set the Tcl environment variables](https://github.com/pypa/virtualenv/issues/93):
 ```
 set TCL_LIBRARY=c:\python27\tcl\tcl8.5
 set TK_LIBRARY=c:\python27\tcl\tk8.5
