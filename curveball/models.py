@@ -17,9 +17,22 @@ import pandas as pd
 import copy
 from lmfit import Model
 from lmfit.models import LinearModel
+from lowess import lowess
 import sympy
 import seaborn as sns
 sns.set_style("ticks")
+
+
+def poly_smooth(x, y):
+    p = np.poly1d(np.polyfit(x, y, 3))
+    return p(x)
+
+
+def lowess_smooth(x, y):
+    return lowess(x, y, 0.1)
+
+
+smooth = lowess_smooth
 
 
 def logistic_function(t, y0, r, K):
@@ -571,9 +584,9 @@ def _calc_weights(df):
 
 
 def guess_nu(t, N, K=None):
-    dNdt = np.gradient(N, t[1]-t[0])   
-    p = np.poly1d(np.polyfit(t,dNdt, 3))  # smoothing
-    i = p(t).argmax()
+    dNdt = np.gradient(N, t[1]-t[0])       
+    smoothed = smooth(t, dNdt)
+    i = smoothed.argmax()
     Nmax = N[i] 
     if K is None:
         K = N.max()
@@ -584,8 +597,8 @@ def guess_nu(t, N, K=None):
 
 def guess_r(t, N, nu=None, K=None):
     dNdt = np.gradient(N, t[1]-t[0])
-    p = np.poly1d(np.polyfit(t,dNdt, 3))  # smoothing
-    dNdtmax = p(t).max()    
+    smoothed = smooth(t, dNdt)
+    dNdtmax = smoothed.max()    
     if K is None:
         K = N.max()
     if nu is None:
