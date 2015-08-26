@@ -6,7 +6,7 @@
 
 # Licensed under the MIT license:
 # http://www.opensource.org/licenses/MIT-license
-# Copyright (c) 2015, Yoav Ram <yoavram+github@gmail.com>
+# Copyright (c) 2015, Yoav Ram <yoav@yoavram.com>
 
 from setuptools import setup, find_packages
 from curveball import __version__
@@ -29,7 +29,7 @@ setup(
     long_description='''curveball uses ecological and evolutionary models to analyze microbial growth curves''',
     keywords='microbiology biomath evolution',
     author='Yoav Ram',
-    author_email='yoavram+github@gmail.com',
+    author_email='yoav@yoavram.com',
     url='https://github.com/yoavram/curveball',
     license='MIT',
     classifiers=[
