@@ -22,6 +22,15 @@ You might need to install the `lxml` dependencies. On _Ubuntu_ you'll need to [s
 sudo apt-get install libxml2-dev libxslt1-dev
 ```
 
+To test the package on Windows inside a virtualenv you might need to [set the Tcl environment variables](https://github.com/pypa/virtualenv/issues/93):
+```
+set TCL_LIBRARY=c:\python27\tcl\tcl8.5
+set TK_LIBRARY=c:\python27\tcl\tk8.5
+```
+
+where the numbers could change depending on versions and paths.
+You can set this in the `venv\scripts\activate.bat` to occur automatically.
+
 ## Contribute
 **curveball** is an open-source software. Everyone is welcome to contribute! Please Use issues and pull requests in the official [Github repository](https://github.com/yoavram/curveball)
 
