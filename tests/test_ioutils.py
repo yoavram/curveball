@@ -17,7 +17,7 @@ import pandas as pd
 
 class XLSXTestCase(TestCase):
     def setUp(self):
-        self.filename = os.path.join("data", "yoavram", "Tecan_210115.xlsx")
+        self.filename = os.path.join("data", "Tecan_210115.xlsx")
         if not os.path.exists(self.filename):
             raise IOError("Data file not found: %s" % self.filename)
         self.plate = pd.read_csv(os.path.join("plate_templates", "G-RG-R.csv"))       
@@ -58,8 +58,8 @@ class XLSXTestCase(TestCase):
 
 class XMLTestCase(TestCase):
     def setUp(self):            
-        self.folder = os.path.join("data", "dorith")
-        self.zip_filename = os.path.join(self.folder, "20140911_dorit.zip")
+        self.folder = "data"
+        self.zip_filename = os.path.join(self.folder, "20130211_dh.zip")
         if not os.path.exists(self.zip_filename):
             raise IOError("Data file not found: %s" % self.zip_filename)
         self.zipfile = zipfile.ZipFile(self.zip_filename)
