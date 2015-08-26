@@ -132,17 +132,17 @@ def lrtest(m0, m1, alfa=0.05):
     n0 = m0.ndata
     k0 = m0.nvarys
     chisqr0 = m0.chisqr
-    assert chisqr0 > 0
+    assert chisqr0 > 0, chisqr0
     n1 = m1.ndata
     assert n0 == n1
     k1 = m1.nvarys
     chisqr1 = m1.chisqr
-    assert chisqr1 > 0
+    assert chisqr1 > 0, chisqr1
     Lambda = (m1.chisqr / m0.chisqr)**(n0 / 2.)
     D = -2 * np.log( Lambda )
-    assert D > 0
+    assert D > 0, D
     ddf = k1 - k0
-    assert ddf > 0
+    assert ddf > 0, ddf
     pval = chisqprob(D, ddf)
     prefer_m1 = pval < alfa
     return prefer_m1, pval, D, ddf
@@ -538,7 +538,7 @@ def find_all_outliers(df, model_fit, deviations=2, max_outlier_fraction=0.1, use
     outliers.append(o)
     while len(outliers[-1]) != 0 and len(sum(outliers, [])) <  max_outlier_fraction * num_wells:
         df = df[~df.Well.isin(outliers[-1])]
-        assert df.shape[0] > 0
+        assert df.shape[0] > 0, df.shape[0] 
         model_fit = fit_model(df, use_weights=use_weights, PLOT=False, PRINT=False)[0]
         if PLOT:
             o, fig, ax = find_outliers(df, model_fit, deviations=deviations, use_weights=use_weights, ax=fig.add_subplot(), PLOT=PLOT)            
@@ -610,11 +610,11 @@ def fit_model(df, ax=None, param_guess=None, param_max=None, use_weights=True, u
         param_max = {}
     Kguess  = param_guess.get('K', _df.OD.max())
     y0guess = param_guess.get('y0', _df.OD.min())
-    assert y0guess > 0
-    assert Kguess > y0guess
+    assert y0guess > 0, y0guess
+    assert Kguess > y0guess, (Kguess, y0guess)
     nuguess = param_guess.get('nu', guess_nu(_df.Time, _df.OD, K=Kguess))
     rguess  = param_guess.get('r', guess_r(_df.Time, _df.OD, nu=nuguess, K=Kguess))
-    assert rguess > 0
+    assert rguess > 0, rguess
     q0guess = param_guess.get('q0', 1.0)
     vguess = param_guess.get('v', 1.0)
 
