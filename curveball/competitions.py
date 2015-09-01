@@ -36,7 +36,19 @@ def baranyi_roberts_ode(y, t, r, K, nu, q0, v):
     return alfa * r * y * (1 - (y/K)**nu)
 
 
-def double_baranyi_roberts_ode(y, t, r, K, nu, q0, v):
+def double_baranyi_roberts_ode0(y, t, r, K, nu, q0, v):
+    alfa = q0[0] / (q0[0] + np.exp(-v[0] * t)), q0[1] / (q0[1] + np.exp(-v[1] * t))
+    dydt = alfa[0] * r[0] * y[0] * (1 - ((y[0] + y[1]) / K[0])**nu[0]), alfa[1] * r[1] * y[1] * (1 - ((y[0] + y[1]) / K[1])**nu[1])
+    return dydt
+
+
+def double_baranyi_roberts_ode1(y, t, r, K, nu, q0, v):
+    alfa = q0[0] / (q0[0] + np.exp(-v[0] * t)), q0[1] / (q0[1] + np.exp(-v[1] * t))
+    dydt = alfa[0] * r[0] * y[0] * (1 - (y[0] / K[0] + y[1] / K[1])**nu[0]), alfa[1] * r[1] * y[1] * (1 - (y[0] / K[0] + y[1] / K[1])**nu[1])
+    return dydt
+
+
+def double_baranyi_roberts_ode2(y, t, r, K, nu, q0, v):
     alfa = q0[0] / (q0[0] + np.exp(-v[0] * t)), q0[1] / (q0[1] + np.exp(-v[1] * t))
     dydt = alfa[0] * r[0] * y[0] * (1 - (y[0] / K[0])**nu[0] - (y[1] / K[1])**nu[1]), alfa[1] * r[1] * y[1] * (1 - (y[0] / K[0])**nu[0] - (y[1] / K[1])**nu[1])
     return dydt
@@ -44,7 +56,7 @@ def double_baranyi_roberts_ode(y, t, r, K, nu, q0, v):
 
 from scipy.integrate import odeint
 
-def compete(m1, m2, y0=None, hours=24, nsamples=1, lag_phase=True, num_of_points=100, colors=None, ax=None, PLOT=False):
+def compete(m1, m2, y0=None, hours=24, nsamples=1, lag_phase=True, ode=double_baranyi_roberts_ode1, num_of_points=100, colors=None, ax=None, PLOT=False):
 	if not isinstance(m1, lmfit.model.ModelResult):
 		raise ValueError("m1 must be %s, instead it is %s", lmfit.model.ModelResult, type(m1))
 	if not isinstance(m2, lmfit.model.ModelResult):
@@ -80,7 +92,7 @@ def compete(m1, m2, y0=None, hours=24, nsamples=1, lag_phase=True, num_of_points
 	        v = m1_samples.iloc[i].get('v', 1e6), m2_samples.iloc[i].get('v', 1e6)
 	    args = (r, K, nu, q0, v)
 	    
-	    y[:,:,i] = odeint(double_baranyi_roberts_ode, y0, t, args=args)
+	    y[:,:,i] = odeint(ode, y0, t, args=args)
 
 	    # DEBUG
 	    # _y_,info = odeint(double_baranyi_roberts_ode, y0, t, args=args, full_output=1)        
