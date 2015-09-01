@@ -638,9 +638,11 @@ def fit_model(df, ax=None, param_guess=None, param_max=None, use_weights=True, u
     y0guess = param_guess.get('y0', _df.OD.min())
     assert y0guess > 0, y0guess
     assert Kguess > y0guess, (Kguess, y0guess)
-    nuguess = param_guess.get('nu', guess_nu(_df.Time, _df.OD, K=Kguess))
+    nuguess = param_guess.get('nu', -1)
+    if nuguess == -1: nuguess = guess_nu(_df.Time, _df.OD, K=Kguess)
     assert nuguess > 0, nuguess
-    rguess  = param_guess.get('r', guess_r(_df.Time, _df.OD, nu=nuguess, K=Kguess))
+    rguess  = param_guess.get('r', 0)
+    if rguess == 0: rguess = guess_r(_df.Time, _df.OD, nu=nuguess, K=Kguess)
     assert rguess > 0, rguess
     q0guess = param_guess.get('q0', 1.0)
     vguess = param_guess.get('v', 1.0)
