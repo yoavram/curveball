@@ -12,7 +12,7 @@ import matplotlib.pyplot as plt
 import collections
 from scipy.stats import chisqprob
 from scipy.misc import derivative
-from scipy.optimize import broyden1 as solve
+from scipy.optimize import minimize
 import pandas as pd
 import copy
 from lmfit import Model
@@ -35,7 +35,6 @@ def lowess_smooth(x, y, PLOT=False):
         fig, ax = plt.subplots(1, 1)
         ax.plot(x, yhat, 'k--')
         ax.plot(x, y, 'ko')
-        return yhat, fig, ax
     return yhat
 
 
@@ -599,7 +598,12 @@ def guess_nu(t, N, K=None):
         K = N.max()
     def target(nu):
         return (1+nu)**(-1/nu) - Nmax/K
-    return solve(target, 1, f_tol=1e-14).flatten()[0]
+    opt_res = minimize(target, x0=1)
+    if not opt_res.success:
+        print "Warning: minimization failed,", opt_res.message
+        if opt_res.x < 0:
+            return 1
+    return opt_res.x
 
 
 def guess_r(t, N, nu=None, K=None):
