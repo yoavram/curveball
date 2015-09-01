@@ -54,8 +54,6 @@ def double_baranyi_roberts_ode2(y, t, r, K, nu, q0, v):
     return dydt
 
 
-from scipy.integrate import odeint
-
 def compete(m1, m2, y0=None, hours=24, nsamples=1, lag_phase=True, ode=double_baranyi_roberts_ode1, num_of_points=100, colors=None, ax=None, PLOT=False):
 	if not isinstance(m1, lmfit.model.ModelResult):
 		raise ValueError("m1 must be %s, instead it is %s", lmfit.model.ModelResult, type(m1))
