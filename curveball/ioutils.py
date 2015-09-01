@@ -114,6 +114,7 @@ def read_tecan_xlsx(filename, label, sheet=None, max_time=None, plate=None):
         df.Time = map(lambda t: (t - min_time).total_seconds()/3600., df.Time)
         if not max_time is None:
             df = df[df.Time <= max_time]
+        df.sort(['Row', 'Col', 'Time'], inplace=True)
         label_dataframes.append((lbl,df))
 
     if len(label_dataframes) == 0: # dataframes
@@ -161,7 +162,8 @@ def read_tecan_mat(filename, time_label='tps', value_label='plate_mat', value_na
         df = pd.merge(df, plate, on=('Row','Col'))
     if not max_time:
         max_time = df.Time.max()
-    df = df[df.Time < max_time]       
+    df = df[df.Time < max_time]
+    df.sort(['Row', 'Col', 'Time'], inplace=True)    
     return df
 
 
@@ -241,6 +243,7 @@ def read_tecan_xml(filename, label='OD', max_time=None, plate=None):
         df = pd.merge(df, plate, on=('Row','Col'))
     if not max_time is None:
         df = df[df.Time <= max_time]
+    df.sort(['Row', 'Col', 'Time'], inplace=True)
     return df
 
 
@@ -295,4 +298,5 @@ def read_sunrise_xlsx(filename, label='OD', max_time=None, plate=None):
         df = pd.merge(df, plate, on=('Row','Col'))
     if not max_time is None:
         df = df[df.Time <= max_time]
+    df.sort(['Row', 'Col', 'Time'], inplace=True)
     return df
