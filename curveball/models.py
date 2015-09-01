@@ -17,7 +17,8 @@ import pandas as pd
 import copy
 from lmfit import Model
 from lmfit.models import LinearModel
-from lowess import lowess
+#from lowess import lowess
+from statsmodels.nonparametric.smoothers_lowess import lowess
 import sympy
 import seaborn as sns
 sns.set_style("ticks")
@@ -28,8 +29,14 @@ def poly_smooth(x, y):
     return p(x)
 
 
-def lowess_smooth(x, y):
-    return lowess(x, y, 0.1)
+def lowess_smooth(x, y, PLOT=False):
+    yhat = lowess(y, x, 0.1, return_sorted=False)
+    if PLOT:
+        fig, ax = plt.subplots(1, 1)
+        ax.plot(x, yhat, 'k--')
+        ax.plot(x, y, 'ko')
+        return yhat, fig, ax
+    return yhat
 
 
 smooth = lowess_smooth
