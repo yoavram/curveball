@@ -7,6 +7,7 @@
 # Licensed under the MIT license:
 # http://www.opensource.org/licenses/MIT-license
 # Copyright (c) 2015, Yoav Ram <yoav@yoavram.com>
+import sys
 import numpy as np
 import matplotlib.pyplot as plt
 import collections
@@ -597,12 +598,10 @@ def guess_nu(t, N, K=None):
     if K is None:
         K = N.max()
     def target(nu):
-        return (1+nu)**(-1/nu) - Nmax/K
-    opt_res = minimize(target, x0=1)
+        return np.abs((1+nu)**(-1/nu) - Nmax/K)
+    opt_res = minimize(target, x0=1, bounds=[(0,None)])
     if not opt_res.success:
-        print "Warning: minimization failed,", opt_res.message
-        if opt_res.x < 0:
-            return 1
+        print "Minimization warning in %s: %s\nGuessed nu=%.4f with f(nu)=%.4f" % (sys._getframe().f_code.co_name, opt_res.message, opt_res.x, target(opt_res.x))
     return opt_res.x
 
 
