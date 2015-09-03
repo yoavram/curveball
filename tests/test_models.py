@@ -129,7 +129,7 @@ class ModelSelectionTestCase(TestCase):
 
 
     def test_fit_model_richards(self):
-        df = randomize_data(richards_ode)
+        df = randomize_data(richards_ode, t=np.linspace(0,24))
         if not CI:
             models,fig,ax = curveball.models.fit_model(df, PLOT=True, PRINT=False)
             func_name = sys._getframe().f_code.co_name
@@ -144,7 +144,7 @@ class ModelSelectionTestCase(TestCase):
 
 
     def test_fit_model_logistic_lag(self):        
-        df = randomize_data(baranyi_roberts_ode, t=np.linspace(0,36), nu=1.0)
+        df = randomize_data(baranyi_roberts_ode, t=np.linspace(0,48), nu=1.0)
         if not CI:
             models,fig,ax = curveball.models.fit_model(df, PLOT=True, PRINT=False)
             func_name = sys._getframe().f_code.co_name
