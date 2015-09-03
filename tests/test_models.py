@@ -335,14 +335,13 @@ class LRTestTestCase(TestCase):
 
     def test_has_lag_logistic_lag(self):
         df = randomize_data(baranyi_roberts_ode, t=np.linspace(0,36), nu=1.0)
-        models,fig,ax = curveball.models.fit_model(df, PLOT=True, PRINT=True)
+        models = curveball.models.fit_model(df, PLOT=False, PRINT=False)
         lag = curveball.models.has_lag(models)
         self.assertTrue(lag)
 
 
     def test_has_lag_baranyi_roberts(self):
         df = randomize_data(baranyi_roberts_ode, t=np.linspace(0,32))
-        df.to_csv('tmp.csv', index=False)
         models = curveball.models.fit_model(df, PLOT=False, PRINT=False)
         lag = curveball.models.has_lag(models)
         self.assertTrue(lag)
