@@ -9,6 +9,7 @@
 # Copyright (c) 2015, Yoav Ram <yoav@yoavram.com>
 
 from unittest import TestCase, main
+from nose.plugins.skip import SkipTest
 import sys
 import os
 import curveball
@@ -289,6 +290,7 @@ class FindMaxGrowthTestCase(TestCase):
         self.assertTrue(relative_error(r * (1 - (y0/K)**nu), mu) < 1, "mu=%.4g, r(1-(y0/K)**nu)=%.4g" % (mu, r * (1 - (y0/K)**nu)))
 
 
+@SkipTest
 class LRTestTestCase(TestCase):
     _multiprocess_can_split_ = True
 
