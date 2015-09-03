@@ -159,7 +159,7 @@ class ModelSelectionTestCase(TestCase):
 
 
     def test_fit_model_baranyi_roberts(self):        
-        df = randomize_data(baranyi_roberts_ode, t=np.linspace(0,30), nu=2.5)
+        df = randomize_data(baranyi_roberts_ode, t=np.linspace(0,24), nu=2)
         if not CI:
             models,fig,ax = curveball.models.fit_model(df, PLOT=True, PRINT=False)
             func_name = sys._getframe().f_code.co_name
