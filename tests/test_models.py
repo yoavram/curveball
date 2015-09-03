@@ -463,9 +463,9 @@ class OutliersTestCase(TestCase):
 
     def test_cooks_distance(self):
         D = curveball.models.cooks_distance(self.df, self.model_fit)
-        self.assertEquals(set(D.keys()), set(self.df.Well))
-        self.assertTrue( (np.array(D.values()) < 14).all() )
-        self.assertTrue( (np.array(D.values()) > 11).all() )
+        self.assertEquals(set(D.keys()), set(self.df.Well), msg=D.keys())
+        self.assertTrue( (np.array(D.values()) < 14).all(), msg=D.values() )
+        self.assertTrue( (np.array(D.values()) > 0).all(), msg=D.values() )
 
 
     def test_find_outliers(self):
