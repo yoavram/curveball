@@ -17,7 +17,7 @@ sns.set_style("ticks")
 import click
 import curveball
 
-PLOT = True
+PLOT = False
 ERROR_COLOR = 'red'
 file_extension_handlers = {'.mat': curveball.ioutils.read_tecan_mat}
 
@@ -27,20 +27,21 @@ def echo_error(message):
 
 
 def process_file(filepath, plate, blank_strain, ref_strain, max_time):
-	click.echo('Filename: %s.' % click.format_filename(filepath))
+	results = []
+	click.echo('Filename: %s' % click.format_filename(filepath))
 	fn,ext = os.path.splitext(filepath)
-	click.echo('Extension: %s.' % ext)
+	click.echo('Extension: %s' % ext)
 	handler = file_extension_handlers.get(ext)
-	click.echo('Handler: %s.' % handler)
+	click.echo('Handler: %s' % handler.__name__)
 	if  handler == None:
-		click.echo("No handler.")
-		return
+		click.echo("No handler")
+		return results
 
 	try: 
 		df = handler(filepath, plate=plate, max_time=max_time)
 	except IOError as e:
 		echo_error('Failed reading data file, %s' % e.message)
-		return False
+		return results
 
 	if PLOT:
 		wells_plot_fn = fn + '_wells.png'
@@ -51,44 +52,86 @@ def process_file(filepath, plate, blank_strain, ref_strain, max_time):
 		curveball.plots.plot_strains(df, output_filename=strains_plot_fn)
 		click.echo("Wrote strains plot to %s" % strains_plot_fn)
 
-	for strain in df.Strain.unique():
+	strains = plate.Strain.unique().tolist()
+	strains.remove(ref_strain)
+	strains.insert(0, ref_strain)	
+
+	for strain in strains:		
 		strain_df = df[df.Strain == strain]
-		res = curveball.models.fit_model(strain_df, PLOT=PLOT, PRINT=True)
+		_ = curveball.models.fit_model(strain_df, PLOT=PLOT, PRINT=False)
 		if PLOT:
-			models,fig,ax = res
+			fit_results,fig,ax = _
 			strain_plot_fn = fn + ('_strain_%s.png' % strain)
 			fig.savefig(strain_plot_fn)
 			click.echo("Wrote strain %s plot to %s" % (strain, strain_plot_fn))
 		else:
-			models = res
+			fit_results = _
 
-		# IM HERE!
+		res = {}
+		fit = fit_results[0]
+		res['file'] = fn
+		res['strain'] = strain
+		res['model'] = fit.model.name
+		res['bic'] = fit.bic
+		res['aic'] = fit.aic
+		params = fit.params
+		res['y0'] = params['y0'].value
+		res['K'] = params['K'].value
+		res['r'] = params['r'].value
+		res['nu'] = params['nu'].value if 'nu' in params else 1
+		res['q0'] = params['q0'].value if 'q0' in params else 0
+		res['v'] = params['v'].value if 'v' in params else 0
+		res['max_growth_rate'] = curveball.models.find_max_growth(fit, PLOT=False)[-1]
+		res['lag'] = curveball.models.find_lag(fit, PLOT=False)
+		res['has_lag'] = curveball.models.has_lag(fit_results)
+		res['has_nu'] = curveball.models.has_nu(fit_results, PRINT=False)
+		#res['benchmark'] = curveball.models.benchmark(fit) # FIXME
 
+		if strain == ref_strain:
+			ref_fit = fit
+			res['w'] = 1
+		else:
+			colors = plate[plate.Strain.isin([strain, ref_strain])].Color.unique()
+			_ = curveball.competitions.compete(fit, ref_fit, hours=df.Time.max(), colors=colors, PLOT=PLOT)
+			if PLOT:
+				t,y,fig,ax = _
+				competition_plot_fn = fn + ('_%s_vs_%s.png' % (strain, ref_strain))
+				fig.savefig(competition_plot_fn)
+				click.echo("Wrote competition %s vs %s plot to %s" % (strain, ref_strain, strain_plot_fn))
+			else:
+				t,y = _
+			res['w'] = curveball.competitions.fitness_LTEE(y, assay_strain=0, ref_strain=1)
 
-
-	return True
+		results.append(res)
+	return results
 
 
 def process_folder(folder, plate_path, blank_strain, ref_strain, max_time):
+	results = []
 	try:
 		plate = pd.read_csv(plate_path)
 	except IOError as e:
 		echo_error('Failed reading plate file, %s' % e.message)
-		return False
+		return results
+	plate.Strain = map(unicode, plate.Strain)
+	plate_strains = plate.Strain.unique().tolist()
+	click.echo("Plate with %d strains: %s" % (len(plate_strains), ', '.join(plate_strains)))
 	fig,ax = curveball.plots.plot_plate(plate)
 	fig.show()
 	click.confirm('Is this the plate you wanted?', default=False, abort=True, show_default=True)
 
 	files = glob.glob(os.path.join(folder, '*'))
+	files = filter(lambda fn: os.path.splitext(fn)[-1].lower() in file_extension_handlers.keys(), files)
 	if not files:
 		echo_error("No files found in folder %s" % folder)
-		return False
+		return results
 
 	for fn in files:
 		filepath = os.path.join(folder, fn)
-		process_file(filepath, plate, blank_strain, ref_strain, max_time)
+		file_results = process_file(filepath, plate, blank_strain, ref_strain, max_time)
+		results.extend(file_results)
 
-	return True
+	return results
 
 
 @click.command()
@@ -104,14 +147,18 @@ def main(folder, plate_folder, plate_file, blank_strain, ref_strain, max_time, v
 		click.secho('=' * 40, fg='cyan')
 		click.secho('Curveball %s' % curveball.__version__, fg='cyan')	
 		click.secho('=' * 40, fg='cyan')
-		click.echo('- Processing %s.' % click.format_filename(folder))
+		click.echo('- Processing %s' % click.format_filename(folder))
 		plate_path = os.path.join(plate_folder, plate_file)
-		click.echo('- Using plate template from %s.' % click.format_filename(plate_path))
-		click.echo('- Blank strain: %s; Reference strain: %s.' % (blank_strain, ref_strain))
-		click.echo('- Omitting data after %.2f hours.' % max_time)
+		click.echo('- Using plate template from %s' % click.format_filename(plate_path))
+		click.echo('- Blank strain: %s; Reference strain: %s' % (blank_strain, ref_strain))
+		click.echo('- Omitting data after %.2f hours' % max_time)
 		click.echo('-' * 40)
 
-	process_folder(folder, plate_path, blank_strain, ref_strain, max_time)
+	results = process_folder(folder, plate_path, blank_strain, ref_strain, max_time)
+	df = pd.DataFrame(results)
+	output_filename = os.path.join(folder, 'curveball.csv')
+	df.to_csv(output_filename, index=False)
+	click.secho("Wrote output to %s" % output_filename, fg='green')
 
 
 if __name__ == '__main__':
