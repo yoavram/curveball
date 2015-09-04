@@ -23,13 +23,18 @@ import curveball
 @click.option('--blank_strain', default='0', help='blank strain for background calibration')
 @click.option('--ref_strain', default='1',  help='reference strain for competitions')
 @click.option('--max_time', default=np.inf, help='omit data after max_time hours')
-@click.option('-v/-V', '--verbose/--no-verbose', default=False)
+@click.option('-v/-V', '--verbose/--no-verbose', default=True)
 def main(folder, plate_folder, plate_file, blank_strain, ref_strain, max_time, verbose):
-	click.echo('Curveball %s' % curveball.__version__)	
-	click.echo('Processing %s' % folder)
-	plate_path = os.path.join(plate_folder, plate_file)
-	click.echo('Using plate template from %s with blank strain %s and reference strain %s' % (plate_path, blank_strain, ref_strain))
-	click.echo('Omitting data after %.2f hours' % max_time)
+	if verbose:		
+		click.echo('=' * 40)
+		click.echo('Curveball %s' % curveball.__version__)	
+		click.echo('=' * 40)
+		click.echo('- Processing %s.' % folder)
+		plate_path = os.path.join(plate_folder, plate_file)
+		click.echo('- Using plate template from %s.' % plate_path)
+		click.echo('- Blank strain: %s; Reference strain: %s.' % (blank_strain, ref_strain))
+		click.echo('- Omitting data after %.2f hours.' % max_time)
+		click.echo('-' * 40)
 
 if __name__ == '__main__':
     main()
