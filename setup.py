@@ -47,6 +47,7 @@ setup(
     install_requires=[
         # add your dependencies here
         # remember to use 'package-name>=x.y.z,<x.y+1.0' notation (this way you get bugfixes)
+        'Click',
     ],
     extras_require={
         'tests': tests_require,
@@ -54,7 +55,7 @@ setup(
     entry_points={
         'console_scripts': [
             # add cli scripts here in this form:
-            # 'curveball=curveball.cli:main',
+            'curveball=scripts.curveball:curveball',
         ],
     },
 )
