@@ -14,7 +14,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
 sns.set_style("ticks")
-import click
+from click import echo, secho, command, option, confirm, format_filename
 import curveball
 
 
@@ -25,18 +25,18 @@ file_extension_handlers = {'.mat': curveball.ioutils.read_tecan_mat}
 
 
 def echo_error(message):
-	click.secho("Error: %s" % message, fg=ERROR_COLOR)
+	secho("Error: %s" % message, fg=ERROR_COLOR)
 
 
 def process_file(filepath, plate, blank_strain, ref_strain, max_time):
 	results = []
-	click.echo('Filename: %s' % click.format_filename(filepath))
+	echo('Filename: %s' % format_filename(filepath))
 	fn,ext = os.path.splitext(filepath)
-	click.echo('Extension: %s' % ext)
+	echo('Extension: %s' % ext)
 	handler = file_extension_handlers.get(ext)
-	click.echo('Handler: %s' % handler.__name__)
+	echo('Handler: %s' % handler.__name__)
 	if  handler == None:
-		click.echo("No handler")
+		echo("No handler")
 		return results
 	try: 
 		df = handler(filepath, plate=plate, max_time=max_time)
@@ -53,11 +53,11 @@ def process_file(filepath, plate, blank_strain, ref_strain, max_time):
 	if PLOT:
 		wells_plot_fn = fn + '_wells.png'
 		curveball.plots.plot_wells(df, output_filename=wells_plot_fn)
-		click.echo("Wrote wells plot to %s" % wells_plot_fn)
+		echo("Wrote wells plot to %s" % wells_plot_fn)
 
 		strains_plot_fn = fn + '_strains.png'
 		curveball.plots.plot_strains(df, output_filename=strains_plot_fn)
-		click.echo("Wrote strains plot to %s" % strains_plot_fn)
+		echo("Wrote strains plot to %s" % strains_plot_fn)
 
 	strains = plate.Strain.unique().tolist()
 	strains.remove(blank_strain)
@@ -71,7 +71,7 @@ def process_file(filepath, plate, blank_strain, ref_strain, max_time):
 			fit_results,fig,ax = _
 			strain_plot_fn = fn + ('_strain_%s.png' % strain)
 			fig.savefig(strain_plot_fn)
-			click.echo("Wrote strain %s plot to %s" % (strain, strain_plot_fn))
+			echo("Wrote strain %s plot to %s" % (strain, strain_plot_fn))
 		else:
 			fit_results = _
 
@@ -106,7 +106,7 @@ def process_file(filepath, plate, blank_strain, ref_strain, max_time):
 				t,y,fig,ax = _
 				competition_plot_fn = fn + ('_%s_vs_%s.png' % (strain, ref_strain))
 				fig.savefig(competition_plot_fn)
-				click.echo("Wrote competition %s vs %s plot to %s" % (strain, ref_strain, strain_plot_fn))
+				echo("Wrote competition %s vs %s plot to %s" % (strain, ref_strain, strain_plot_fn))
 			else:
 				t,y = _
 			res['w'] = curveball.competitions.fitness_LTEE(y, assay_strain=0, ref_strain=1)
@@ -124,10 +124,10 @@ def process_folder(folder, plate_path, blank_strain, ref_strain, max_time):
 		return results
 	plate.Strain = map(unicode, plate.Strain)
 	plate_strains = plate.Strain.unique().tolist()
-	click.echo("Plate with %d strains: %s" % (len(plate_strains), ', '.join(plate_strains)))
+	echo("Plate with %d strains: %s" % (len(plate_strains), ', '.join(plate_strains)))
 	fig,ax = curveball.plots.plot_plate(plate)
 	fig.show()
-	click.confirm('Is this the plate you wanted?', default=False, abort=True, show_default=True)
+	confirm('Is this the plate you wanted?', default=False, abort=True, show_default=True)
 
 	files = glob.glob(os.path.join(folder, '*'))
 	files = filter(lambda fn: os.path.splitext(fn)[-1].lower() in file_extension_handlers.keys(), files)
@@ -143,31 +143,31 @@ def process_folder(folder, plate_path, blank_strain, ref_strain, max_time):
 	return results
 
 
-@click.command()
-@click.option('--folder', prompt=True, help='folder to process')
-@click.option('--plate_folder', default='plate_templates', help='plate templates default folder')
-@click.option('--plate_file', default='checkerboard.csv', help='plate templates csv file')
-@click.option('--blank_strain', default='0', help='blank strain for background calibration')
-@click.option('--ref_strain', default='1',  help='reference strain for competitions')
-@click.option('--max_time', default=np.inf, help='omit data after max_time hours')
-@click.option('-v/-V', '--verbose/--no-verbose', default=True)
+@command()
+@option('--folder', prompt=True, help='folder to process')
+@option('--plate_folder', default='plate_templates', help='plate templates default folder')
+@option('--plate_file', default='checkerboard.csv', help='plate templates csv file')
+@option('--blank_strain', default='0', help='blank strain for background calibration')
+@option('--ref_strain', default='1',  help='reference strain for competitions')
+@option('--max_time', default=np.inf, help='omit data after max_time hours')
+@option('-v/-V', '--verbose/--no-verbose', default=True)
 def main(folder, plate_folder, plate_file, blank_strain, ref_strain, max_time, verbose):
 	if verbose:		
-		click.secho('=' * 40, fg='cyan')
-		click.secho('Curveball %s' % curveball.__version__, fg='cyan')	
-		click.secho('=' * 40, fg='cyan')
-		click.echo('- Processing %s' % click.format_filename(folder))
+		secho('=' * 40, fg='cyan')
+		secho('Curveball %s' % curveball.__version__, fg='cyan')	
+		secho('=' * 40, fg='cyan')
+		echo('- Processing %s' % format_filename(folder))
 		plate_path = os.path.join(plate_folder, plate_file)
-		click.echo('- Using plate template from %s' % click.format_filename(plate_path))
-		click.echo('- Blank strain: %s; Reference strain: %s' % (blank_strain, ref_strain))
-		click.echo('- Omitting data after %.2f hours' % max_time)
-		click.echo('-' * 40)
+		echo('- Using plate template from %s' % format_filename(plate_path))
+		echo('- Blank strain: %s; Reference strain: %s' % (blank_strain, ref_strain))
+		echo('- Omitting data after %.2f hours' % max_time)
+		echo('-' * 40)
 
 	results = process_folder(folder, plate_path, blank_strain, ref_strain, max_time)
 	df = pd.DataFrame(results)
 	output_filename = os.path.join(folder, 'curveball.csv')
 	df.to_csv(output_filename, index=False)
-	click.secho("Wrote output to %s" % output_filename, fg='green')
+	secho("Wrote output to %s" % output_filename, fg='green')
 
 
 if __name__ == '__main__':
