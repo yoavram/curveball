@@ -14,29 +14,33 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
 sns.set_style("ticks")
-from click import echo, secho, command, option, confirm, format_filename
+from click import echo, secho, command, option, confirm, format_filename, progressbar	
 import curveball
 
 
 PRINT = False
 PLOT = True
 ERROR_COLOR = 'red'
+INFO_COLOR = 'white'
 file_extension_handlers = {'.mat': curveball.ioutils.read_tecan_mat}
 
 
 def echo_error(message):
 	secho("Error: %s" % message, fg=ERROR_COLOR)
 
+def echo_info(message):
+	if PRINT:
+		secho(message, fg=INFO_COLOR)
+
 
 def process_file(filepath, plate, blank_strain, ref_strain, max_time):
-	results = []
-	echo('Filename: %s' % format_filename(filepath))
+	results = []	
 	fn,ext = os.path.splitext(filepath)
-	echo('Extension: %s' % ext)
+	echo_info('Extension: %s' % ext)
 	handler = file_extension_handlers.get(ext)
-	echo('Handler: %s' % handler.__name__)
+	echo_info('Handler: %s' % handler.__name__)
 	if  handler == None:
-		echo("No handler")
+		echo_info("No handler")
 		return results
 	try: 
 		df = handler(filepath, plate=plate, max_time=max_time)
@@ -53,65 +57,66 @@ def process_file(filepath, plate, blank_strain, ref_strain, max_time):
 	if PLOT:
 		wells_plot_fn = fn + '_wells.png'
 		curveball.plots.plot_wells(df, output_filename=wells_plot_fn)
-		echo("Wrote wells plot to %s" % wells_plot_fn)
+		echo_info("Wrote wells plot to %s" % wells_plot_fn)
 
 		strains_plot_fn = fn + '_strains.png'
 		curveball.plots.plot_strains(df, output_filename=strains_plot_fn)
-		echo("Wrote strains plot to %s" % strains_plot_fn)
+		echo_info("Wrote strains plot to %s" % strains_plot_fn)
 
 	strains = plate.Strain.unique().tolist()
 	strains.remove(blank_strain)
 	strains.remove(ref_strain)
 	strains.insert(0, ref_strain)	
 
-	for strain in strains:		
-		strain_df = df[df.Strain == strain]
-		_ = curveball.models.fit_model(strain_df, PLOT=PLOT, PRINT=PRINT)
-		if PLOT:
-			fit_results,fig,ax = _
-			strain_plot_fn = fn + ('_strain_%s.png' % strain)
-			fig.savefig(strain_plot_fn)
-			echo("Wrote strain %s plot to %s" % (strain, strain_plot_fn))
-		else:
-			fit_results = _
-
-		res = {}
-		fit = fit_results[0]
-		res['folder'] = os.path.dirname(filepath)
-		res['filename'] = os.path.splitext(os.path.basename(fn))[0]
-		res['strain'] = strain
-		res['model'] = fit.model.name
-		res['bic'] = fit.bic
-		res['aic'] = fit.aic
-		params = fit.params
-		res['y0'] = params['y0'].value
-		res['K'] = params['K'].value
-		res['r'] = params['r'].value
-		res['nu'] = params['nu'].value if 'nu' in params else 1
-		res['q0'] = params['q0'].value if 'q0' in params else 0
-		res['v'] = params['v'].value if 'v' in params else 0
-		res['max_growth_rate'] = curveball.models.find_max_growth(fit, PLOT=False)[-1]
-		res['lag'] = curveball.models.find_lag(fit, PLOT=False)
-		res['has_lag'] = curveball.models.has_lag(fit_results)
-		res['has_nu'] = curveball.models.has_nu(fit_results, PRINT=PRINT)
-		#res['benchmark'] = curveball.models.benchmark(fit) # FIXME, issue #23
-
-		if strain == ref_strain:
-			ref_fit = fit
-			res['w'] = 1
-		else:
-			colors = plate[plate.Strain.isin([strain, ref_strain])].Color.unique()
-			_ = curveball.competitions.compete(fit, ref_fit, hours=df.Time.max(), colors=colors, PLOT=PLOT)
+	with progressbar(strains, label='Fitting strain growth curves') as bar:
+		for strain in bar:
+			strain_df = df[df.Strain == strain]
+			_ = curveball.models.fit_model(strain_df, PLOT=PLOT, PRINT=PRINT)
 			if PLOT:
-				t,y,fig,ax = _
-				competition_plot_fn = fn + ('_%s_vs_%s.png' % (strain, ref_strain))
-				fig.savefig(competition_plot_fn)
-				echo("Wrote competition %s vs %s plot to %s" % (strain, ref_strain, strain_plot_fn))
+				fit_results,fig,ax = _
+				strain_plot_fn = fn + ('_strain_%s.png' % strain)
+				fig.savefig(strain_plot_fn)
+				echo_info("Wrote strain %s plot to %s" % (strain, strain_plot_fn))
 			else:
-				t,y = _
-			res['w'] = curveball.competitions.fitness_LTEE(y, assay_strain=0, ref_strain=1)
+				fit_results = _
 
-		results.append(res)
+			res = {}
+			fit = fit_results[0]
+			res['folder'] = os.path.dirname(filepath)
+			res['filename'] = os.path.splitext(os.path.basename(fn))[0]
+			res['strain'] = strain
+			res['model'] = fit.model.name
+			res['bic'] = fit.bic
+			res['aic'] = fit.aic
+			params = fit.params
+			res['y0'] = params['y0'].value
+			res['K'] = params['K'].value
+			res['r'] = params['r'].value
+			res['nu'] = params['nu'].value if 'nu' in params else 1
+			res['q0'] = params['q0'].value if 'q0' in params else 0
+			res['v'] = params['v'].value if 'v' in params else 0
+			res['max_growth_rate'] = curveball.models.find_max_growth(fit, PLOT=False)[-1]
+			res['lag'] = curveball.models.find_lag(fit, PLOT=False)
+			res['has_lag'] = curveball.models.has_lag(fit_results)
+			res['has_nu'] = curveball.models.has_nu(fit_results, PRINT=PRINT)
+			#res['benchmark'] = curveball.models.benchmark(fit) # FIXME, issue #23
+
+			if strain == ref_strain:
+				ref_fit = fit
+				res['w'] = 1
+			else:
+				colors = plate[plate.Strain.isin([strain, ref_strain])].Color.unique()
+				_ = curveball.competitions.compete(fit, ref_fit, hours=df.Time.max(), colors=colors, PLOT=PLOT)
+				if PLOT:
+					t,y,fig,ax = _
+					competition_plot_fn = fn + ('_%s_vs_%s.png' % (strain, ref_strain))
+					fig.savefig(competition_plot_fn)
+					echo_info("Wrote competition %s vs %s plot to %s" % (strain, ref_strain, strain_plot_fn))
+				else:
+					t,y = _
+				res['w'] = curveball.competitions.fitness_LTEE(y, assay_strain=0, ref_strain=1)
+
+			results.append(res)
 	return results
 
 
@@ -135,10 +140,11 @@ def process_folder(folder, plate_path, blank_strain, ref_strain, max_time):
 		echo_error("No files found in folder %s" % folder)
 		return results
 
-	for fn in files:
-		filepath = os.path.join(folder, fn)
-		file_results = process_file(filepath, plate, blank_strain, ref_strain, max_time)
-		results.extend(file_results)
+	with progressbar(files, label='Processing files:') as bar:
+		for fn in bar:
+			filepath = os.path.join(folder, fn)
+			file_results = process_file(filepath, plate, blank_strain, ref_strain, max_time)
+			results.extend(file_results)
 
 	return results
 
