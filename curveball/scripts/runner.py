@@ -17,7 +17,9 @@ sns.set_style("ticks")
 import click
 import curveball
 
-PLOT = False
+
+PRINT = False
+PLOT = True
 ERROR_COLOR = 'red'
 file_extension_handlers = {'.mat': curveball.ioutils.read_tecan_mat}
 
@@ -36,12 +38,17 @@ def process_file(filepath, plate, blank_strain, ref_strain, max_time):
 	if  handler == None:
 		click.echo("No handler")
 		return results
-
 	try: 
 		df = handler(filepath, plate=plate, max_time=max_time)
 	except IOError as e:
 		echo_error('Failed reading data file, %s' % e.message)
 		return results
+
+	if not blank_strain == None:
+		bg = df[(df.Strain == blank_strain) & (df.Time == df.Time.min())]		
+		bg = bg.OD.mean()
+		df.OD -= bg
+		df.loc[df.OD < 0, 'OD'] = 0		
 
 	if PLOT:
 		wells_plot_fn = fn + '_wells.png'
@@ -53,12 +60,13 @@ def process_file(filepath, plate, blank_strain, ref_strain, max_time):
 		click.echo("Wrote strains plot to %s" % strains_plot_fn)
 
 	strains = plate.Strain.unique().tolist()
+	strains.remove(blank_strain)
 	strains.remove(ref_strain)
 	strains.insert(0, ref_strain)	
 
 	for strain in strains:		
 		strain_df = df[df.Strain == strain]
-		_ = curveball.models.fit_model(strain_df, PLOT=PLOT, PRINT=False)
+		_ = curveball.models.fit_model(strain_df, PLOT=PLOT, PRINT=PRINT)
 		if PLOT:
 			fit_results,fig,ax = _
 			strain_plot_fn = fn + ('_strain_%s.png' % strain)
@@ -69,7 +77,8 @@ def process_file(filepath, plate, blank_strain, ref_strain, max_time):
 
 		res = {}
 		fit = fit_results[0]
-		res['file'] = fn
+		res['folder'] = os.path.dirname(filepath)
+		res['filename'] = os.path.splitext(os.path.basename(fn))[0]
 		res['strain'] = strain
 		res['model'] = fit.model.name
 		res['bic'] = fit.bic
@@ -84,8 +93,8 @@ def process_file(filepath, plate, blank_strain, ref_strain, max_time):
 		res['max_growth_rate'] = curveball.models.find_max_growth(fit, PLOT=False)[-1]
 		res['lag'] = curveball.models.find_lag(fit, PLOT=False)
 		res['has_lag'] = curveball.models.has_lag(fit_results)
-		res['has_nu'] = curveball.models.has_nu(fit_results, PRINT=False)
-		#res['benchmark'] = curveball.models.benchmark(fit) # FIXME
+		res['has_nu'] = curveball.models.has_nu(fit_results, PRINT=PRINT)
+		#res['benchmark'] = curveball.models.benchmark(fit) # FIXME, issue #23
 
 		if strain == ref_strain:
 			ref_fit = fit
