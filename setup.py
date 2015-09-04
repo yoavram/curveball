@@ -55,7 +55,7 @@ setup(
     entry_points={
         'console_scripts': [
             # add cli scripts here in this form:
-            'curveball=scripts.curveball:curveball',
+            'curveball=curveball.scripts.curveball:main',
         ],
     },
 )
