@@ -422,8 +422,9 @@ def has_nu(model_fits, alfa=0.05, PRINT=False):
     
     m1 = best_fit
     prefer_m1, pval, D, ddf = lrtest(m0, m1, alfa=alfa)
-    msg = "Tested H0: %s (nu=%.2g) vs. H1: %s (nu=%.2g); D=%.2g, ddf=%d, p-value=%.2g"  
-    print msg % (m0.model.name, m0.best_values.get('nu', 1), m1.model.name, m1.best_values.get('nu', 1), D, ddf, pval)
+    if PRINT:
+        msg = "Tested H0: %s (nu=%.2g) vs. H1: %s (nu=%.2g); D=%.2g, ddf=%d, p-value=%.2g"  
+        print msg % (m0.model.name, m0.best_values.get('nu', 1), m1.model.name, m1.best_values.get('nu', 1), D, ddf, pval)
     return prefer_m1
 
 
