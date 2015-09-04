@@ -602,6 +602,9 @@ def guess_nu(t, N, K=None):
     opt_res = minimize(target, x0=1, bounds=[(0,None)])
     if not opt_res.success:
         print "Minimization warning in %s: %s\nGuessed nu=%.4f with f(nu)=%.4f" % (sys._getframe().f_code.co_name, opt_res.message, opt_res.x, target(opt_res.x))
+    if target(1) < target(opt_res.x):
+        print "Setting nu=1"
+        return 1
     return opt_res.x
 
 
