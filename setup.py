@@ -26,7 +26,7 @@ setup(
     name='curveball',
     version=__version__,
     description='model microbial growth curves',
-    long_description='''curveball uses ecological and evolutionary models to analyze microbial growth curves''',
+    long_description='''Curveball uses ecological and evolutionary models to analyze microbial growth curves''',
     keywords='microbiology biomath evolution',
     author='Yoav Ram',
     author_email='yoav@yoavram.com',
@@ -39,7 +39,7 @@ setup(
         'Natural Language :: English',
         'Operating System :: Unix',
         'Programming Language :: Python :: 2.7',
-        'Programming Language :: Python :: 3.4',
+        #'Programming Language :: Python :: 3.4',
         'Operating System :: OS Independent',
     ],
     packages=find_packages(),
@@ -55,7 +55,7 @@ setup(
     entry_points={
         'console_scripts': [
             # add cli scripts here in this form:
-            'curveball=curveball.scripts.runner:main',
+            'curveball=curveball.scripts.runner:cli',
         ],
     },
 )
