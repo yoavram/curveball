@@ -28,9 +28,17 @@ file_extension_handlers = {'.mat': curveball.ioutils.read_tecan_mat}
 def echo_error(message):
 	secho("Error: %s" % message, fg=ERROR_COLOR)
 
+
 def echo_info(message):
 	if PRINT:
 		secho(message, fg=INFO_COLOR)
+
+
+def print_version(ctx, param, value):
+    if not value or ctx.resilient_parsing:
+        return
+    echo(curveball.__version__)
+    ctx.exit()
 
 
 def process_file(filepath, plate, blank_strain, ref_strain, max_time):
@@ -157,6 +165,7 @@ def process_folder(folder, plate_path, blank_strain, ref_strain, max_time):
 @option('--ref_strain', default='1',  help='reference strain for competitions')
 @option('--max_time', default=np.inf, help='omit data after max_time hours')
 @option('-v/-V', '--verbose/--no-verbose', default=True)
+@option('--version', is_flag=True, callback=print_version, expose_value=False, is_eager=True)
 def main(folder, plate_folder, plate_file, blank_strain, ref_strain, max_time, verbose):
 	if verbose:		
 		secho('=' * 40, fg='cyan')
