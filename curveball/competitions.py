@@ -164,7 +164,7 @@ def fitness_LTEE(y, ref_strain=0, assay_strain=1, t0=0, t1=-1):
 	'''
 	At0,Bt0 = y[t0,assay_strain],y[t0,ref_strain]
 	At1,Bt1 = y[t1,assay_strain],y[t1,ref_strain]
-	return np.log(At1/At0) / np.log(Bt1/Bt0)
+	return (np.log(At1/At0) / np.log(Bt1/Bt0))[0]
 
 
 
