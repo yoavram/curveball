@@ -70,7 +70,7 @@ def cli(verbose, plot, prompt):
 @click.option('--max_time', default=np.inf, help='omit data after max_time hours')
 @cli.command()
 def analyse(path, output_file, plate_folder, plate_file, blank_strain, ref_strain, max_time):
-	"""Analyze growth curves using Curveball.
+	"""Analyse growth curves using Curveball.
 	Outputs estimated growth traits and fitness of all strains in all files in folder PATH or matching the pattern PATH.
 	"""
 	results = []
