@@ -23,7 +23,10 @@ PLOT = True
 PROMPT = True
 ERROR_COLOR = 'red'
 INFO_COLOR = 'white'
-file_extension_handlers = {'.mat': curveball.ioutils.read_tecan_mat}
+file_extension_handlers = {
+							'.mat': curveball.ioutils.read_tecan_mat, 
+							'.xlsx': curveball.ioutils.read_text_xlsx
+						  }
 
 
 def echo_error(message):
@@ -43,9 +46,9 @@ def VERBOSE_version(ctx, param, value):
 
 
 @click.group()
-@click.option('-v/-V', '--verbose/--no-verbose', default=True)
-@click.option('-l/-l', '--plot/--no-plot', default=False)
-@click.option('-p/-P', '--prompt/--no-prompt', default=True)
+@click.option('-v/-V', '--verbose/--no-verbose', default=False)
+@click.option('-l/-L', '--plot/--no-plot', default=True)
+@click.option('-p/-P', '--prompt/--no-prompt', default=False)
 @click.option('--version', is_flag=True, callback=VERBOSE_version, expose_value=False, is_eager=True)
 def cli(verbose, plot, prompt):
 	global VERBOSE
