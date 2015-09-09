@@ -638,7 +638,7 @@ def fit_model(df, ax=None, param_guess=None, param_max=None, use_weights=True, u
     if param_max is None:
         param_max = {}
     Kguess  = param_guess.get('K', _df.OD.max())
-    y0guess = param_guess.get('y0', _df.OD.min())
+    y0guess = param_guess.get('y0', max(_df.OD.min(),1e-6))
     assert y0guess > 0, y0guess
     assert Kguess > y0guess, (Kguess, y0guess)
     nuguess = param_guess.get('nu', -1)
