@@ -23,7 +23,7 @@ import os.path
 MAT_VERSION = '1.0'
 
 
-def read_tecan_xlsx(filename, label, sheet=None, max_time=None, plate=None):
+def read_tecan_xlsx(filename, label='OD', sheet=None, max_time=None, plate=None):
     """Reads growth measurements from a Tecan Infinity Excel output file.
 
     Args:
