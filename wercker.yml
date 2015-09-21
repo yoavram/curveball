@@ -8,6 +8,7 @@ build:
             code: |
               echo "python version $(python --version) running"
               echo "conda version $(conda --version) running"
+              
         - script:
             name: create and activate Python 2.7 virtual environment with the full Anaconda distro
             code: |
