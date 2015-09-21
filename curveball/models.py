@@ -168,12 +168,12 @@ def lrtest(m0, m1, alfa=0.05):
     return prefer_m1, pval, D, ddf
 
 
-def find_max_growth(model_fit, PLOT=True):
+def find_max_growth(model_fit, after_lag=True, PLOT=True):
     r"""Estimates the maximum population growth rate from the model fit.
 
     The function calculates the maximum population growth rate :math:`a=\max{\frac{dy}{dt}}` as the derivative of the model curve and calculates its maximum. 
     It also calculates the maximum of the per capita growth rate :math:`\mu = \max{\frac{dy}{y \cdot dt}}`.
-    The latter is more useful as a metric to compare different strains or treatments as it does not depend on the population size/density.
+    The latter is more useful as a metric to compare different strains or treatments as it does not depend on the population size/density.    
 
     For example, for the logistic model the population growth rate is a quadratic function of :math:`y` so the maximum is realized when the 2nd derivative is zero:
 
@@ -197,6 +197,7 @@ def find_max_growth(model_fit, PLOT=True):
 
     Args:
         - model_fit: :py:class:`lmfit.model.ModelResult` object.
+        - after_lag: :py:class:`bool`. If true, only explore the time after the lag phase. Otherwise start at time zero. Default is :py:const:`True`.
         - PLOT: :py:class:`bool`. If true, the function will plot a figure that illustrates the calculation. Default is :py:const:`False`.
 
     Returns:
@@ -212,7 +213,9 @@ def find_max_growth(model_fit, PLOT=True):
     y0 = model_fit.params['y0'].value
     K  = model_fit.params['K'].value
 
-    t = np.linspace(0, 24)
+    t0 = find_lag(model_fit, PLOT=False) if after_lag else 0
+    t1 = model_fit.userkws['t'].max()
+    t = np.linspace(t0, t1)     
     f = lambda t: model_fit.eval(t=t)
     y = f(t)
     dfdt = derivative(f, t)
