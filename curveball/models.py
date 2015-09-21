@@ -629,6 +629,11 @@ def fit_model(df, ax=None, param_guess=None, param_max=None, use_weights=True, u
     This function will attempt to fit a growth model to `OD~Time` taken from the `df` :py:class:`pandas.DataFrame`.
     The function is still being developed.
     """
+    if not isinstance(df, pd.DataFrame):
+        raise TypeError("Input df must be a %s, but it is %s" % (pd.DataFrame.__name__, df.__class__.__name__))
+    if df.shape[0] == 0:
+        raise ValueError("No rows in input df")
+        
     _df = df.groupby('Time')['OD'].agg([np.mean, np.std]).reset_index().rename(columns={'mean':'OD'})
 
     weights =  _calc_weights(_df) if use_weights else None
