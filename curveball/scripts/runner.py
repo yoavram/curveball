@@ -131,7 +131,10 @@ def process_file(filepath, plate, blank_strain, ref_strain, max_time):
 		echo_info("No handler")
 		return results
 	try: 
-		df = handler(filepath, plate=plate, max_time=max_time)
+		if np.isfinite(max_time):
+			df = handler(filepath, plate=plate, max_time=max_time)
+		else:
+			df = handler(filepath, plate=plate)
 	except IOError as e:
 		echo_error('Failed reading data file, %s' % e.message)
 		return results
@@ -177,6 +180,7 @@ def process_file(filepath, plate, blank_strain, ref_strain, max_time):
 			res['RSS'] = fit.chisqr
 			res['bic'] = fit.bic
 			res['aic'] = fit.aic
+			res['benchmark'] = curveball.models.benchmark(fit_results)
 			params = fit.params
 			res['y0'] = params['y0'].value
 			res['K'] = params['K'].value
@@ -188,7 +192,6 @@ def process_file(filepath, plate, blank_strain, ref_strain, max_time):
 			res['lag'] = curveball.models.find_lag(fit, PLOT=False)
 			res['has_lag'] = curveball.models.has_lag(fit_results)
 			res['has_nu'] = curveball.models.has_nu(fit_results, PRINT=VERBOSE)			
-			#res['benchmark'] = curveball.models.benchmark(fit) # FIXME, issue #23
 
 			if strain == ref_strain:
 				ref_fit = fit
