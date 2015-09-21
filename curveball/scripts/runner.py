@@ -139,11 +139,16 @@ def process_file(filepath, plate, blank_strain, ref_strain, max_time):
 		echo_error('Failed reading data file, %s' % e.message)
 		return results
 
-	if not blank_strain == None:
-		bg = df[(df.Strain == blank_strain) & (df.Time == df.Time.min())]		
-		bg = bg.OD.mean()
-		df.OD -= bg
-		df.loc[df.OD < 0, 'OD'] = 0		
+	strains = plate.Strain.unique().tolist()
+
+	if not blank_strain is None: 
+		if blank_strain in strains:
+			bg = df[(df.Strain == blank_strain) & (df.Time == df.Time.min())]		
+			bg = bg.OD.mean()
+			df.OD -= bg
+			df.loc[df.OD < 0, 'OD'] = 0
+		else:
+			echo_error("Warning! Blank strain '%s' doesn't exist" % blank_strain)
 
 	if PLOT:
 		wells_plot_fn = fn + '_wells.png'
@@ -153,11 +158,13 @@ def process_file(filepath, plate, blank_strain, ref_strain, max_time):
 		strains_plot_fn = fn + '_strains.png'
 		curveball.plots.plot_strains(df, output_filename=strains_plot_fn)
 		echo_info("Wrote strains plot to %s" % click.format_filename(strains_plot_fn))
-
-	strains = plate.Strain.unique().tolist()
-	strains.remove(blank_strain)
-	strains.remove(ref_strain)
-	strains.insert(0, ref_strain)	
+	
+	if blank_strain in strains: strains.remove(blank_strain)
+	if ref_strain in strains:
+		strains.remove(ref_strain)
+		strains.insert(0, ref_strain)
+	else:
+		echo_error("Warning, reference strains '%s' doesn't exist!" % ref_strain)
 
 	with click.progressbar(strains, label='Fitting strain growth curves') as bar:
 		for strain in bar:
@@ -196,7 +203,7 @@ def process_file(filepath, plate, blank_strain, ref_strain, max_time):
 			if strain == ref_strain:
 				ref_fit = fit
 				res['w'] = 1
-			else:
+			elif ref_strain in strains:
 				colors = plate[plate.Strain.isin([strain, ref_strain])].Color.unique()
 				_ = curveball.competitions.compete(fit, ref_fit, hours=df.Time.max(), colors=colors, PLOT=PLOT)
 				if PLOT:
