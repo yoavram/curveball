@@ -18,7 +18,6 @@ setup:
 # test your application (tests in the tests/ directory)
 test:
 	@nosetests --with-coverage --cover-package=curveball --cover-inclusive --cover-min-percentage=80 --cover-html --cover-html-dir=coverage_report
-	@open coverage_report/index.html
 
 # run tests against all supported python versions
 tox:
