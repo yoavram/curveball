@@ -1,8 +1,8 @@
 # Curveball: growth curves analysis
 
-[![Latest Version](https://pypip.in/version/curveball/badge.svg?text=version)](https://pypi.python.org/pypi/curveball/)
-[![Supported Python versions](https://pypip.in/py_versions/curveball/badge.svg)](https://pypi.python.org/pypi/curveball/)
-[![License](https://pypip.in/license/curveball/badge.svg)](https://pypi.python.org/pypi/curveball/)
+[![Latest Version](https://img.shields.io/pypi/v/curveball.svg)](https://pypi.python.org/pypi/curveball/)
+[![Supported Python versions](https://img.shields.io/pypi/pyversions/curveball.svg)](https://pypi.python.org/pypi/curveball/)
+[![License](https://img.shields.io/pypi/l/curveball.svg)](https://pypi.python.org/pypi/curveball/)
 
 [![wercker status](https://app.wercker.com/status/ccdaa657b94c79e9a1fe194353613c13/m/master "wercker status")](https://app.wercker.com/project/bykey/ccdaa657b94c79e9a1fe194353613c13)
 
