@@ -174,6 +174,7 @@ def process_file(filepath, plate, blank_strain, ref_strain, max_time):
 			res['filename'] = os.path.splitext(os.path.basename(fn))[0]
 			res['strain'] = strain
 			res['model'] = fit.model.name
+			res['RSS'] = fit.chisqr
 			res['bic'] = fit.bic
 			res['aic'] = fit.aic
 			params = fit.params
@@ -186,7 +187,7 @@ def process_file(filepath, plate, blank_strain, ref_strain, max_time):
 			res['max_growth_rate'] = curveball.models.find_max_growth(fit, PLOT=False)[-1]
 			res['lag'] = curveball.models.find_lag(fit, PLOT=False)
 			res['has_lag'] = curveball.models.has_lag(fit_results)
-			res['has_nu'] = curveball.models.has_nu(fit_results, PRINT=VERBOSE)
+			res['has_nu'] = curveball.models.has_nu(fit_results, PRINT=VERBOSE)			
 			#res['benchmark'] = curveball.models.benchmark(fit) # FIXME, issue #23
 
 			if strain == ref_strain:
