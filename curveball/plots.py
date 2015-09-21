@@ -59,7 +59,7 @@ def plot_wells(df, x='Time', y='OD', plot_func=plt.plot, output_filename=None):
 	return g
 
 
-def plot_strains(df, x='Time', y='OD', plot_func=plt.plot, by=('Strain', 'Cycle Nr.'), agg_func=np.mean, hue='Strain', output_filename=None):
+def plot_strains(df, x='Time', y='OD', plot_func=plt.plot, by=None, agg_func=np.mean, hue='Strain', output_filename=None):
 	"""Aggregate by strain and plot the results on one figure with different color for each strain.
 
 	The grouping of the data is done by the `Strain` and `Cycle Nr.` columns; the aggregation is done by the `agg_func`, which defaults to `mean`.
@@ -70,7 +70,7 @@ def plot_strains(df, x='Time', y='OD', plot_func=plt.plot, by=('Strain', 'Cycle 
 		- x: name of column for x-axis, string.
 		- y: name of column for y-axis, string.
 		- plot_func: a function to use for plotting, defaults to :py:func:`matplotlib.pyplot.plot`.
-		- by: a :py:class:tuple to use for grouping the data, defaults to `('Strain', 'Cycle Nr.')`.
+		- by: a :py:class:tuple to use for grouping the data, defaults to `('Strain', 'Cycle Nr.')` or `('Strain', 'Time')`, whichever is available.
 		- agg_func: a function to use for aggregating the data, defaults to :py:func:`numpy.mean`.
 		- output_filename: optional filename to save the resulting figure, string.
 
@@ -79,6 +79,14 @@ def plot_strains(df, x='Time', y='OD', plot_func=plt.plot, by=('Strain', 'Cycle 
 	"""
 	palette = df.Color.unique() if 'Color' in df else sns.color_palette()
 	palette[palette == '#ffffff'] = '#000000'
+	if by is None:
+		if 'Cycle Nr.' in df and 'Strain' in df:
+			by = ('Strain', 'Cycle Nr.')
+		elif 'Time' in df and 'Strain' in df:
+			by = ('Strain', 'Time')
+		else:
+			raise ValueError("If by is not set then df must have column Strain and either Time or Cycle Nr.")
+		
 	grp = df.groupby(by=by)
 	agg = grp.aggregate(agg_func).reset_index()
 	g = sns.FacetGrid(agg, hue=hue, size=5, aspect=1.5, palette=palette, hue_order=df[hue].unique())
