@@ -3,7 +3,6 @@ Babel==2.0
 click==5.1
 colorama==0.3.3
 coverage==3.7.1
--e git+git@gitlab.com:yoavram/curveball.git@04d74d2e02b380a8e731f2b05bce34f96042d084#egg=curveball-dorit_script
 docutils==0.12
 Jinja2==2.8
 lmfit===800f3e40ef8ba977005d27a5d05fd231688a5749
