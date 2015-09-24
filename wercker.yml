@@ -19,8 +19,9 @@ build:
               conda install python-dateutil --yes
               conda install sympy --yes
               conda install xlrd --yes
-              pip install https://github.com/lmfit/lmfit-py/archive/800f3e40ef8ba977005d27a5d05fd231688a5749.zip
-              pip install -r requirements.txt
+              conda install coverage --yes
+              pip install --upgrade pip
+              pip install https://github.com/lmfit/lmfit-py/archive/800f3e40ef8ba977005d27a5d05fd231688a5749.zip              
               python setup.py install
 
         - script:
