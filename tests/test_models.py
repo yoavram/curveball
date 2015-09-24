@@ -514,6 +514,24 @@ class SamplingTestCase(TestCase):
         self.assertIsNotNone(sample_params)
         self.assertEquals(sample_params.shape, (100, 3))
 
+
+class IssuesTestCase(TestCase):
+    '''Tests that came up from bugs and other issues.
+
+    See `Curveball issues <https://github.com/yoavram/curveball>`_.
+    '''
+    _multiprocess_can_split_ = True
+
+
+    def test_covar_exists(self):  
+        '''`Issue 27 <https://github.com/yoavram/curveball/issues/27>`_.
+        '''
+        plate = pd.read_csv('plate_templates/G-RG-R.csv')
+        df = curveball.ioutils.read_tecan_xlsx('data/Tecan_280715.xlsx', plate=plate)
+        self.assertTrue('R' in df.Strain.unique())
+        df = df[df.Strain == 'R']
+        models_R = curveball.models.fit_model(df[df.Time<=16], PLOT=False, PRINT=False)
+        self.assertIsNotNone(models_R[0].covar)
         
 
 if __name__ == '__main__':
