@@ -27,7 +27,31 @@ build:
               pip install --upgrade pip
               pip install https://github.com/lmfit/lmfit-py/archive/800f3e40ef8ba977005d27a5d05fd231688a5749.zip              
               python setup.py install
-
+    after-steps:
         - script:
             name: test
-            code: nosetests
+            code: nosetests --with-coverage --cover-package=curveball --cover-inclusive --cover-min-percentage=50 --cover-html --cover-html-dir=$SRC_COVERAGE_DIR
+
+        - script:
+            name: update gh-pages with coverage
+            code: |
+              remote='https://$GITHUB_TOKEN@github.com/$GITHUB_USERNAME/$GITHUB_REPO.git'
+              git config user.email "$GITHUB_EMAIL"
+              git config user.name "$GITHUB_USERNAME"                
+              git clone -b gh-pages $remote gh-pages
+              cp -R $SRC_COVERAGE_DIR/* gh-pages/$DST_COVERAGE_DIR
+              cd gh-pages              
+              diff=$(git status -s | grep $DST_COVERAGE_DIR)
+              if [[ -z $diff ]]; then
+                info 'Skip gh-pages step because the coverage was not updated.'
+              else
+                info 'Commiting changes to coverage.'
+                git commit $DST_COVERAGE_DIR -m "Updated code coverage: `date +'%Y-%m-%d%k:%M:%S'`"
+                result="$(git push origin gh-pages)"
+                if [[ $? -ne 0 ]]; then
+                  warning "$result"
+                  fail "Failed deploying to Github Pages."
+                else
+                  success "Deployed to Github Pages."
+                fi
+              fi
