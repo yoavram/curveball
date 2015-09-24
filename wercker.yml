@@ -1,13 +1,11 @@
 box: somada141/python-miniconda@0.0.4
-# Build definition
 build:
-  # The steps that will be executed on build
     steps:
         - script:
             name: python environment
             code: |
-              echo "python version $(python --version) running"
-              echo "conda version $(conda --version) running"
+              info "$(python --version)"
+              info "$(conda --version)"
               
         - script:
             name: create and activate Python 2.7 virtual environment with the full Anaconda distro
@@ -27,9 +25,11 @@ build:
               pip install --upgrade pip
               pip install https://github.com/lmfit/lmfit-py/archive/800f3e40ef8ba977005d27a5d05fd231688a5749.zip              
               python setup.py install
+
         - script:
             name: test
             code: nosetests --with-coverage --cover-package=curveball --cover-inclusive --cover-html --cover-html-dir=$SRC_COVERAGE_DIR
+
     after-steps:
         - script:
             name: update gh-pages with coverage
