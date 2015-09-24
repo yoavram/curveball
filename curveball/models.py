@@ -696,6 +696,10 @@ def fit_model(df, ax=None, param_guess=None, param_max=None, use_weights=True, u
 
     # Baranyi-Roberts /w nu=1 = Logistic /w lag (5 params)   
     params['nu'].set(value=1.0, vary=False)
+    # a different guess is required for r if assuming nu=1
+    rguess2  = param_guess.get('r', 0)
+    if rguess2 == 0: rguess2 = guess_r(_df.Time, _df.OD, nu=1.0, K=Kguess)
+    params['r'].set(value=rguess2, vary=True)
     fit_kws = {'Dfun': baranyi_roberts5_Dfun, "col_deriv":True} if use_Dfun else {}
     result = baranyi_roberts_model.fit(data=_df.OD, t=_df.Time, params=params, weights=weights, fit_kws=fit_kws)
     models.append(result)
