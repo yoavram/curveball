@@ -299,7 +299,6 @@ class FindMaxGrowthTestCase(TestCase):
         self.assertTrue(relative_error(r * (1 - (y0/K)**nu), mu) < 1, "mu=%.4g, r(1-(y0/K)**nu)=%.4g" % (mu, r * (1 - (y0/K)**nu)))
 
 
-@SkipTest
 class LRTestTestCase(TestCase):
     _multiprocess_can_split_ = True
 
@@ -329,6 +328,15 @@ class LRTestTestCase(TestCase):
         prefer_m1,pval,D,ddf = curveball.models.lrtest(one_var_fit, two_var_fit, alfa)
         self.assertTrue(prefer_m1)
 
+
+@SkipTest
+class MoreLRTestTestCase(TestCase):
+    _multiprocess_can_split_ = True
+
+
+    def tearDown(self):
+        plt.close("all")
+ 
 
     def test_has_lag_logistic(self):
         df = randomize_data(logistic_ode)
@@ -543,7 +551,7 @@ class IssuesTestCase(TestCase):
         self.assertTrue(0.1 < nu < 2.0)
         has = curveball.models.has_nu(models)
         self.assertTrue(has)
-        
+
 
 if __name__ == '__main__':
     main()
