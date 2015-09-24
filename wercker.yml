@@ -34,7 +34,7 @@ build:
         - script:
             name: update gh-pages with coverage
             code: |
-              remote='https://$GITHUB_TOKEN@github.com/$GITHUB_USERNAME/$GITHUB_REPO.git'
+              remote="https://$GITHUB_TOKEN@github.com/$GITHUB_USERNAME/$GITHUB_REPO.git"
               git config user.email "$GITHUB_EMAIL"
               git config user.name "$GITHUB_USERNAME"                
               git clone -b gh-pages $remote gh-pages
@@ -42,9 +42,9 @@ build:
               cd gh-pages              
               diff=$(git status -s | grep $DST_COVERAGE_DIR)
               if [[ -z $diff ]]; then
-                info 'Skip gh-pages step because the coverage was not updated.'
+                info "Skip gh-pages step because the coverage was not updated."
               else
-                info 'Commiting changes to coverage.'
+                info "Commiting changes to coverage."
                 git commit $DST_COVERAGE_DIR -m "Updated code coverage: `date +'%Y-%m-%d%k:%M:%S'`"
                 result="$(git push origin gh-pages)"
                 if [[ $? -ne 0 ]]; then
