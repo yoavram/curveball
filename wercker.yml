@@ -27,11 +27,10 @@ build:
               pip install --upgrade pip
               pip install https://github.com/lmfit/lmfit-py/archive/800f3e40ef8ba977005d27a5d05fd231688a5749.zip              
               python setup.py install
-    after-steps:
         - script:
             name: test
             code: nosetests --with-coverage --cover-package=curveball --cover-inclusive --cover-min-percentage=50 --cover-html --cover-html-dir=$SRC_COVERAGE_DIR
-
+    after-steps:
         - script:
             name: update gh-pages with coverage
             code: |
