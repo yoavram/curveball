@@ -595,9 +595,10 @@ def _calc_weights(df):
 
 
 def guess_nu(t, N, K=None, PLOT=False, PRINT=False):
-    dNdt = np.gradient(N, t[1]-t[0])       
-    smoothed = smooth(t, dNdt)    
-    i = smoothed.argmax()
+    N_smooth = smooth(t, N)
+    dNdt = np.gradient(N_smooth, t[1]-t[0])   
+    dNdt_smooth = smooth(t, dNdt)
+    i = dNdt_smooth.argmax()
     Nmax = N[i]    
     if K is None:
         K = N.max()
@@ -618,7 +619,7 @@ def guess_nu(t, N, K=None, PLOT=False, PRINT=False):
         fig, ax = plt.subplots(1, 2, figsize=(fs[0] * 2, fs[1]))
         ax1,ax2 = ax
         ax1.plot(t, dNdt, 'ok')
-        ax1.plot(t, smoothed, '--k')
+        ax1.plot(t, dNdt_smooth, '--k')
         ax1.axvline(t[i], color='k', ls='--')
         ax1.axhline(dNdt[i], color='k', ls='--')
         ax1.set_xlabel('Time')
