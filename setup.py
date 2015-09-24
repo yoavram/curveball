@@ -46,7 +46,7 @@ setup(
     include_package_data=True,
     package_data = {
         'curveball': ['data'],
-    }
+    },
     install_requires=[
         # add your dependencies here
         # remember to use 'package-name>=x.y.z,<x.y+1.0' notation (this way you get bugfixes)
