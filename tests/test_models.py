@@ -341,6 +341,18 @@ class LRTestTestCase(TestCase):
         models = curveball.models.fit_model(df, PLOT=False, PRINT=False)
         lag = curveball.models.has_lag(models)
         self.assertFalse(lag)
+
+
+    def test_has_lag_logistic_lag(self):
+        df = randomize_data(baranyi_roberts_ode, t=np.linspace(0,36), nu=1.0)
+        if not CI:
+            models,fig,ax = curveball.models.fit_model(df, PLOT=True, PRINT=True)
+            func_name = sys._getframe().f_code.co_name
+            fig.savefig(func_name + ".png")
+        else:
+            models = curveball.models.fit_model(df, PLOT=False, PRINT=False)
+        lag = curveball.models.has_lag(models)
+        self.assertTrue(lag)
  
 
     def test_has_lag_baranyi_roberts(self):
@@ -382,21 +394,6 @@ class LRTestTestCase(TestCase):
         result = curveball.models.has_nu(models, PRINT=True)
         self.assertFalse(result)
 
-
-class MoreLRTestTestCase(TestCase):
-    _multiprocess_can_split_ = True
-
-
-    def tearDown(self):
-        plt.close("all")
-
-
-    def test_has_lag_logistic_lag(self):
-        df = randomize_data(baranyi_roberts_ode, t=np.linspace(0,36), nu=1.0)
-        models = curveball.models.fit_model(df, PLOT=False, PRINT=False)
-        lag = curveball.models.has_lag(models)
-        self.assertTrue(lag)
-  
 
     def test_has_nu_baranyi_roberts_nu_01(self):
         df = randomize_data(baranyi_roberts_ode, t=np.linspace(0,120), nu=0.1)
