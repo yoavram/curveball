@@ -1,6 +1,4 @@
 box: somada141/python-miniconda@0.0.4
-no-response-timeout: 10
-command-timeout: 30
 build:
     steps:
         - script:
