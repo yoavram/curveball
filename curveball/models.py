@@ -615,7 +615,8 @@ def guess_nu(t, N, K=None, PLOT=False, PRINT=False):
         x = 1.0
     if PLOT:
         fs = plt.rcParams['figure.figsize']
-        fig, (ax1,ax2) = plt.subplots(1, 2, figsize=(fs[0] * 2, fs[1]))
+        fig, ax = plt.subplots(1, 2, figsize=(fs[0] * 2, fs[1]))
+        ax1,ax2 = ax
         ax1.plot(t, dNdt, 'ok')
         ax1.plot(t, smoothed, '--k')
         ax1.axvline(t[i], color='k', ls='--')
