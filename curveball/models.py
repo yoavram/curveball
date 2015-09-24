@@ -614,7 +614,7 @@ def guess_nu(t, N, K=None, PLOT=False, PRINT=False):
         print "f(1)=%.4f < f(%.4f)=%.4f, Setting nu=1" % (y1, x, y)
         x = 1.0
     if PLOT:
-        fs = rcParams['figure.figsize']
+        fs = plt.rcParams['figure.figsize']
         fig, (ax1,ax2) = plt.subplots(1, 2, figsize=(fs[0] * 2, fs[1]))
         ax1.plot(t, dNdt, 'ok')
         ax1.plot(t, smoothed, '--k')
