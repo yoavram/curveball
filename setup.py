@@ -44,9 +44,9 @@ setup(
     ],
     packages=find_packages(),
     include_package_data=True,
-    package_data = {
-        'curveball': ['data'],
-    },
+    data_files=[('data', ['data/Tecan_280715.xlsx']),
+                  ('plate_templates', ['plate_templates/checkerboard.csv', 'plate_templates/G-RG-R.csv']),
+    ],
     install_requires=[
         # add your dependencies here
         # remember to use 'package-name>=x.y.z,<x.y+1.0' notation (this way you get bugfixes)
