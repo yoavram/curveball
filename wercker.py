@@ -33,7 +33,13 @@ payload = {
 			#"branch":"master", 
 			#"commit":"no-id", 
 			#"message":"trigger build",
-			#"envVars": ?
+			"envVars": [{'key':'GITHUB_USERNAME', 'value':'yoavram'},
+						{'key':'GITHUB_EMAIL', 'value':'yoavram+github@gmail.com'},
+						{'key':'GITHUB_REPO', 'value':'curveball'},
+						{'key':'GITHUB_TOKEN', 'value':'token'},
+						{'key':'DST_COVERAGE_DIR', 'value':'coverage'},
+						{'key':'SRC_COVERAGE_DIR', 'value':'coverage_report'},
+			]
 		  }
 with warnings.catch_warnings():
 	warnings.simplefilter("ignore")
@@ -42,4 +48,7 @@ if not r.ok:
 	print "Failed:", r.content
 	sys.exit()
 data = r.json()
-print "Build %s status:" % (data['id'], data['status'])
+try:
+	print "Build %s status: %s" % (data['id'], data['status'])
+except Exception:
+	print "Failed:", r.content
