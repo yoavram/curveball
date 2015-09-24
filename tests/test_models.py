@@ -143,7 +143,7 @@ class ModelSelectionTestCase(TestCase):
         self.assertEquals(models[0].nvarys, 4)
 
 
-@SkipTest
+#@SkipTest
 class MoreModelSelectionTestCase(TestCase):
     _multiprocess_can_split_ = True
 
@@ -164,11 +164,15 @@ class MoreModelSelectionTestCase(TestCase):
         for mod in models:
             self.assertIsInstance(mod, ModelResult)
         self.assertEquals(models[0].model, curveball.models.baranyi_roberts_model)
-        self.assertEquals(models[0].nvarys, 5)
+        self.assertTrue(models[0].nvarys >= 5)
+        if models[0].nvarys == 5:
+            self.assertEquals(models[1].nvarys, 6)
+            delta_bic = abs(models[1].bic - models[0].bic)
+            self.assertTrue(delta_bic < 10)
 
 
     def test_fit_model_baranyi_roberts(self):        
-        df = randomize_data(baranyi_roberts_ode, t=np.linspace(0,24), nu=2)
+        df = randomize_data(baranyi_roberts_ode, t=np.linspace(0,24), nu=5.0)
         if not CI:
             models,fig,ax = curveball.models.fit_model(df, PLOT=True, PRINT=False)
             func_name = sys._getframe().f_code.co_name
