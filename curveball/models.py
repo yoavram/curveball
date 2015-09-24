@@ -594,22 +594,43 @@ def _calc_weights(df):
     return weights
 
 
-def guess_nu(t, N, K=None):
+def guess_nu(t, N, K=None, PLOT=False, PRINT=False):
     dNdt = np.gradient(N, t[1]-t[0])       
-    smoothed = smooth(t, dNdt)
+    smoothed = smooth(t, dNdt)    
     i = smoothed.argmax()
-    Nmax = N[i] 
+    Nmax = N[i]    
     if K is None:
         K = N.max()
     def target(nu):
         return np.abs((1+nu)**(-1/nu) - Nmax/K)
     opt_res = minimize(target, x0=1, bounds=[(0,None)])
-    if not opt_res.success:
-        print "Minimization warning in %s: %s\nGuessed nu=%.4f with f(nu)=%.4f" % (sys._getframe().f_code.co_name, opt_res.message, opt_res.x, target(opt_res.x))
-    if target(1) < target(opt_res.x):
-        print "Setting nu=1"
-        return 1
-    return opt_res.x
+    x = opt_res.x
+    y = target(x)
+    y1 = target(1.0)
+    
+    if not opt_res.success and not np.allclose(y, 0):
+        print "Minimization warning in %s: %s\nGuessed nu=%.4f with f(nu)=%.4f" % (sys._getframe().f_code.co_name, opt_res.message, x, y)
+    if y1 < y:
+        print "f(1)=%.4f < f(%.4f)=%.4f, Setting nu=1" % (y1, x, y)
+        x = 1.0
+    if PLOT:
+        fs = rcParams['figure.figsize']
+        fig, (ax1,ax2) = plt.subplots(1, 2, figsize=(fs[0] * 2, fs[1]))
+        ax1.plot(t, dNdt, 'ok')
+        ax1.plot(t, smoothed, '--k')
+        ax1.axvline(t[i], color='k', ls='--')
+        ax1.axhline(dNdt[i], color='k', ls='--')
+        ax1.set_xlabel('Time')
+        ax1.set_ylabel('dN/dt')
+        
+        ax2.plot(np.logspace(-3,3), target(np.logspace(-3, 3)), 'k-')
+        ax2.set_xlabel(r'$\nu$')
+        ax2.set_ylabel('Target function')
+        ax2.set_xscale('log')
+        
+        fig.tight_layout()        
+        return x,fig,ax
+    return x
 
 
 def guess_r(t, N, nu=None, K=None):
