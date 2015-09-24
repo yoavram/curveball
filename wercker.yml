@@ -29,7 +29,7 @@ build:
               python setup.py install
         - script:
             name: test
-            code: nosetests --with-coverage --cover-package=curveball --cover-inclusive --cover-min-percentage=50 --cover-html --cover-html-dir=$SRC_COVERAGE_DIR
+            code: nosetests --with-coverage --cover-package=curveball --cover-inclusive --cover-html --cover-html-dir=$SRC_COVERAGE_DIR
     after-steps:
         - script:
             name: update gh-pages with coverage
