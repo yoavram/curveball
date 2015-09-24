@@ -143,15 +143,6 @@ class ModelSelectionTestCase(TestCase):
         self.assertEquals(models[0].nvarys, 4)
 
 
-#@SkipTest
-class MoreModelSelectionTestCase(TestCase):
-    _multiprocess_can_split_ = True
-
-
-    def tearDown(self):
-        plt.close("all")
-
-
     def test_fit_model_logistic_lag(self):        
         df = randomize_data(baranyi_roberts_ode, t=np.linspace(0,48), nu=1.0)
         if not CI:
@@ -169,6 +160,15 @@ class MoreModelSelectionTestCase(TestCase):
             self.assertEquals(models[1].nvarys, 6)
             delta_bic = abs(models[1].bic - models[0].bic)
             self.assertTrue(delta_bic < 10)
+
+
+#@SkipTest
+class MoreModelSelectionTestCase(TestCase):
+    _multiprocess_can_split_ = True
+
+
+    def tearDown(self):
+        plt.close("all")
 
 
     def test_fit_model_baranyi_roberts(self):        
