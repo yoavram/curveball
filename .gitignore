@@ -73,3 +73,6 @@ tmp
 # notebooks folder
 notebooks/*.png
 notebooks/Untitled*.ipynb
+
+# secret
+.wercker.token
