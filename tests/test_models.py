@@ -537,12 +537,10 @@ class IssuesTestCase(TestCase):
     def test_has_nu_issue22(self):
         '''`Issue 22 <https://github.com/yoavram/curveball/issues/22>`_.
         '''
-        df = randomize_data(baranyi_roberts_ode, t=np.linspace(0,32),).copy()
-        models = curveball.models.fit_model(df, PLOT=False, PRINT=False)
+        df = randomize_data(baranyi_roberts_ode, t=np.linspace(0,32),)
+        models = curveball.models.fit_model(df, PLOT=False, PRINT=True)
         nu = models[0].best_values['nu']
-        self.assertTrue(0.1 < nu < 2.0)
-        has = curveball.models.has_nu(models)
-        self.assertTrue(has)
+        self.assertTrue(0.1 < nu < 2.0)        
         
 
 if __name__ == '__main__':
