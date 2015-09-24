@@ -48,11 +48,5 @@ build:
               else
                 info "Commiting coverage changes."
                 git commit $DST_COVERAGE_DIR -m "Updated code coverage: `date +'%Y-%m-%d%k:%M:%S'`"
-                result="$(git push origin gh-pages)"
-                if [[ $? -ne 0 ]]; then
-                  warning "$result"
-                  fail "Failed deploying to Github Pages."
-                else
-                  success "Deployed to Github Pages."
-                fi
+                git push origin gh-pages                
               fi
