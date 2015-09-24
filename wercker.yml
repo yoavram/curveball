@@ -1,4 +1,6 @@
 box: somada141/python-miniconda@0.0.4
+no-response-timeout: 10
+command-timeout: 30
 build:
     steps:
         - script:
@@ -42,9 +44,9 @@ build:
               cd gh-pages              
               diff=$(git status -s | grep $DST_COVERAGE_DIR)
               if [[ -z $diff ]]; then
-                info "Skip gh-pages step because the coverage was not updated."
+                info "Skipping gh-pages step because coverage did not change."
               else
-                info "Commiting changes to coverage."
+                info "Commiting coverage changes."
                 git commit $DST_COVERAGE_DIR -m "Updated code coverage: `date +'%Y-%m-%d%k:%M:%S'`"
                 result="$(git push origin gh-pages)"
                 if [[ $? -ne 0 ]]; then
