@@ -35,17 +35,7 @@ if __name__ == '__main__':
 
 	# http://devcenter.wercker.com/api/endpoints/builds.html#trigger-a-build
 	payload = {
-				"applicationId": app_id, 
-				#"branch":"master", 
-				#"commit":"no-id", 
-				#"message":"trigger build",
-				"envVars": [{'key':'GITHUB_USERNAME', 'value':'yoavram'},
-							{'key':'GITHUB_EMAIL', 'value':'yoavram+github@gmail.com'},
-							{'key':'GITHUB_REPO', 'value':'curveball'},
-							{'key':'GITHUB_TOKEN', 'value':'token'},
-							{'key':'DST_COVERAGE_DIR', 'value':'coverage'},
-							{'key':'SRC_COVERAGE_DIR', 'value':'coverage_report'},
-				]
+				"applicationId": app_id
 			  }
 	with warnings.catch_warnings():
 		warnings.simplefilter("ignore")
