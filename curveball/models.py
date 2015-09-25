@@ -683,6 +683,23 @@ def fit_model(df, ax=None, param_guess=None, param_max=None, use_weights=True, u
     q0guess = param_guess.get('q0', 1.0)
     vguess = param_guess.get('v', 1.0)
 
+    # Run Baranyi-Roberts once just to make a guess for q0 and v
+    params = baranyi_roberts_model.make_params(y0=y0guess, K=Kguess, r=rguess, nu=nuguess, q0=q0guess, v=vguess)
+    for p,m in param_max.items():
+        params[p].set(max=m)
+    params['y0'].set(vary=False)
+    params['K'].set(vary=False)
+    params['r'].set(vary=False)
+    params['nu'].set(vary=False)
+    params['q0'].set(min=1e-4, max=param_max.get('q0', 1))
+    params['v'].set(min=1e-4)
+    fit_kws = {'Dfun': baranyi_roberts6_Dfun, "col_deriv":True} if use_Dfun else {}
+    result = baranyi_roberts_model.fit(data=_df.OD, t=_df.Time, params=params, weights=weights, fit_kws=fit_kws)
+
+    q0guess = result.best_values['q0']
+    vguess = result.best_values['v']
+
+    # Baranyi-Roberts = Richards /w lag (6 params)
     params = baranyi_roberts_model.make_params(y0=y0guess, K=Kguess, r=rguess, nu=nuguess, q0=q0guess, v=vguess)
     for p,m in param_max.items():
         params[p].set(max=m)
@@ -692,8 +709,6 @@ def fit_model(df, ax=None, param_guess=None, param_max=None, use_weights=True, u
     params['nu'].set(min=1e-4)
     params['q0'].set(min=1e-4, max=param_max.get('q0', 1))
     params['v'].set(min=1e-4)
-
-    # Baranyi-Roberts = Richards /w lag (6 params)
     fit_kws = {'Dfun': baranyi_roberts6_Dfun, "col_deriv":True} if use_Dfun else {}
     result = baranyi_roberts_model.fit(data=_df.OD, t=_df.Time, params=params, weights=weights, fit_kws=fit_kws)
     models.append(result)
