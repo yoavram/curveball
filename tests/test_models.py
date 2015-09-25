@@ -538,6 +538,7 @@ class IssuesTestCase(TestCase):
         '''
         df = randomize_data(baranyi_roberts_ode, t=np.linspace(0,32),).copy()
         models = curveball.models.fit_model(df, PLOT=False, PRINT=False)
+        self.assertTrue('nu' in models[0].best_values)
         nu = models[0].best_values['nu']
         self.assertTrue(0.1 < nu < 2.0)
         has = curveball.models.has_nu(models)
