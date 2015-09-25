@@ -352,6 +352,12 @@ class LRTestTestCase(TestCase):
 
     def test_has_lag_baranyi_roberts(self):
         df = randomize_data(baranyi_roberts_ode, t=np.linspace(0,32))
+        if not CI:
+            models,fig,ax = curveball.models.fit_model(df, PLOT=True, PRINT=True)
+            func_name = sys._getframe().f_code.co_name
+            fig.savefig(func_name + ".png")
+        else:
+            models = curveball.models.fit_model(df, PLOT=False, PRINT=False)
         models = curveball.models.fit_model(df, PLOT=False, PRINT=False)
         lag = curveball.models.has_lag(models)
         self.assertTrue(lag)
@@ -537,7 +543,12 @@ class IssuesTestCase(TestCase):
         '''`Issue 22 <https://github.com/yoavram/curveball/issues/22>`_.
         '''
         df = randomize_data(baranyi_roberts_ode, t=np.linspace(0,32),).copy()
-        models = curveball.models.fit_model(df, PLOT=False, PRINT=False)
+        if not CI:
+            models,fig,ax = curveball.models.fit_model(df, PLOT=True, PRINT=False)
+            func_name = sys._getframe().f_code.co_name
+            fig.savefig(func_name + ".png")
+        else:
+            models = curveball.models.fit_model(df, PLOT=False, PRINT=False)
         self.assertTrue('nu' in models[0].best_values)
         nu = models[0].best_values['nu']
         self.assertTrue(0.1 < nu < 2.0)
