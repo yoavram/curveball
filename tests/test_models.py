@@ -542,7 +542,7 @@ class IssuesTestCase(TestCase):
     def test_has_nu_issue22(self):
         '''`Issue 22 <https://github.com/yoavram/curveball/issues/22>`_.
         '''
-        df = randomize_data(baranyi_roberts_ode, t=np.linspace(0,32),).copy()
+        df = randomize_data(baranyi_roberts_ode, t=np.linspace(0,48), nu=0.5)
         if not CI:
             models,fig,ax = curveball.models.fit_model(df, PLOT=True, PRINT=False)
             func_name = sys._getframe().f_code.co_name
