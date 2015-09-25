@@ -143,15 +143,6 @@ class ModelSelectionTestCase(TestCase):
         self.assertEquals(models[0].nvarys, 4)
 
 
-@SkipTest
-class MoreModelSelectionTestCase(TestCase):
-    _multiprocess_can_split_ = True
-
-
-    def tearDown(self):
-        plt.close("all")
-
-
     def test_fit_model_logistic_lag(self):        
         df = randomize_data(baranyi_roberts_ode, t=np.linspace(0,48), nu=1.0)
         if not CI:
@@ -164,11 +155,15 @@ class MoreModelSelectionTestCase(TestCase):
         for mod in models:
             self.assertIsInstance(mod, ModelResult)
         self.assertEquals(models[0].model, curveball.models.baranyi_roberts_model)
-        self.assertEquals(models[0].nvarys, 5)
+        self.assertTrue(models[0].nvarys >= 5)
+        if models[0].nvarys == 5:
+            self.assertEquals(models[1].nvarys, 6)
+            delta_bic = abs(models[1].bic - models[0].bic)
+            self.assertTrue(delta_bic < 10)
 
 
     def test_fit_model_baranyi_roberts(self):        
-        df = randomize_data(baranyi_roberts_ode, t=np.linspace(0,24), nu=2)
+        df = randomize_data(baranyi_roberts_ode, t=np.linspace(0,24), nu=5.0)
         if not CI:
             models,fig,ax = curveball.models.fit_model(df, PLOT=True, PRINT=False)
             func_name = sys._getframe().f_code.co_name
@@ -299,7 +294,6 @@ class FindMaxGrowthTestCase(TestCase):
         self.assertTrue(relative_error(r * (1 - (y0/K)**nu), mu) < 1, "mu=%.4g, r(1-(y0/K)**nu)=%.4g" % (mu, r * (1 - (y0/K)**nu)))
 
 
-@SkipTest
 class LRTestTestCase(TestCase):
     _multiprocess_can_split_ = True
 
@@ -331,10 +325,10 @@ class LRTestTestCase(TestCase):
 
 
     def test_has_lag_logistic(self):
-        df = randomize_data(logistic_ode)
-        models = curveball.models.fit_model(df, PLOT=False, PRINT=False)
-        lag = curveball.models.has_lag(models)
-        self.assertFalse(lag)
+            df = randomize_data(logistic_ode)
+            models = curveball.models.fit_model(df, PLOT=False, PRINT=False)
+            lag = curveball.models.has_lag(models)
+            self.assertFalse(lag)
 
 
     def test_has_lag_richards(self):
@@ -346,13 +340,24 @@ class LRTestTestCase(TestCase):
 
     def test_has_lag_logistic_lag(self):
         df = randomize_data(baranyi_roberts_ode, t=np.linspace(0,36), nu=1.0)
-        models = curveball.models.fit_model(df, PLOT=False, PRINT=False)
+        if not CI:
+            models,fig,ax = curveball.models.fit_model(df, PLOT=True, PRINT=True)
+            func_name = sys._getframe().f_code.co_name
+            fig.savefig(func_name + ".png")
+        else:
+            models = curveball.models.fit_model(df, PLOT=False, PRINT=False)
         lag = curveball.models.has_lag(models)
         self.assertTrue(lag)
-
+ 
 
     def test_has_lag_baranyi_roberts(self):
         df = randomize_data(baranyi_roberts_ode, t=np.linspace(0,32))
+        if not CI:
+            models,fig,ax = curveball.models.fit_model(df, PLOT=True, PRINT=True)
+            func_name = sys._getframe().f_code.co_name
+            fig.savefig(func_name + ".png")
+        else:
+            models = curveball.models.fit_model(df, PLOT=False, PRINT=False)
         models = curveball.models.fit_model(df, PLOT=False, PRINT=False)
         lag = curveball.models.has_lag(models)
         self.assertTrue(lag)
@@ -364,7 +369,7 @@ class LRTestTestCase(TestCase):
         result = curveball.models.has_nu(models)
         self.assertFalse(result)
 
-
+    
     def test_has_nu_richards(self):
         df = randomize_data(richards_ode)
         models = curveball.models.fit_model(df, PLOT=False, PRINT=False)
@@ -379,18 +384,6 @@ class LRTestTestCase(TestCase):
         self.assertFalse(result)
 
 
-    def test_has_nu_baranyi_roberts_nu_01(self):
-        df = randomize_data(baranyi_roberts_ode, t=np.linspace(0,120), nu=0.1)
-        if not CI:
-            models,fig,ax = curveball.models.fit_model(df, PLOT=True, PRINT=False)
-            func_name = sys._getframe().f_code.co_name
-            fig.savefig(func_name + ".png")
-        else:
-            models = curveball.models.fit_model(df, PLOT=False, PRINT=False)
-        result = curveball.models.has_nu(models, PRINT=True)
-        self.assertTrue(result)
-
-
     def test_has_nu_baranyi_roberts_nu_1(self):
         df = randomize_data(baranyi_roberts_ode, t=np.linspace(0,32), nu=1.0)
         if not CI:
@@ -401,6 +394,18 @@ class LRTestTestCase(TestCase):
             models = curveball.models.fit_model(df, PLOT=False, PRINT=False)
         result = curveball.models.has_nu(models, PRINT=True)
         self.assertFalse(result)
+
+
+    def test_has_nu_baranyi_roberts_nu_01(self):
+        df = randomize_data(baranyi_roberts_ode, t=np.linspace(0,120), nu=0.1)
+        if not CI:
+            models,fig,ax = curveball.models.fit_model(df, PLOT=True, PRINT=False)
+            func_name = sys._getframe().f_code.co_name
+            fig.savefig(func_name + ".png")
+        else:
+            models = curveball.models.fit_model(df, PLOT=False, PRINT=False)
+        result = curveball.models.has_nu(models, PRINT=True)
+        self.assertTrue(result)
 
 
     def test_has_nu_baranyi_roberts_nu_5(self):
@@ -537,11 +542,19 @@ class IssuesTestCase(TestCase):
     def test_has_nu_issue22(self):
         '''`Issue 22 <https://github.com/yoavram/curveball/issues/22>`_.
         '''
-        df = randomize_data(baranyi_roberts_ode, t=np.linspace(0,32),)
-        models = curveball.models.fit_model(df, PLOT=False, PRINT=True)
+        df = randomize_data(baranyi_roberts_ode, t=np.linspace(0,48), nu=5.0)
+        if not CI:
+            models,fig,ax = curveball.models.fit_model(df, PLOT=True, PRINT=False)
+            func_name = sys._getframe().f_code.co_name
+            fig.savefig(func_name + ".png")
+        else:
+            models = curveball.models.fit_model(df, PLOT=False, PRINT=False)
+        self.assertTrue('nu' in models[0].best_values)
         nu = models[0].best_values['nu']
-        self.assertTrue(0.1 < nu < 2.0)        
-        
+        self.assertTrue(1.0 < nu < 10.0, nu)
+        has = curveball.models.has_nu(models)
+        self.assertTrue(has)
+
 
 if __name__ == '__main__':
     main()
