@@ -76,3 +76,4 @@ notebooks/Untitled*.ipynb
 
 # secret
 .wercker.token
+.github.token
