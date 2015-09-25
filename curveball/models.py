@@ -672,22 +672,26 @@ def fit_model(df, ax=None, param_guess=None, param_max=None, use_weights=True, u
     y0guess = param_guess.get('y0', max(_df.OD.min(),1e-6))
     assert y0guess > 0, y0guess
     assert Kguess > y0guess, (Kguess, y0guess)
-    nuguess = param_guess.get('nu', -1)
-    if nuguess == -1: nuguess = guess_nu(_df.Time, _df.OD, K=Kguess)
+    nuguess = param_guess.get('nu')
+    if nuguess is None: 
+        nuguess = guess_nu(_df.Time, _df.OD, K=Kguess)
     assert nuguess > 0, nuguess
-    rguess  = param_guess.get('r', 0)
-    if rguess == 0: rguess = guess_r(_df.Time, _df.OD, nu=nuguess, K=Kguess)
+    rguess  = param_guess.get('r')
+    if rguess is None: 
+        rguess = guess_r(_df.Time, _df.OD, nu=nuguess, K=Kguess)
     assert rguess > 0, rguess
     q0guess = param_guess.get('q0', 1.0)
     vguess = param_guess.get('v', 1.0)
 
     params = baranyi_roberts_model.make_params(y0=y0guess, K=Kguess, r=rguess, nu=nuguess, q0=q0guess, v=vguess)
-    params['y0'].set(min=1e-10)
-    params['K'].set(min=1e-10)
-    params['r'].set(min=1e-10)
-    params['nu'].set(min=1e-10, max=param_max.get('nu', 1))
-    params['q0'].set(min=1e-10, max=param_max.get('q0', 1))
-    params['v'].set(min=1e-4, max=param_max.get('v', 60))
+    for p,m in param_max.items():
+        params[p].set(max=m)
+    params['y0'].set(min=1e-4)
+    params['K'].set(min=1e-4)
+    params['r'].set(min=1e-4)
+    params['nu'].set(min=1e-4)
+    params['q0'].set(min=1e-4, max=param_max.get('q0', 1))
+    params['v'].set(min=1e-4)
 
     # Baranyi-Roberts = Richards /w lag (6 params)
     fit_kws = {'Dfun': baranyi_roberts6_Dfun, "col_deriv":True} if use_Dfun else {}
@@ -697,8 +701,9 @@ def fit_model(df, ax=None, param_guess=None, param_max=None, use_weights=True, u
     # Baranyi-Roberts /w nu=1 = Logistic /w lag (5 params)   
     params['nu'].set(value=1.0, vary=False)
     # a different guess is required for r if assuming nu=1
-    rguess2  = param_guess.get('r', 0)
-    if rguess2 == 0: rguess2 = guess_r(_df.Time, _df.OD, nu=1.0, K=Kguess)
+    rguess2  = param_guess.get('r')
+    if rguess2 is None: 
+        rguess2 = guess_r(_df.Time, _df.OD, nu=1.0, K=Kguess)
     params['r'].set(value=rguess2, vary=True)
     fit_kws = {'Dfun': baranyi_roberts5_Dfun, "col_deriv":True} if use_Dfun else {}
     result = baranyi_roberts_model.fit(data=_df.OD, t=_df.Time, params=params, weights=weights, fit_kws=fit_kws)
@@ -706,19 +711,21 @@ def fit_model(df, ax=None, param_guess=None, param_max=None, use_weights=True, u
 
     # Richards = Baranyi-Roberts /wout lag (4 params)
     params = richards_model.make_params(y0=y0guess, K=Kguess, r=rguess, nu=nuguess)
-    params['y0'].set(min=1e-10)
-    params['K'].set(min=1e-10)
-    params['r'].set(min=1e-10)
-    params['nu'].set(min=1e-10, max=param_max.get('nu', 1))
+    for p,m in param_max.items():
+        params[p].set(max=m)
+    params['y0'].set(min=1e-4)
+    params['K'].set(min=1e-4)
+    params['r'].set(min=1e-4)
+    params['nu'].set(min=1e-4)
     fit_kws = {'Dfun': richards_Dfun, "col_deriv":True} if use_Dfun else {}
     result = richards_model.fit(data=_df.OD, t=_df.Time, params=params, weights=weights, fit_kws=fit_kws)
     models.append(result)
 
     # Logistic = Richards /w nu=1 (3 params)
-    params = logistic_model.make_params(y0=y0guess, K=Kguess, r=rguess)
-    params['y0'].set(min=1e-10)
-    params['K'].set(min=1e-10)
-    params['r'].set(min=1e-10)
+    params = logistic_model.make_params(y0=y0guess, K=Kguess, r=rguess2)
+    params['y0'].set(min=1e-4)
+    params['K'].set(min=1e-4)
+    params['r'].set(min=1e-4)
     fit_kws = {'Dfun': logistic_Dfun, "col_deriv":True} if use_Dfun else {}
     result = logistic_model.fit(data=_df.OD, t=_df.Time, params=params, weights=weights, fit_kws=fit_kws)
     models.append(result)

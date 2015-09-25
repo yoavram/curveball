@@ -162,15 +162,6 @@ class ModelSelectionTestCase(TestCase):
             self.assertTrue(delta_bic < 10)
 
 
-#@SkipTest
-class MoreModelSelectionTestCase(TestCase):
-    _multiprocess_can_split_ = True
-
-
-    def tearDown(self):
-        plt.close("all")
-
-
     def test_fit_model_baranyi_roberts(self):        
         df = randomize_data(baranyi_roberts_ode, t=np.linspace(0,24), nu=5.0)
         if not CI:
