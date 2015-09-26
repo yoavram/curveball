@@ -1,50 +1,53 @@
 box: somada141/python-miniconda@0.0.4
 build:
-    steps:
-        - script:
-            name: python environment
-            code: |
-              info "$(python --version)"
-              info "$(conda --version)"
-              
-        - script:
-            name: create and activate Python 2.7 virtual environment with the full Anaconda distro
-            code: |
-              conda create --yes -n py27 python=2.7 anaconda
-              source activate py27
+  steps:
+    - script:
+        name: python environment
+        code: |
+          info "$(python --version)"
+          info "$(conda --version)"
+          
+    - script:
+        name: create and activate Python 2.7 virtual environment with the full Anaconda distro
+        code: |
+          conda create --yes -n py27 python=2.7 anaconda
+          source activate py27
 
-        - script:
-            name: install required packages
-            code: |
-              conda install seaborn --yes            
-              conda install lxml --yes
-              conda install python-dateutil --yes
-              conda install sympy --yes
-              conda install xlrd --yes
-              conda install coverage --yes
-              pip install --upgrade pip
-              pip install https://github.com/lmfit/lmfit-py/archive/800f3e40ef8ba977005d27a5d05fd231688a5749.zip              
-              python setup.py install
+    - script:
+        name: install required packages
+        code: |
+          conda install seaborn --yes            
+          conda install lxml --yes
+          conda install python-dateutil --yes
+          conda install sympy --yes
+          conda install xlrd --yes
+          conda install coverage --yes
+          pip install --upgrade pip
+          pip install https://github.com/lmfit/lmfit-py/archive/800f3e40ef8ba977005d27a5d05fd231688a5749.zip              
+          python setup.py install
 
-        - script:
-            name: test
-            code: nosetests --with-coverage --cover-package=curveball --cover-inclusive --cover-html --cover-html-dir=$SRC_COVERAGE_DIR
+    - script:
+        name: test
+        code: nosetests --with-coverage --cover-package=curveball --cover-inclusive --cover-html --cover-html-dir=$SRC_COVERAGE_DIR
 
-    after-steps:
-        - script:
-            name: update gh-pages with coverage
-            code: |
-              remote="https://$GITHUB_TOKEN@github.com/$GITHUB_USERNAME/$GITHUB_REPO.git"
-              git config user.email "$GITHUB_EMAIL"
-              git config user.name "$GITHUB_USERNAME"                
-              git clone -b gh-pages $remote gh-pages
-              cp -R $SRC_COVERAGE_DIR/* gh-pages/$DST_COVERAGE_DIR
-              cd gh-pages              
-              diff=$(git status -s | grep $DST_COVERAGE_DIR)
-              if [[ -z $diff ]]; then
-                info "Skipping gh-pages step because coverage did not change."
-              else
-                info "Commiting coverage changes."
-                git commit $DST_COVERAGE_DIR -m "Updated code coverage: `date +'%Y-%m-%d%k:%M:%S'`"
-                git push origin gh-pages                
-              fi
+deploy :
+  steps :
+    - script:
+        name: configure git and clone gh-pages branch
+        code: |-
+          git config --global user.email "pleasemailus@wercker.com"
+          git config --global user.name "wercker"
+          git clone -b gh-pages $GIT_REMOTE gh-pages
+    - script:
+        name: deploy coverage report to github pages
+        code: |
+          cp -R $SRC_COVERAGE_DIR/* gh-pages/$DST_COVERAGE_DIR
+          cd gh-pages              
+          diff=$(git status -s | grep $DST_COVERAGE_DIR)
+          if [[ -z $diff ]]; then
+            info "Skipping gh-pages step because coverage did not change."
+          else
+            info "Commiting coverage changes."
+            git commit $DST_COVERAGE_DIR -m "Updated code coverage: `date +'%Y-%m-%d%k:%M:%S'`, commited from $WERCKER_STARTED_BY"
+            git push origin gh-pages                
+          fi
