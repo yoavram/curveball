@@ -43,11 +43,5 @@ deploy :
         code: |
           cp -R $SRC_COVERAGE_DIR/* gh-pages/$DST_COVERAGE_DIR
           cd gh-pages              
-          diff=$(git status -s | grep $DST_COVERAGE_DIR)
-          if [[ -z $diff ]]; then
-            info "Skipping gh-pages step because coverage did not change."
-          else
-            info "Commiting coverage changes."
-            git commit $DST_COVERAGE_DIR -m "Updated code coverage: `date +'%Y-%m-%d%k:%M:%S'`, commited from $WERCKER_STARTED_BY"
-            git push origin gh-pages                
-          fi
+          git commit $DST_COVERAGE_DIR -m "Updated code coverage: `date +'%Y-%m-%d%k:%M:%S'`, commited from $WERCKER_STARTED_BY"
+          git push origin gh-pages
