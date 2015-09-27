@@ -30,11 +30,25 @@ class SimpleTestCase(TestCase):
 		pass
 
 
+	def test_help(self):
+		runner = CliRunner()
+		result = runner.invoke(cli.cli, ['--help'])
+		self.assertEquals(result.exit_code, 0)
+
+
 	def test_version(self):
 		runner = CliRunner()
 		result = runner.invoke(cli.cli, ['--version'])
 		self.assertEquals(result.exit_code, 0)
 		self.assertIn(curveball.__version__, result.output)
+
+
+class AnalysisTestCase(TestCase):
+	_multiprocess_can_split_ = True
+
+
+	def test_process_file(self):
+		pass
 
 
 if __name__ == '__main__':
