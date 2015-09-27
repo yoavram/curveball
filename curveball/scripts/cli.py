@@ -42,7 +42,7 @@ def echo_info(message):
 @click.option('-v/-V', '--verbose/--no-verbose', default=False)
 @click.option('-l/-L', '--plot/--no-plot', default=True)
 @click.option('-p/-P', '--prompt/--no-prompt', default=False)
-@click.version_option(prog_name=curveball.__name__)
+@click.version_option(version=curveball.__version__, prog_name=curveball.__name__)
 def cli(verbose, plot, prompt):
 	global VERBOSE
 	VERBOSE = verbose
