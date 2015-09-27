@@ -10,6 +10,10 @@
 from unittest import TestCase, main
 from nose.plugins.skip import SkipTest
 import os
+# See reference on testing Click applications: http://click.pocoo.org/5/testing/
+from click.testing import CliRunner
+from curveball.scripts import cli
+import curveball
 
 
 CI = os.environ.get('CI', 'false').lower() == 'true'
@@ -18,17 +22,19 @@ CI = os.environ.get('CI', 'false').lower() == 'true'
 class SimpleTestCase(TestCase):
 	_multiprocess_can_split_ = True
 
-
-    def setUp(self):
-        pass
-
-
-    def tearDown(self):
-    	pass
+	def setUp(self):
+		pass
 
 
-    def test_read_tecan_xlsx_OD(self):
-    	pass
+	def tearDown(self):
+		pass
+
+
+	def test_version(self):
+		runner = CliRunner()
+		result = runner.invoke(cli.cli, ['--version'])
+		self.assertEquals(result.exit_code, 0)
+		self.assertIn(curveball.__version__, result.output)
 
 
 if __name__ == '__main__':
