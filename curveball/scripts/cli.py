@@ -38,18 +38,11 @@ def echo_info(message):
 		click.secho(message, fg=INFO_COLOR)
 
 
-def VERBOSE_version(ctx, param, value):
-    if not value or ctx.resilient_parsing:
-        return
-    click.echo(curveball.__version__)
-    ctx.exit()
-
-
 @click.group()
 @click.option('-v/-V', '--verbose/--no-verbose', default=False)
 @click.option('-l/-L', '--plot/--no-plot', default=True)
 @click.option('-p/-P', '--prompt/--no-prompt', default=False)
-@click.option('--version', is_flag=True, callback=VERBOSE_version, expose_value=False, is_eager=True)
+@click.version_option(prog_name=curveball.__name__)
 def cli(verbose, plot, prompt):
 	global VERBOSE
 	VERBOSE = verbose
