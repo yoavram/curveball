@@ -57,6 +57,16 @@ def cli(verbose, plot, prompt):
 		click.secho('=' * 40, fg='cyan')		
 
 
+@click.option('--plate_folder', default='plate_templates', help='plate templates default folder', type=click.Path())
+@click.option('--plate_file', default='checkerboard.csv', help='plate templates csv file')
+@cli.command()
+def plate(plate_folder, plate_file):
+	## TODO: check exists, check folder not in package resource, output errors...
+	import pkg_resources
+	with open(pkg_resources.resource_filename(plate_folder, plate_file), 'r') as f:
+		click.echo(f.read())
+
+
 @click.argument('path', type=click.Path(exists=True, readable=True))
 @click.option('--plate_folder', default='plate_templates', help='plate templates default folder', type=click.Path(exists=True, dir_okay=True, readable=True))
 @click.option('--plate_file', default='checkerboard.csv', help='plate templates csv file')
