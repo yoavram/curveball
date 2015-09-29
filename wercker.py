@@ -1,4 +1,3 @@
-import warnings
 import sys
 import requests
 import json
@@ -20,9 +19,7 @@ if __name__ == '__main__':
 	builds_url = '%s/api/v3/builds' % base_url
 	headers = headers = {'Authorization':'Bearer %s' % token}
 
-	with warnings.catch_warnings():
-		warnings.simplefilter("ignore")
-		r = requests.get(apps_url, headers=headers, verify=True)
+	r = requests.get(apps_url, headers=headers, verify=True)
 	print "Apps:"
 	for app in r.json():
 		print app['name'], app['id']
@@ -37,9 +34,7 @@ if __name__ == '__main__':
 	payload = {
 				"applicationId": app_id
 			  }
-	with warnings.catch_warnings():
-		warnings.simplefilter("ignore")
-		r = requests.post(builds_url, headers=headers, verify=True, json=payload)		  
+	r = requests.post(builds_url, headers=headers, verify=True, json=payload)		  
 	if not r.ok:
 		print "Failed:", r.content
 		sys.exit()
