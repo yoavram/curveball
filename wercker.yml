@@ -8,21 +8,15 @@ build:
           info "$(conda --version)"
           
     - script:
-        name: create and activate Python 2.7 virtual environment with the full Anaconda distro
+        name: create and activate Python 2.7 virtual environment
         code: |
-          conda create --yes -n py27 python=2.7 anaconda
+          conda create --yes -n py27 python=2.7           
           source activate py27
 
     - script:
         name: install required packages
         code: |
-          conda install seaborn --yes            
-          conda install lxml --yes
-          conda install python-dateutil --yes
-          conda install sympy --yes
-          conda install xlrd --yes
-          conda install coverage --yes
-          pip install --upgrade pip
+          conda install --yes coverage lxml matplotlib nose numpy pandas pip requests scipy seaborn statsmodels sympy xlrd
           pip install https://github.com/lmfit/lmfit-py/archive/800f3e40ef8ba977005d27a5d05fd231688a5749.zip              
           python setup.py install
 
