@@ -10,14 +10,23 @@
 from unittest import TestCase, main
 from nose.plugins.skip import SkipTest
 import os
+import io
 import shutil
 import pkg_resources
+import pandas as pd
 from click.testing import CliRunner # See reference on testing Click applications: http://click.pocoo.org/5/testing/
 from curveball.scripts import cli
 import curveball
 
 
 CI = os.environ.get('CI', 'false').lower() == 'true'
+
+
+def is_csv(data):
+	lines = data.splitlines()
+	data  = map(lambda line: line.split(','), lines)
+	lengths = map(len, data)
+	return all(x==lengths[0] for x in lengths)
 
 
 class SimpleTestCase(TestCase):
@@ -84,18 +93,20 @@ class AnalysisTestCase(TestCase):
 		dst = os.path.join('data', self.filename)
 		os.makedirs(dst)
 		shutil.copy(src, dst)		
-		self.filepath = dst		
+		self.filepath = os.path.join(os.getcwd(), dst)
 		self.assertTrue(os.path.exists(self.filepath))
-		self.assertTrue(os.path.exists(os.path.join(os.getcwd(), self.filepath)))
 
 
 	def tearDown(self):
-		pass
+		pass	
 
 
 	def test_process_file(self):
 		result = self.runner.invoke(cli.cli, ['--no-plot', '--no-verbose', '--no-prompt', 'analyse', self.filepath, '--plate_file=G-RG-R.csv', '--ref_strain=G'])
-		self.assertEquals(result.exit_code, 0, result.output)
+		self.assertEquals(result.exit_code, 0, result.output)		
+		lines = filter(lambda line: len(line) > 0, result.output.splitlines()) 
+		data = os.linesep.join(lines[-4:]) # only last 4 lines
+		self.assertTrue(is_csv(data))
 
 
 if __name__ == '__main__':
