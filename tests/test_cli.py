@@ -84,18 +84,24 @@ def setup_with_context_manager(testcase, cm):
 
 class AnalysisTestCase(TestCase):
 	_multiprocess_can_split_ = True
-	filename = 'Tecan_280715.xlsx'
 
 
 	def setUp(self):
+		files = pkg_resources.resource_listdir('data', '')
+		files = filter(lambda fn: fn[:2] != '__' and os.path.splitext(fn)[-1] != 'py', files)
 		self.runner = CliRunner()
 		self.ctx = setup_with_context_manager(self, self.runner.isolated_filesystem())
-		src = pkg_resources.resource_filename('data', self.filename)
-		shutil.copy(src, '.')
-		self.filepath = os.path.join(os.getcwd(), self.filename)
-		self.assertTrue(os.path.exists(self.filepath))
-		self.assertTrue(os.path.isfile(self.filepath))
+		self.dirpath = os.getcwd()
+		self.assertTrue(os.path.exists(self.dirpath))
+		self.assertTrue(os.path.isdir(self.dirpath))
 
+		for fn in files:
+			src = pkg_resources.resource_filename('data', fn)
+			shutil.copy(src, '.')
+			self.assertTrue(os.path.exists(os.path.join(self.dirpath, fn)))
+			self.assertTrue(os.path.isfile(os.path.join(self.dirpath, fn)))
+		self.filepath = os.path.join(self.dirpath, files[0])
+		
 
 	def tearDown(self):
 		pass	
@@ -124,6 +130,10 @@ class AnalysisTestCase(TestCase):
 		plot_files = glob.glob(path + "_*.png")
 		self.assertNotEqual(len(plot_files), 0)
 
+
+	def test_process_dir(self):
+		pass
+		
 
 if __name__ == '__main__':
     main()
