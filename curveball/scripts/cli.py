@@ -7,6 +7,7 @@
 # Licensed under the MIT license:
 # http://www.opensource.org/licenses/MIT-license
 # Copyright (c) 2015, Yoav Ram <yoav@yoavram.com>
+import sys
 import os.path
 import pkg_resources
 import glob
@@ -71,7 +72,7 @@ def plate(plate_folder, plate_file):
 
 
 @click.argument('path', type=click.Path(exists=True, readable=True))
-@click.option('--plate_folder', default='plate_templates', help='plate templates default folder', type=click.Path(exists=True, dir_okay=True, readable=True))
+@click.option('--plate_folder', default='plate_templates', help='plate templates default folder', type=click.Path())
 @click.option('--plate_file', default='checkerboard.csv', help='plate templates csv file')
 @click.option('-o', '--output_file', default='-', help='output csv file path', type=click.File(mode='w', lazy=True))
 @click.option('--blank_strain', default='0', help='blank strain for background calibration')
@@ -83,7 +84,10 @@ def analyse(path, output_file, plate_folder, plate_file, blank_strain, ref_strai
 	Outputs estimated growth traits and fitness of all strains in all files in folder PATH or matching the pattern PATH.
 	"""
 	results = []
-	plate_path = os.path.join(plate_folder, plate_file)	
+	plate_path = os.path.join(plate_folder, plate_file)
+	if not os.path.exists(plate_path):
+		# if plate path doesn't exist try to get it from package data
+		plate_path = pkg_resources.resource_filename(plate_folder, plate_file)
 
 	if VERBOSE:
 		click.echo('- Processing %s' % click.format_filename(path))		
@@ -116,23 +120,30 @@ def analyse(path, output_file, plate_folder, plate_file, blank_strain, ref_strai
 	if not files:
 		echo_error("No files to analyze found in %s" % click.format_filename(path))
 		return results
-
-	with click.progressbar(files, label='Processing files:') as bar:
-		for filepath in bar:
+	
+	with click.progressbar(files, label='Processing files:', item_show_func=get_filename, color='green') as bar:
+		for filepath in bar:		
 			file_results = process_file(filepath, plate, blank_strain, ref_strain, max_time)
 			results.extend(file_results)
 	
 	output_table = pd.DataFrame(results)
 	output_table.to_csv(output_file, index=False)
-	click.secho("Wrote output to %s" % output_file.name, fg='green')
+	if VERBOSE and output_file.name != '-':
+		click.secho("Wrote output to %s" % output_file.name, fg='green')
 
+
+def get_filename(filepath):
+	if filepath is None:
+		return ''
+	filename = os.path.split(filepath)[-1]
+	if filename is None:
+		return ''
+	return filename
 
 def process_file(filepath, plate, blank_strain, ref_strain, max_time):
 	results = []	
 	fn,ext = os.path.splitext(filepath)
-	echo_info('Extension: %s' % ext)
 	handler = file_extension_handlers.get(ext)
-	echo_info('Handler: %s' % handler.__name__)
 	if  handler == None:
 		echo_info("No handler")
 		return results
@@ -172,7 +183,7 @@ def process_file(filepath, plate, blank_strain, ref_strain, max_time):
 	else:
 		echo_error("Warning, reference strains '%s' doesn't exist!" % ref_strain)
 
-	with click.progressbar(strains, label='Fitting strain growth curves') as bar:
+	with click.progressbar(strains, label='Fitting strain growth curves', item_show_func=lambda s: s, color='green') as bar:
 		for strain in bar:
 			strain_df = df[df.Strain == strain]
 			_ = curveball.models.fit_model(strain_df, PLOT=PLOT, PRINT=VERBOSE)
