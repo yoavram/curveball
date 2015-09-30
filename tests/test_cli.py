@@ -87,20 +87,20 @@ class AnalysisTestCase(TestCase):
 
 
 	def setUp(self):
-		files = pkg_resources.resource_listdir('data', '')
-		files = filter(lambda fn: os.path.splitext(fn)[-1] in ['.xlsx', '.mat'], files)
+		self.files = pkg_resources.resource_listdir('data', '')
+		self.files = filter(lambda fn: os.path.splitext(fn)[-1] in ['.xlsx', '.mat'], self.files)
 		self.runner = CliRunner()
 		self.ctx = setup_with_context_manager(self, self.runner.isolated_filesystem())
 		self.dirpath = os.getcwd()
 		self.assertTrue(os.path.exists(self.dirpath))
 		self.assertTrue(os.path.isdir(self.dirpath))
 
-		for fn in files:
+		for fn in self.files:
 			src = pkg_resources.resource_filename('data', fn)
 			shutil.copy(src, '.')
 			self.assertTrue(os.path.exists(os.path.join(self.dirpath, fn)))
 			self.assertTrue(os.path.isfile(os.path.join(self.dirpath, fn)))
-		self.filepath = os.path.join(self.dirpath, files[0])
+		self.filepath = os.path.join(self.dirpath, self.files[0])
 		
 
 	def tearDown(self):
@@ -132,9 +132,13 @@ class AnalysisTestCase(TestCase):
 
 
 	def test_process_dir(self):
-		pass
-
+		result = self.runner.invoke(cli.cli, ['--no-plot', '--verbose', '--no-prompt', 'analyse', self.dirpath, '--plate_file=G-RG-R.csv', '--ref_strain=G'])
+		self.assertEquals(result.exit_code, 0, result.output)		
+		lines = filter(lambda line: len(line) > 0, result.output.splitlines()) 
+		num_lines = len(self.files) * 3 + 1
+		data = os.linesep.join(lines[-num_lines:])
+		self.assertTrue(is_csv(data), result.output)
+		
 
 if __name__ == '__main__':
     main()
-
