@@ -40,6 +40,15 @@ def echo_info(message):
 		click.secho(message, fg=INFO_COLOR)
 
 
+def get_filename(filepath):
+	if filepath is None:
+		return ''
+	filename = os.path.split(filepath)[-1]
+	if filename is None:
+		return ''
+	return filename
+
+
 @click.group()
 @click.option('-v/-V', '--verbose/--no-verbose', default=False)
 @click.option('-l/-L', '--plot/--no-plot', default=True)
@@ -115,7 +124,7 @@ def analyse(path, output_file, plate_folder, plate_file, blank_strain, ref_strai
 		files = map(lambda fn: os.path.join(path, fn), files)
 	else:
 		files = glob.glob(path)
-
+	
 	files = filter(lambda fn: os.path.splitext(fn)[-1].lower() in file_extension_handlers.keys(), files)
 	if not files:
 		echo_error("No files to analyze found in %s" % click.format_filename(path))
@@ -132,14 +141,6 @@ def analyse(path, output_file, plate_folder, plate_file, blank_strain, ref_strai
 		click.secho("Wrote output to %s" % output_file.name, fg='green')
 
 
-def get_filename(filepath):
-	if filepath is None:
-		return ''
-	filename = os.path.split(filepath)[-1]
-	if filename is None:
-		return ''
-	return filename
-
 def process_file(filepath, plate, blank_strain, ref_strain, max_time):
 	results = []	
 	fn,ext = os.path.splitext(filepath)
@@ -153,7 +154,7 @@ def process_file(filepath, plate, blank_strain, ref_strain, max_time):
 		else:
 			df = handler(filepath, plate=plate)
 	except IOError as e:
-		echo_error('Failed reading data file, %s' % e.message)
+		echo_error("Failed reading data file, '%s'" % e.message)
 		return results
 
 	strains = plate.Strain.unique().tolist()
