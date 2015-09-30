@@ -109,6 +109,14 @@ class AnalysisTestCase(TestCase):
 		self.assertTrue(is_csv(data))
 
 
+	def test_process_file_to_file(self):
+		result = self.runner.invoke(cli.cli, ['--no-plot', '--no-verbose', '--no-prompt', 'analyse', self.filepath, '--plate_file=G-RG-R.csv', '--ref_strain=G', '--output_file=summary.csv'])
+		self.assertEquals(result.exit_code, 0, result.output)		
+		with open('summary.csv', 'r') as f:
+			data = f.read()
+		self.assertTrue(is_csv(data))
+
+
 	def test_create_plots(self):
 		result = self.runner.invoke(cli.cli, ['--plot', '--verbose', '--no-prompt', 'analyse', self.filepath, '--plate_file=G-RG-R.csv', '--ref_strain=G'])
 		self.assertEquals(result.exit_code, 0, result.output)
