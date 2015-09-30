@@ -44,7 +44,7 @@ setup(
     ],
     packages=find_packages(),
     include_package_data=True,
-    data_files=[('data', ['data/Tecan_280715.xlsx']),
+    data_files=[('data', ['data/Tecan_280715.xlsx', 'data/Tecan_210115.xlsx']),
                   ('plate_templates', ['plate_templates/checkerboard.csv', 'plate_templates/G-RG-R.csv']),
     ],
     install_requires=[
