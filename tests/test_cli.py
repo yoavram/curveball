@@ -10,6 +10,7 @@
 from unittest import TestCase, main
 from nose.plugins.skip import SkipTest
 import os
+import glob
 import io
 import shutil
 import pkg_resources
@@ -90,11 +91,10 @@ class AnalysisTestCase(TestCase):
 		self.runner = CliRunner()
 		self.ctx = setup_with_context_manager(self, self.runner.isolated_filesystem())
 		src = pkg_resources.resource_filename('data', self.filename)
-		dst = os.path.join('data', self.filename)
-		os.makedirs(dst)
-		shutil.copy(src, dst)		
-		self.filepath = os.path.join(os.getcwd(), dst)
+		shutil.copy(src, '.')
+		self.filepath = os.path.join(os.getcwd(), self.filename)
 		self.assertTrue(os.path.exists(self.filepath))
+		self.assertTrue(os.path.isfile(self.filepath))
 
 
 	def tearDown(self):
@@ -109,5 +109,14 @@ class AnalysisTestCase(TestCase):
 		self.assertTrue(is_csv(data))
 
 
+	def test_create_plots(self):
+		result = self.runner.invoke(cli.cli, ['--plot', '--verbose', '--no-prompt', 'analyse', self.filepath, '--plate_file=G-RG-R.csv', '--ref_strain=G'])
+		self.assertEquals(result.exit_code, 0, result.output)
+		path,ext = os.path.splitext(self.filepath)		
+		plot_files = glob.glob(path + "_*.png")
+		self.assertNotEqual(len(plot_files), 0)
+
+
 if __name__ == '__main__':
     main()
+
