@@ -88,7 +88,7 @@ class AnalysisTestCase(TestCase):
 
 	def setUp(self):
 		files = pkg_resources.resource_listdir('data', '')
-		files = filter(lambda fn: fn[:2] != '__' and os.path.splitext(fn)[-1] != 'py', files)
+		files = filter(lambda fn: os.path.splitext(fn)[-1] in ['.xlsx', '.mat'], files)
 		self.runner = CliRunner()
 		self.ctx = setup_with_context_manager(self, self.runner.isolated_filesystem())
 		self.dirpath = os.getcwd()
@@ -128,12 +128,12 @@ class AnalysisTestCase(TestCase):
 		self.assertEquals(result.exit_code, 0, result.output)
 		path,ext = os.path.splitext(self.filepath)		
 		plot_files = glob.glob(path + "_*.png")
-		self.assertNotEqual(len(plot_files), 0)
+		self.assertNotEqual(len(plot_files), 0, result.output)
 
 
 	def test_process_dir(self):
 		pass
-		
+
 
 if __name__ == '__main__':
     main()
