@@ -43,6 +43,18 @@ class SimpleTestCase(TestCase):
 		self.assertIn(curveball.__version__, result.output)
 
 
+class PlateTestCase(TestCase):
+	_multiprocess_can_split_ = True
+
+
+	def test_default_plate(self):
+		runner = CliRunner()
+		result = runner.invoke(cli.cli, ['plate'])
+		self.assertEquals(result.exit_code, 0)
+		newlines = result.output.count("\n")
+		self.assertEquals(newlines, 98) # 96 wells, 1 header, 1 empty line
+
+
 class AnalysisTestCase(TestCase):
 	_multiprocess_can_split_ = True
 

@@ -8,6 +8,7 @@
 # http://www.opensource.org/licenses/MIT-license
 # Copyright (c) 2015, Yoav Ram <yoav@yoavram.com>
 import os.path
+import pkg_resources
 import glob
 import numpy as np
 import matplotlib.pyplot as plt
@@ -61,8 +62,10 @@ def cli(verbose, plot, prompt):
 @click.option('--plate_file', default='checkerboard.csv', help='plate templates csv file')
 @cli.command()
 def plate(plate_folder, plate_file):
-	## TODO: check exists, check folder not in package resource, output errors...
-	import pkg_resources
+	"""Read and output a plate from a plate file.
+	Default is to dump the plate file to the standard output.
+	TODO: check exists, check folder not in package resource, output errors, plot the plate.
+	"""
 	with open(pkg_resources.resource_filename(plate_folder, plate_file), 'r') as f:
 		click.echo(f.read())
 
