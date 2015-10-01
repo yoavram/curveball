@@ -13,9 +13,7 @@ import shutil
 import tempfile
 import os
 import matplotlib
-CI = os.environ.get('CI', 'false').lower() == 'true'
-if CI:
-	matplotlib.use('Agg') # Must be before importing matplotlib.pyplot or pylab!
+matplotlib.use('Agg') # Must be before importing matplotlib.pyplot or pylab!
 import pandas as pd
 import numpy as np
 from PIL import Image
