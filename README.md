@@ -3,6 +3,7 @@
 [![Latest Version](https://img.shields.io/pypi/v/curveball.svg)](https://pypi.python.org/pypi/curveball/)
 [![Supported Python versions](https://img.shields.io/pypi/pyversions/curveball.svg)](https://pypi.python.org/pypi/curveball/)
 [![License](https://img.shields.io/pypi/l/curveball.svg)](https://pypi.python.org/pypi/curveball/)
+[![Build Status](https://magnum.travis-ci.com/yoavram/curveball.svg?token=jdWtkbZwtnsj5TaFxVKJ&branch=travis)](https://magnum.travis-ci.com/yoavram/curveball)
 
 [![wercker status](https://app.wercker.com/status/ccdaa657b94c79e9a1fe194353613c13/m/master "wercker status")](https://app.wercker.com/project/bykey/ccdaa657b94c79e9a1fe194353613c13)
 
