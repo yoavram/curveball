@@ -21,6 +21,15 @@ import seaborn as sns
 import curveball
 
 
+CI = os.environ.get('CI', 'false').lower() == 'true'
+
+
+class MplTestCase(TestCase):
+	def test_mpl(self):
+		if CI:
+			self.assertEquals(matplotlib.rcParams['backend'].lower(), 'agg')
+
+
 class PlotsTestCase(TestCase):
 	def setUp(self):
 		self.assertEquals(matplotlib.rcParams['backend'].lower(), 'agg')
