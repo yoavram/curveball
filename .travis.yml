@@ -30,4 +30,4 @@ install:
 script:  
   - python tests/test_plots.py
   - nosetests tests/test_plots.py -v
-  - nosetests --with-coverage --cover-package=curveball --cover-inclusive --cover-html --cover-html-dir=coverage_report
+  - nosetests tests --verbose --with-coverage --cover-package=curveball --cover-inclusive --cover-html --cover-html-dir=coverage_report
