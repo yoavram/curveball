@@ -18,16 +18,14 @@ before_install:
   - chmod +x miniconda.sh
   - ./miniconda.sh -b
   - export PATH=/home/travis/miniconda/bin:$PATH
-  - conda update --yes conda
+  - conda update --yes conda  
 
 # Install packages
 install:
   - conda install --yes python=$TRAVIS_PYTHON_VERSION requests pip atlas numpy scipy matplotlib nose dateutil pandas statsmodels coverage lxml seaborn sympy xlrd pillow
-  # Coverage packages are on my binstar channel
-  # - conda install --yes -c dan_blanchard python-coveralls nose-cov
   - pip install https://github.com/lmfit/lmfit-py/archive/800f3e40ef8ba977005d27a5d05fd231688a5749.zip
   - python setup.py install
 
 # Run test
 script:  
-  - nosetests tests/test_mpl.py --with-coverage --cover-package=curveball --cover-inclusive --cover-html --cover-html-dir=coverage_report
+  - nosetests tests --with-coverage --cover-package=curveball --cover-inclusive --cover-html --cover-html-dir=coverage_report

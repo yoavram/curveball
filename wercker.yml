@@ -16,13 +16,16 @@ build:
     - script:
         name: install required packages
         code: |
-          conda install --yes coverage lxml matplotlib nose numpy pandas pip requests scipy seaborn statsmodels sympy xlrd
+          conda install --yes coverage lxml matplotlib nose numpy pandas pip requests scipy seaborn statsmodels sympy xlrd pillow
           pip install https://github.com/lmfit/lmfit-py/archive/800f3e40ef8ba977005d27a5d05fd231688a5749.zip              
           python setup.py install
 
     - script:
         name: test
-        code: nosetests --with-coverage --cover-package=curveball --cover-inclusive --cover-html --cover-html-dir=$SRC_COVERAGE_DIR
+        code: |
+          mkdir $HOME/.matplotlib
+          echo 'backend : Agg' > $HOME/.matplotlib/matplotlibrc
+          nosetests --with-coverage --cover-package=curveball --cover-inclusive --cover-html --cover-html-dir=$SRC_COVERAGE_DIR
 
 deploy :
   steps :
