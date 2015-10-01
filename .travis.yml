@@ -30,4 +30,4 @@ install:
 
 # Run test
 script:  
-  - nosetests tests/test_mpl.py --with-coverage --cover-package=curveball --cover-inclusive --cover-html --cover-html-dir=coverage_report
+  - nosetests --with-coverage --cover-package=curveball --cover-inclusive --cover-html --cover-html-dir=coverage_report
