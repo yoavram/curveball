@@ -17,6 +17,7 @@ import numpy as np
 from PIL import Image
 import seaborn as sns
 import curveball
+import matplotlib
 
 
 CI = os.environ.get('CI', 'false').lower() == 'true'
