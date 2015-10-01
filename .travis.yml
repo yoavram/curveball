@@ -28,6 +28,4 @@ install:
 
 # Run test
 script:  
-  - python tests/test_plots.py
-  - nosetests tests/test_plots.py -v
-  - nosetests tests --verbose --with-coverage --cover-package=curveball --cover-inclusive --cover-html --cover-html-dir=coverage_report
+  - nosetests tests --with-coverage --cover-package=curveball --cover-inclusive --cover-html --cover-html-dir=coverage_report
