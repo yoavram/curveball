@@ -16,7 +16,7 @@ build:
     - script:
         name: install required packages
         code: |
-          conda install --yes coverage lxml matplotlib nose numpy pandas pip requests scipy seaborn statsmodels sympy xlrd
+          conda install --yes coverage lxml matplotlib nose numpy pandas pip requests scipy seaborn statsmodels sympy xlrd pillow
           pip install https://github.com/lmfit/lmfit-py/archive/800f3e40ef8ba977005d27a5d05fd231688a5749.zip              
           python setup.py install
 
