@@ -22,10 +22,7 @@ before_install:
 
 # Install packages
 install:
-  - mkdir -p ~/.matplotlib/; echo 'backend : Agg' > ~/.matplotlib/matplotlibrc
   - conda install --yes python=$TRAVIS_PYTHON_VERSION requests pip atlas numpy scipy matplotlib nose dateutil pandas statsmodels coverage lxml seaborn sympy xlrd pillow
-  # Coverage packages are on my binstar channel
-  # - conda install --yes -c dan_blanchard python-coveralls nose-cov
   - pip install https://github.com/lmfit/lmfit-py/archive/800f3e40ef8ba977005d27a5d05fd231688a5749.zip
   - python setup.py install
 
