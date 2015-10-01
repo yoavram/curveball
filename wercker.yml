@@ -23,7 +23,8 @@ build:
     - script:
         name: test
         code: |
-          python -c "import matplotlib; matplotlib.use('Agg')"
+          mkdir $HOME/.matplotlib
+          echo 'backend : Agg' > $HOME/.matplotlib/matplotlibrc
           nosetests --with-coverage --cover-package=curveball --cover-inclusive --cover-html --cover-html-dir=$SRC_COVERAGE_DIR
 
 deploy :
