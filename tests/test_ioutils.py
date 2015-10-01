@@ -9,18 +9,18 @@
 # Copyright (c) 2015, Yoav Ram <yoav@yoavram.com>
 
 from unittest import TestCase, main
+import tempfile
 import os
+import shutil
 import zipfile
-
+import pkg_resources
 import curveball
 import pandas as pd
 
 class XLSXTestCase(TestCase):
     def setUp(self):
-        self.filename = os.path.join("data", "Tecan_210115.xlsx")
-        if not os.path.exists(self.filename):
-            raise IOError("Data file not found: %s" % self.filename)
-        self.plate = pd.read_csv(os.path.join("plate_templates", "G-RG-R.csv"))       
+        self.filename = pkg_resources.resource_filename("data", "Tecan_210115.xlsx")
+        self.plate = pd.read_csv(pkg_resources.resource_filename("plate_templates", "G-RG-R.csv"))
 
 
     def test_read_tecan_xlsx_OD(self):
@@ -47,7 +47,6 @@ class XLSXTestCase(TestCase):
         self.assertEquals(df.columns.tolist() , ['Time', u'Temp. [\xb0C]', 'Cycle Nr.', 'Well', 'OD', 'Row', 'Col', 'Strain', 'Color'])
 
 
-
     def test_read_tecan_xlsx_with_plate(self):
         df = curveball.ioutils.read_tecan_xlsx(self.filename, 'OD', plate=self.plate)
         self.assertIsNotNone(df)
@@ -57,14 +56,17 @@ class XLSXTestCase(TestCase):
 
 
 class XMLTestCase(TestCase):
-    def setUp(self):            
-        self.folder = "data"
-        self.zip_filename = os.path.join(self.folder, "20130211_dh.zip")
-        if not os.path.exists(self.zip_filename):
-            raise IOError("Data file not found: %s" % self.zip_filename)
+    def setUp(self):        
+        self.zip_filename = pkg_resources.resource_filename("data", "Tecan_210115.xlsx")
+        self.zip_filename = os.path.join("data", "20130211_dh.zip")
+        self.folder = tempfile.mkdtemp()
         self.zipfile = zipfile.ZipFile(self.zip_filename)
         self.zipfile.extractall(self.folder)
-        self.plate = pd.read_csv(os.path.join("plate_templates", "checkerboard.csv"))
+        self.plate = pd.read_csv(pkg_resources.resource_filename("plate_templates", "checkerboard.csv"))
+
+
+    def tearDown(self):
+        shutil.rmtree(self.folder)
 
 
     def test_read_tecan_xml_with_plate(self):
@@ -72,12 +74,7 @@ class XMLTestCase(TestCase):
         self.assertIsNotNone(df)
         self.assertIsInstance(df, pd.DataFrame)
         self.assertEquals(df.shape, (2016, 8))
-        self.assertEquals(df.columns.tolist() , ['OD', 'Well', 'Row', 'Col', 'Time', 'Filename', 'Strain', 'Color'])
-
-
-    def tearDown(self):
-        for f in self.zipfile.filelist:
-            os.remove(os.path.join(self.folder, f.filename))
+        self.assertEquals(df.columns.tolist() , ['OD', 'Well', 'Row', 'Col', 'Time', 'Filename', 'Strain', 'Color'])    
 
 
 if __name__ == '__main__':
