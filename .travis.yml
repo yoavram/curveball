@@ -28,13 +28,6 @@ install:
   - pip install https://github.com/lmfit/lmfit-py/archive/800f3e40ef8ba977005d27a5d05fd231688a5749.zip
   - python setup.py install
 
-# Configure a headless backend for matplotlib
-before_script:
-  - mkdir -p ~/.matplotlib/
-# Ugly trick to avoid that the colon gets interpreted by the YAML parser.
-  - |-
-    echo "backend : Agg" > ~/.matplotlib/matplotlibrc
-
 # Run test
 script:  
-  - nosetests --with-coverage --cover-package=curveball --cover-inclusive --cover-html --cover-html-dir=coverage_report
+  - python tests/test_mpl.py #--with-coverage --cover-package=curveball --cover-inclusive --cover-html --cover-html-dir=coverage_report

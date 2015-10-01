@@ -9,6 +9,7 @@
 # Copyright (c) 2015, Yoav Ram <yoav@yoavram.com>
 from unittest import TestCase, main
 import matplotlib
+matplotlib.use('Agg')
 import os
 
 
@@ -19,4 +20,3 @@ class MplTestCase(TestCase):
 	def test_mpl(self):
 		if CI:
 			self.assertEquals(matplotlib.rcParams['backend'].lower(), 'agg')
-		
