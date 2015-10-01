@@ -18,6 +18,7 @@ import pandas as pd
 from click.testing import CliRunner # See reference on testing Click applications: http://click.pocoo.org/5/testing/
 from curveball.scripts import cli
 import curveball
+import click
 
 
 CI = os.environ.get('CI', 'false').lower() == 'true'
@@ -86,6 +87,18 @@ class PlateTestCase(TestCase):
 			with open(filename, 'r') as f:
 				data = f.read()		
 			self._is_plate_csv(data)
+
+
+	def test_plate_not_found(self):
+		result = self.runner.invoke(cli.cli, ['plate', '--plate_file=untitled.csv'])
+		self.assertNotEquals(result.exit_code, 0)
+		self.assertIn('untitled.csv', result.output)
+
+
+	def test_bad_plate_file(self):
+		result = self.runner.invoke(cli.cli, ['plate', '--plate_file={0}'.format(__file__)])
+		self.assertNotEquals(result.exit_code, 0)
+		self.assertIn(__file__, result.output)
 
 
 class AnalysisTestCase(TestCase):
@@ -163,6 +176,28 @@ class AnalysisTestCase(TestCase):
 		data = os.linesep.join(lines[-num_lines:])
 		self.assertTrue(is_csv(data), result.output)
 		
+
+	def test_path_not_found(self):
+		result = self.runner.invoke(cli.cli, ['analyse', 'untitled.xlsx'])
+		self.assertNotEquals(result.exit_code, 0)
+		self.assertIn('untitled.xlsx', result.output)
+
+
+	def test_no_files_in_folder(self):
+		for fn in self.files:
+			os.remove(fn)
+		self.assertEquals(len(glob.glob("*")), 0)
+		result = self.runner.invoke(cli.cli, ['--no-plot', '--verbose', '--no-prompt', 'analyse', '.'])
+		self.assertNotEquals(result.exit_code, 0)
+		self.assertIn('.', result.output)
+
+
+	def test_bad_data_file(self):
+		shutil.copyfile(__file__, 'untitled.xlsx')
+		result = self.runner.invoke(cli.cli, ['analyse', 'untitled.xlsx'])
+		self.assertNotEquals(result.exit_code, 0)
+		self.assertIn('untitled.xlsx', result.output)
+
 
 if __name__ == '__main__':
     main()
