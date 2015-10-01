@@ -130,6 +130,15 @@ class AnalysisTestCase(TestCase):
 		self.assertTrue(is_csv(data))
 
 
+	def test_process_file2(self):
+		filepath = os.path.join(self.dirpath, self.files[1])
+		result = self.runner.invoke(cli.cli, ['--no-plot', '--no-verbose', '--no-prompt', 'analyse', filepath, '--plate_file=G-RG-R.csv', '--ref_strain=G'])
+		self.assertEquals(result.exit_code, 0, result.output)		
+		lines = filter(lambda line: len(line) > 0, result.output.splitlines()) 
+		data = os.linesep.join(lines[-4:]) # only last 4 lines
+		self.assertTrue(is_csv(data))
+
+
 	def test_process_file_to_file(self):
 		result = self.runner.invoke(cli.cli, ['--no-plot', '--no-verbose', '--no-prompt', 'analyse', self.filepath, '--plate_file=G-RG-R.csv', '--ref_strain=G', '--output_file=summary.csv'])
 		self.assertEquals(result.exit_code, 0, result.output)		
