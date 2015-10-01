@@ -16,6 +16,8 @@ Contents:
    ioutils
    plots
    models
+   competitions
+   cli
 
 
 Indices and tables
