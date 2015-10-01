@@ -7,3 +7,5 @@
 # Licensed under the MIT license:
 # http://www.opensource.org/licenses/MIT-license
 # Copyright (c) 2015, Yoav Ram <yoav@yoavram.com>
+import matplotlib
+matplotlib.use('Agg')
