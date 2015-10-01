@@ -70,14 +70,30 @@ def cli(verbose, plot, prompt):
 
 @click.option('--plate_folder', default='plate_templates', help='plate templates default folder', type=click.Path())
 @click.option('--plate_file', default='checkerboard.csv', help='plate templates csv file')
+@click.option('-o', '--output_file', default='-', help='output csv file path', type=click.File(mode='w', lazy=True))
 @cli.command()
-def plate(plate_folder, plate_file):
+def plate(plate_folder, plate_file, output_file):
 	"""Read and output a plate from a plate file.
 	Default is to dump the plate file to the standard output.
-	TODO: check exists, check folder not in package resource, output errors, plot the plate.
+	TODO: check exists, output errors, plot the plate.
 	"""
-	with open(pkg_resources.resource_filename(plate_folder, plate_file), 'r') as f:
-		click.echo(f.read())
+	plate_path = find_plate_file(plate_folder, plate_file)
+	plate = pd.read_csv(plate_path)
+	plate.to_csv(output_file, index=False)
+	if VERBOSE and output_file.name != '-':
+		click.secho("Wrote output to %s" % output_file.name, fg='green')
+
+
+def find_plate_file(plate_folder, plate_file):
+	"""Find a plate file in the specified folder, either in the current working dir or in the package data resources
+	Returns the full path of the plate file.
+	"""
+	# TODO check folder not in package resource
+	plate_path = os.path.join(plate_folder, plate_file)
+	if not os.path.exists(plate_path):
+		# if plate path doesn't exist try to get it from package data
+		plate_path = pkg_resources.resource_filename(plate_folder, plate_file)
+	return plate_path
 
 
 @click.argument('path', type=click.Path(exists=True, readable=True))
@@ -93,10 +109,7 @@ def analyse(path, output_file, plate_folder, plate_file, blank_strain, ref_strai
 	Outputs estimated growth traits and fitness of all strains in all files in folder PATH or matching the pattern PATH.
 	"""
 	results = []
-	plate_path = os.path.join(plate_folder, plate_file)
-	if not os.path.exists(plate_path):
-		# if plate path doesn't exist try to get it from package data
-		plate_path = pkg_resources.resource_filename(plate_folder, plate_file)
+	plate_path = find_plate_file(plate_folder, plate_file)
 
 	if VERBOSE:
 		click.echo('- Processing %s' % click.format_filename(path))		
