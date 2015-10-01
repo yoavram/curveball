@@ -33,10 +33,10 @@ install:
 
 # Configure a headless backend for matplotlib
 before_script:
-   - mkdir -p ~/.matplotlib/
-	# Ugly trick to avoid that the colon gets interpreted by the YAML parser.
-   - |-
-	 echo "backend : Agg" > ~/.matplotlib/matplotlibrc
+  - mkdir -p ~/.matplotlib/
+# Ugly trick to avoid that the colon gets interpreted by the YAML parser.
+  - |-
+    echo "backend : Agg" > ~/.matplotlib/matplotlibrc
 
 # Run test
 script:  
