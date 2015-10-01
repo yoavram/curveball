@@ -8,16 +8,19 @@
 # http://www.opensource.org/licenses/MIT-license
 # Copyright (c) 2015, Yoav Ram <yoav@yoavram.com>
 from unittest import TestCase, main
-import os
 import pkg_resources
 import shutil
 import tempfile
-import curveball
-import pandas as pd
-import seaborn as sns
+import os
 import matplotlib
+CI = os.environ.get('CI', 'false').lower() == 'true'
+if CI:
+	matplotlib.use('Agg') # Must be before importing matplotlib.pyplot or pylab!
+import pandas as pd
 import numpy as np
 from PIL import Image
+import seaborn as sns
+import curveball
 
 
 class PlotsTestCase(TestCase):
