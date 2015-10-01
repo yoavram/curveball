@@ -22,7 +22,9 @@ build:
 
     - script:
         name: test
-        code: nosetests --with-coverage --cover-package=curveball --cover-inclusive --cover-html --cover-html-dir=$SRC_COVERAGE_DIR
+        code: |
+          python -c "import matplotlib; matplotlib.use('Agg')"
+          nosetests --with-coverage --cover-package=curveball --cover-inclusive --cover-html --cover-html-dir=$SRC_COVERAGE_DIR
 
 deploy :
   steps :
