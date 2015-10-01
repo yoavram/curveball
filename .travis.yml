@@ -18,10 +18,11 @@ before_install:
   - chmod +x miniconda.sh
   - ./miniconda.sh -b
   - export PATH=/home/travis/miniconda/bin:$PATH
-  - conda update --yes conda
+  - conda update --yes conda  
 
 # Install packages
 install:
+  - mkdir -p ~/.matplotlib/; echo 'backend : Agg' > ~/.matplotlib/matplotlibrc
   - conda install --yes python=$TRAVIS_PYTHON_VERSION requests pip atlas numpy scipy matplotlib nose dateutil pandas statsmodels coverage lxml seaborn sympy xlrd pillow
   # Coverage packages are on my binstar channel
   # - conda install --yes -c dan_blanchard python-coveralls nose-cov
@@ -30,4 +31,6 @@ install:
 
 # Run test
 script:  
+  - python tests/test_plots.py
+  - nosetests tests/test_plots.py -v
   - nosetests --with-coverage --cover-package=curveball --cover-inclusive --cover-html --cover-html-dir=coverage_report
