@@ -112,7 +112,7 @@ def tsplot(df, x='Time', y='OD', ci_level=95, output_filename=None):
 		- output_filename: optional filename to save the resulting figure, string.
 
 	Returns:
-		g: :py:class:`seaborn.FacetGrid`
+		g: :py:class:`matplotlib.axes.AxesSubplot`
 	"""
 	if 'Strain' in df:
 		condition = 'Strain'
@@ -125,11 +125,11 @@ def tsplot(df, x='Time', y='OD', ci_level=95, output_filename=None):
 					err_style='ci_band', ci=ci_level, color=palette)
 	sns.despine()
 	if output_filename:
-		g.savefig(output_filename, bbox_inches='tight', pad_inches=1)
+		g.figure.savefig(output_filename, bbox_inches='tight', pad_inches=1)
 	return g
 
 
-def plot_plate(df, edge_color='#888888'):
+def plot_plate(df, edge_color='#888888', output_filename=None):
 	"""Plot of the plate color mapping.
 
 	The function will plot the color mapping in `df`: a grid with enough columns and rows for the `Col` and `Row` columns in `df`, where the color of each grid cell given by the `Color` column.
@@ -171,6 +171,8 @@ def plot_plate(df, edge_color='#888888'):
 	ax.xaxis.tick_top()
 	ax.yaxis.tick_left()
 	ax.tick_params(length=0, width=0)
+	if output_filename:
+		fig.savefig(output_filename, bbox_inches='tight', pad_inches=1)
 	return fig, ax
 
 
