@@ -18,6 +18,7 @@ import seaborn as sns
 sns.set_style("ticks")
 import click
 import curveball
+import xlrd
 
 
 VERBOSE = False
@@ -40,6 +41,10 @@ def echo_info(message):
 		click.secho(message, fg=INFO_COLOR)
 
 
+def ioerror_to_click_exception(io_error):
+	raise click.FileError(io_error.filename, hint=io_error.message)
+
+
 def get_filename(filepath):
 	if filepath is None:
 		return ''
@@ -47,6 +52,37 @@ def get_filename(filepath):
 	if filename is None:
 		return ''
 	return filename
+
+
+def find_plate_file(plate_folder, plate_file):
+	"""Finds a plate file in the specified folder, either in the current working dir or in the package data resources.
+
+	Returns a string of the plate file full path.
+	"""
+	plate_path = os.path.join(plate_folder, plate_file)
+	if not os.path.exists(plate_path):
+		# if plate path doesn't exist try to get it from package data
+		plate_path = pkg_resources.resource_filename(plate_folder, plate_file)
+	if not os.path.exists(plate_path):
+		raise click.FileError(plate_path, hint="can't find file.")
+	return plate_path
+
+
+def load_plate(plate_path):
+	"""Loads a plate from a CSV file.
+	
+	Args:
+        - plate_path: a string of the plate file full or relative path. Use `find_plate_file` to find the plate path.
+	
+	Returns :py:class:`pandas.DataFrame`.
+	"""	
+	try:
+		plate = pd.read_csv(plate_path)
+	except IOError as e:
+		ioerror_to_click_exception(e)
+	except pd.parser.CParserError as e:
+		raise click.FileError(plate_path, hint="parser error, probably not a CSV file, {0}".format(e.args[0]))
+	return plate
 
 
 @click.group()
@@ -61,7 +97,6 @@ def cli(verbose, plot, prompt):
 	PLOT = plot
 	global PROMPT 
 	PROMPT = prompt
-
 	if VERBOSE:
 		click.secho('=' * 40, fg='cyan')
 		click.secho('Curveball %s' % curveball.__version__, fg='cyan')	
@@ -75,25 +110,13 @@ def cli(verbose, plot, prompt):
 def plate(plate_folder, plate_file, output_file):
 	"""Read and output a plate from a plate file.
 	Default is to dump the plate file to the standard output.
-	TODO: check exists, output errors, plot the plate.
+	TODO: plot the plate.
 	"""
 	plate_path = find_plate_file(plate_folder, plate_file)
-	plate = pd.read_csv(plate_path)
+	plate = load_plate(plate_path)
 	plate.to_csv(output_file, index=False)
 	if VERBOSE and output_file.name != '-':
 		click.secho("Wrote output to %s" % output_file.name, fg='green')
-
-
-def find_plate_file(plate_folder, plate_file):
-	"""Find a plate file in the specified folder, either in the current working dir or in the package data resources
-	Returns the full path of the plate file.
-	"""
-	# TODO check folder not in package resource
-	plate_path = os.path.join(plate_folder, plate_file)
-	if not os.path.exists(plate_path):
-		# if plate path doesn't exist try to get it from package data
-		plate_path = pkg_resources.resource_filename(plate_folder, plate_file)
-	return plate_path
 
 
 @click.argument('path', type=click.Path(exists=True, readable=True))
@@ -117,13 +140,8 @@ def analyse(path, output_file, plate_folder, plate_file, blank_strain, ref_strai
 		click.echo('- Blank strain: %s; Reference strain: %s' % (blank_strain, ref_strain))
 		click.echo('- Omitting data after %.2f hours' % max_time)
 		click.echo('-' * 40)
-
-	try:
-		plate = pd.read_csv(plate_path)
-	except IOError as e:
-		echo_error('Failed reading plate file, %s' % e.message)
-		return results
 	
+	plate = load_plate(plate_path)
 	plate.Strain = map(unicode, plate.Strain)
 	plate_strains = plate.Strain.unique().tolist()	
 	if PROMPT:
@@ -140,8 +158,7 @@ def analyse(path, output_file, plate_folder, plate_file, blank_strain, ref_strai
 	
 	files = filter(lambda fn: os.path.splitext(fn)[-1].lower() in file_extension_handlers.keys(), files)
 	if not files:
-		echo_error("No files to analyze found in %s" % click.format_filename(path))
-		return results
+		raise click.ClickException("No data files found in folder {0}".format(click.format_filename(path)))
 	
 	with click.progressbar(files, label='Processing files:', item_show_func=get_filename, color='green') as bar:
 		for filepath in bar:		
@@ -159,7 +176,7 @@ def process_file(filepath, plate, blank_strain, ref_strain, max_time):
 	fn,ext = os.path.splitext(filepath)
 	handler = file_extension_handlers.get(ext)
 	if  handler == None:
-		echo_info("No handler")
+		echo_info("No handler found for file {0}".format(click.format_filename(filepath)))
 		return results
 	try: 
 		if np.isfinite(max_time):
@@ -167,8 +184,9 @@ def process_file(filepath, plate, blank_strain, ref_strain, max_time):
 		else:
 			df = handler(filepath, plate=plate)
 	except IOError as e:
-		echo_error("Failed reading data file, '%s'" % e.message)
-		return results
+		ioerror_to_click_exception(e)
+	except xlrd.biffh.XLRDError as e:
+		raise click.FileError(filepath, hint="parser error, probably not a {1} file, {0}".format(e.args[0], ext))
 
 	strains = plate.Strain.unique().tolist()
 
@@ -190,7 +208,8 @@ def process_file(filepath, plate, blank_strain, ref_strain, max_time):
 		curveball.plots.plot_strains(df, output_filename=strains_plot_fn)
 		echo_info("Wrote strains plot to %s" % click.format_filename(strains_plot_fn))
 	
-	if blank_strain in strains: strains.remove(blank_strain)
+	if blank_strain in strains: 
+		strains.remove(blank_strain)
 	if ref_strain in strains:
 		strains.remove(ref_strain)
 		strains.insert(0, ref_strain)
