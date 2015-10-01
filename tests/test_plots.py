@@ -7,13 +7,13 @@
 # Licensed under the MIT license:
 # http://www.opensource.org/licenses/MIT-license
 # Copyright (c) 2015, Yoav Ram <yoav@yoavram.com>
+import matplotlib
+matplotlib.use('Agg')
 from unittest import TestCase, main
 import pkg_resources
 import shutil
 import tempfile
 import os
-import matplotlib
-matplotlib.use('Agg') # Must be before importing matplotlib.pyplot or pylab!
 import pandas as pd
 import numpy as np
 from PIL import Image
@@ -22,10 +22,8 @@ import curveball
 
 
 class PlotsTestCase(TestCase):
-	_multiprocess_can_split_ = True
-
-
 	def setUp(self):
+		self.assertEquals(matplotlib.rcParams['backend'].lower(), 'agg')
 		self.folder = tempfile.mkdtemp()
 		self.output_filename = os.path.join(self.folder, 'plate.png')
 
