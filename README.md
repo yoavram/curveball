@@ -5,8 +5,6 @@
 [![License](https://img.shields.io/pypi/l/curveball.svg)](https://pypi.python.org/pypi/curveball/)
 [![Build Status](https://magnum.travis-ci.com/yoavram/curveball.svg?token=jdWtkbZwtnsj5TaFxVKJ&branch=travis)](https://magnum.travis-ci.com/yoavram/curveball)
 
-[![wercker status](https://app.wercker.com/status/ccdaa657b94c79e9a1fe194353613c13/m/master "wercker status")](https://app.wercker.com/project/bykey/ccdaa657b94c79e9a1fe194353613c13)
-
 [![logo](/docs/_static/logo_200px.png?raw=true)](http://www.freepik.com/free-vector/ball-of-wool_762106.htm)
 
 Analyzing microbial growth curves using ecological and evolutionary models
