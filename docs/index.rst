@@ -5,7 +5,7 @@
 
 Curveball: Predicting competition results from growth curves
 ============================================================
-**Author**: `Yoav Ram <http://www.yoavram.com>`_.
+**Author**: `Yoav Ram <http://www.yoavram.com>`_
 
 Curveball is an open source software for analysis and visualization of high-throughput growth curve data 
 and prediction of competition experiment results.
