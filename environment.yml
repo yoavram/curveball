@@ -1,0 +1,51 @@
+name: D:\workspace\curveball_project\code\venv
+dependencies:
+- colorama=0.3.3=py27_0
+- coverage=4.0=py27_0
+- docutils=0.12=py27_1
+- fastcache=1.0.2=py27_0
+- jinja2=2.8=py27_0
+- lxml=3.4.4=py27_0
+- markupsafe=0.23=py27_0
+- matplotlib=1.4.3=np19py27_1
+- nose=1.3.7=py27_0
+- numpy=1.9.3=py27_0
+- pandas=0.16.2=np19py27_0
+- patsy=0.4.0=np19py27_0
+- pillow=2.9.0=py27_0
+- pip=7.1.2=py27_0
+- pygments=2.0.2=py27_0
+- pyparsing=2.0.3=py27_0
+- pyqt=4.10.4=py27_1
+- python=2.7.10=1
+- python-dateutil=2.4.2=py27_0
+- pytz=2015.6=py27_0
+- requests=2.7.0=py27_0
+- scipy=0.16.0=np19py27_0
+- seaborn=0.6.0=np19py27_0
+- setuptools=18.3.2=py27_0
+- six=1.9.0=py27_0
+- sphinx=1.2.3=py27_0
+- statsmodels=0.6.1=np19py27_0
+- sympy=0.7.6.1=py27_0
+- wheel=0.26.0=py27_1
+- xlrd=0.9.4=py27_0
+- pip:
+  - alabaster==0.7.6
+  - astroid==1.3.8
+  - autodoc==0.3
+  - babel==2.1.1
+  - beautifulsoup4==4.4.1
+  - click==5.1
+  - curveball (d:\workspace\curveball_project\code)==0.1.3.dev0
+  - decorator==4.0.4
+  - lmfit==0.9.0
+  - logilab-common==1.0.2
+  - nose-notify-send==0.2.1
+  - pylint==1.4.4
+  - snowballstemmer==1.2.0
+  - sphinx-rtd-theme==0.1.9
+  - waitress==0.8.10
+  - webob==1.4.1
+  - webtest==2.0.18
+
