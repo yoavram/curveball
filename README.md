@@ -1,4 +1,6 @@
-# Curveball: growth curves analysis
+# Curveball
+## Predicting competition results from growth curves
+
 
 [![Latest Version](https://img.shields.io/pypi/v/curveball.svg)](https://pypi.python.org/pypi/curveball/)
 [![Supported Python versions](https://img.shields.io/pypi/pyversions/curveball.svg)](https://pypi.python.org/pypi/curveball/)
@@ -6,8 +8,6 @@
 [![Build Status](https://magnum.travis-ci.com/yoavram/curveball.svg?token=jdWtkbZwtnsj5TaFxVKJ&branch=travis)](https://magnum.travis-ci.com/yoavram/curveball)
 
 [![logo](/docs/_static/logo_200px.png?raw=true)](http://www.freepik.com/free-vector/ball-of-wool_762106.htm)
-
-Predicting competition results from growth curves
 
 ## Installation
 
