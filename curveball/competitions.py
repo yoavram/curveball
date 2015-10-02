@@ -140,7 +140,7 @@ def selection_coefs_ts(t, y, ax=None, PLOT=False):
 
 
 def fitness_LTEE(y, ref_strain=0, assay_strain=1, t0=0, t1=-1):
-	r'''Calculate relative fitness according to the definition used in the Long Term Evolutionary Experiment (LTEE):
+	r"""Calculate relative fitness according to the definition used in the Long Term Evolutionary Experiment (LTEE):
 
 	.. math::
 
@@ -161,7 +161,7 @@ def fitness_LTEE(y, ref_strain=0, assay_strain=1, t0=0, t1=-1):
     
 
 	See also: `Wiser, M. J. & Lenski, R. E., 2015 A Comparison of Methods to Measure Fitness in *Escherichia coli*. PLoS One 10, e0126210. <http://dx.plos.org/10.1371/journal.pone.0126210>`_
-	'''
+	"""
 	At0,Bt0 = y[t0,assay_strain],y[t0,ref_strain]
 	At1,Bt1 = y[t1,assay_strain],y[t1,ref_strain]
 	return (np.log(At1/At0) / np.log(Bt1/Bt0))[0]
