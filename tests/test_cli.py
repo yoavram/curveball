@@ -101,6 +101,12 @@ class PlateTestCase(TestCase):
 		self.assertIn(__file__, result.output)
 
 
+	def test_plate_list(self):
+		result = self.runner.invoke(cli.cli, ['plate', '--list'])
+		self.assertEquals(result.exit_code, 0)
+		self.assertIn('G-RG-R.csv', result.output)
+		self.assertTrue(result.output.count('\n') > 2)
+
 class AnalysisTestCase(TestCase):
 	_multiprocess_can_split_ = True
 

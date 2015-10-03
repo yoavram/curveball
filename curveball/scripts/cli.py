@@ -106,12 +106,19 @@ def cli(verbose, plot, prompt):
 @click.option('--plate_folder', default='plate_templates', help='plate templates default folder', type=click.Path())
 @click.option('--plate_file', default='checkerboard.csv', help='plate templates csv file')
 @click.option('-o', '--output_file', default='-', help='output csv file path', type=click.File(mode='w', lazy=True))
+@click.option('--list', is_flag=True, default=False, help='list plate templates in the default folder')
 @cli.command()
-def plate(plate_folder, plate_file, output_file):
+def plate(plate_folder, plate_file, output_file, list):
 	"""Read and output a plate from a plate file.
 	Default is to dump the plate file to the standard output.
 	TODO: plot the plate.
 	"""
+	if list:
+		files = pkg_resources.resource_listdir('plate_templates', '')
+		files = filter(lambda fn: os.path.splitext(fn)[-1].lower() == '.csv', files)
+		files = os.linesep.join(files)
+		click.echo(files)
+		return
 	plate_path = find_plate_file(plate_folder, plate_file)
 	plate = load_plate(plate_path)
 	plate.to_csv(output_file, index=False)
