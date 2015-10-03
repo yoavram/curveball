@@ -1,21 +1,72 @@
 I/O Utils
 =========
 
+The :py:mod:`ioutils` module contains functions for reading data from automatic plate readers.
+The different functions read the data files and generate a data table of type :py:class:`pandas.DataFrame`
+which contains all the relevant data: the read from every well at every time point. 
+
+This data table is in a "tidy data" format, meaning that each row in the table contains a single measurement with the following values (as columns):
+
+-  `Time`: in hours (mandatory)
+-  `OD`: optical density which is a proxy for cell density (mandatory)
+-  `Well`: as in the name of the well such as "A1" or "H12" (optional)
+-  `Row`, `Col`: the row and column of the well in the plate (optional)
+-  `Strain`: the name of the strain (optional)
+-  `Color`: the color that should be given to graphs of the data from this well (optional)
+
+Any other columns can also be provided (for example, `Cycle Nr.` and `Temp. [°C]` are provided by _Tecan Infinity_).
+
 Example of a :py:class:`pandas.DataFrame` generated using the :py:mod:`ioutils` module functions:
 
-+----+-----------+-----------------+-------------+--------+--------+-------+-------+----------+---------+--------------+--------------------+---------+----------+--------------+-------+
-|    |   Time_OD |   Temp. [°C]_OD |   Cycle Nr. | Well   |     OD | Row   | Col   | Strain   | Color   |   Time_Green |   Temp. [°C]_Green |   Green |     Time |   Temp. [°C] |   Red |
-+====+===========+=================+=============+========+========+=======+=======+==========+=========+==============+====================+=========+==========+==============+=======+
-|  0 |  0        |            30   |           1 | A1     | 0.11   | A     | 1     | G        | #4daf4a |     0        |               30.1 |   28506 | 0        |         30.1 | 25396 |
-+----+-----------+-----------------+-------------+--------+--------+-------+-------+----------+---------+--------------+--------------------+---------+----------+--------------+-------+
-|  1 |  0.232444 |            30.3 |           2 | A1     | 0.1099 | A     | 1     | G        | #4daf4a |     0.232444 |               30.2 |   27507 | 0.232444 |         30.2 | 24806 |
-+----+-----------+-----------------+-------------+--------+--------+-------+-------+----------+---------+--------------+--------------------+---------+----------+--------------+-------+
-|  2 |  0.465694 |            30.1 |           3 | A1     | 0.1105 | A     | 1     | G        | #4daf4a |     0.465667 |               30   |   27324 | 0.465694 |         30.2 | 24549 |
-+----+-----------+-----------------+-------------+--------+--------+-------+-------+----------+---------+--------------+--------------------+---------+----------+--------------+-------+
-|  3 |  0.698111 |            30.1 |           4 | A1     | 0.1105 | A     | 1     | G        | #4daf4a |     0.698111 |               30.3 |   27104 | 0.698111 |         30.1 | 24012 |
-+----+-----------+-----------------+-------------+--------+--------+-------+-------+----------+---------+--------------+--------------------+---------+----------+--------------+-------+
-|  4 |  0.930556 |            30   |           5 | A1     | 0.1116 | A     | 1     | G        | #4daf4a |     0.930556 |               30.1 |   27128 | 0.930556 |         30.1 | 23763 |
-+----+-----------+-----------------+-------------+--------+--------+-------+-------+----------+---------+--------------+--------------------+---------+----------+--------------+-------+
++-----------+-----------------+-------------+--------+--------+-------+-------+----------+---------+
+|   Time    |   Temp. [°C]    |   Cycle Nr. | Well   |     OD | Row   | Col   | Strain   | Color   |
++===========+=================+=============+========+========+=======+=======+==========+=========+
+|  0        |            30   |           1 | A1     | 0.11   | A     | 1     | G        | #4daf4a |
++-----------+-----------------+-------------+--------+--------+-------+-------+----------+---------+
+|  0.232444 |            30.3 |           2 | A1     | 0.1099 | A     | 1     | G        | #4daf4a |
++-----------+-----------------+-------------+--------+--------+-------+-------+----------+---------+
+|  0.465694 |            30.1 |           3 | A1     | 0.1105 | A     | 1     | G        | #4daf4a |
++-----------+-----------------+-------------+--------+--------+-------+-------+----------+---------+
+|  0.698111 |            30.1 |           4 | A1     | 0.1105 | A     | 1     | G        | #4daf4a |
++-----------+-----------------+-------------+--------+--------+-------+-------+----------+---------+
+|  0.930556 |            30   |           5 | A1     | 0.1116 | A     | 1     | G        | #4daf4a |
++-----------+-----------------+-------------+--------+--------+-------+-------+----------+---------+
+
+Plate template
+^^^^^^^^^^^^^^^^
+
+Normally, the output of a plate reader doesn't include information about the strain in each well.
+To integrate that information 
+(as well as the colors that should be used for plotting the data from each well),
+you must provide a plate definition CSV file. 
+
+This plate template file is a table in which each row has four values: 
+`Row`, `Col`, `Strain`, and `Color`.
+The `Row` and `Col` values define the wells; the `Strain` and `Color` values 
+define the names of the strains and their respective colors (for plotting purposes).
+These template files can be created using the 
+`Plato web app <http://plato.yoavram.com>`_, using Excel (save as `.csv`), 
+or in any other way that is convinient to you.
+
+Curveball is also shipped with some plate templates files - 
+type `curveball plate list` in the command line for a list of the builtin plate templates.
+
+Example of the first 5 rows of a plate template file:
+
++-----------+-----------------+-------------+---------+
+|   Row     |   Col           |    Strain   | Color   |
++===========+=================+=============+=========+
+|  A        |            1    |    G        | #4daf4a |
++-----------+-----------------+-------------+---------+
+|  A        |            2    |    G        | #4daf4a |
++-----------+-----------------+-------------+---------+
+|  A        |            3    |    G        | #4daf4a |
++-----------+-----------------+-------------+---------+
+|  A        |            4    |    R        | #4daf4a |
++-----------+-----------------+-------------+---------+
+|  A        |            5    |    R        | #e41a1c |
++-----------+-----------------+-------------+---------+
+
 
 Members
 -------
