@@ -66,7 +66,7 @@ The same installation can be achieved using ``pip`` instead of
 conda. Therefore, a ``requirements.txt`` file is not provided.
 
 For Developers
-------------
+--------------
 
 Follow the
 `.travis.yml <https://github.com/yoavram/curveball/blob/master/.travis.yml>`__

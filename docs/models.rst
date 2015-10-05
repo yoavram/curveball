@@ -1,5 +1,5 @@
 Growth Models
-======
+=============
 
 This module contains several growth functions and models.
 

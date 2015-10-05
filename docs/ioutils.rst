@@ -14,7 +14,7 @@ This data table is in a "tidy data" format, meaning that each row in the table c
 -  `Strain`: the name of the strain (optional)
 -  `Color`: the color that should be given to graphs of the data from this well (optional)
 
-Any other columns can also be provided (for example, `Cycle Nr.` and `Temp. [°C]` are provided by _Tecan Infinity_).
+Any other columns can also be provided (for example, `Cycle Nr.` and `Temp. [°C]` are provided by Tecan Infinity).
 
 Example of a :py:class:`pandas.DataFrame` generated using the :py:mod:`ioutils` module functions:
 

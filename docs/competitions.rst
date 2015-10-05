@@ -1,5 +1,5 @@
 Competition Models
-============
+==================
 
 Members
 -------
