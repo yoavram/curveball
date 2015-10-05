@@ -112,7 +112,7 @@ def tsplot(df, x='Time', y='OD', ci_level=95, output_filename=None):
 		- output_filename: optional filename to save the resulting figure, string.
 
 	Returns:
-		g: :py:class:`matplotlib.axes.AxesSubplot`
+		g: :py:class:`matplotlib.axes.Axes`
 	"""
 	if 'Strain' in df:
 		condition = 'Strain'

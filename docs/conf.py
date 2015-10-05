@@ -32,7 +32,9 @@ sys.path.insert(0, os.path.abspath('..'))
 extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.coverage',
-    'sphinx.ext.mathjax'
+    'sphinx.ext.mathjax',
+    'sphinx.ext.intersphinx', # http://sphinx-doc.org/ext/intersphinx.html#module-sphinx.ext.intersphinx
+    #'sphinx.ext.napoleon', # http://sphinx-doc.org/ext/napoleon.html
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -277,3 +279,15 @@ texinfo_documents = [
 
 # If true, do not generate a @detailmenu in the "Top" node's menu.
 #texinfo_no_detailmenu = False
+
+# Napoleon settings
+napoleon_numpy_docstring = True
+
+# Intersphinx settings
+intersphinx_mapping = {'lmfit': ('http://lmfit.github.io/lmfit-py/', None),
+                       'numpy': ('http://docs.scipy.org/doc/numpy/', None),
+                       'pandas': ('http://pandas.pydata.org/pandas-docs/version/0.16.2/', None),
+                       'matplotlib': ('http://matplotlib.org/', None),
+                       'click': ('http://click.pocoo.org/5/', None),
+                       'seaborn': ('http://stanford.edu/~mwaskom/software/seaborn/', None),
+                      }
