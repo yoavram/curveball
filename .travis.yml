@@ -11,7 +11,8 @@ before_install:
 - conda update --yes conda
 install:
 - conda install --yes python=$TRAVIS_PYTHON_VERSION requests pip atlas numpy scipy
-  matplotlib nose dateutil pandas statsmodels coverage lxml seaborn sympy xlrd pillow
+  matplotlib nose dateutil pandas statsmodels coverage lxml seaborn sympy xlrd pillow 
+- pip install sphinx sphinx-rtd-theme
 - pip install https://github.com/lmfit/lmfit-py/archive/800f3e40ef8ba977005d27a5d05fd231688a5749.zip
 - python setup.py install
 script:
