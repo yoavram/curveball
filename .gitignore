@@ -77,3 +77,6 @@ notebooks/Untitled*.ipynb
 # secret
 .wercker.token
 .github.token
+
+# divshot
+.divshot-cache
