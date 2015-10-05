@@ -23,6 +23,7 @@ script:
 before_deploy:
   - cd docs 
   - make html
+  - cd ..
 
 # Deploy docs to divshot
 deploy:
