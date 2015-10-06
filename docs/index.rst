@@ -40,7 +40,6 @@ Contents:
 
    install
    tutorial
-   gallery
    ioutils
    plots
    models
