@@ -34,7 +34,7 @@ extensions = [
     'sphinx.ext.coverage',
     'sphinx.ext.mathjax',
     'sphinx.ext.intersphinx', # http://sphinx-doc.org/ext/intersphinx.html#module-sphinx.ext.intersphinx
-    #'sphinx.ext.napoleon', # http://sphinx-doc.org/ext/napoleon.html
+    'sphinx.ext.napoleon', # http://sphinx-doc.org/ext/napoleon.html
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -284,10 +284,12 @@ texinfo_documents = [
 napoleon_numpy_docstring = True
 
 # Intersphinx settings
-intersphinx_mapping = {'lmfit': ('http://lmfit.github.io/lmfit-py/', None),
+intersphinx_mapping = {'python': ('https://docs.python.org/2.7', None),
+                       'lmfit': ('http://lmfit.github.io/lmfit-py/', None),
                        'numpy': ('http://docs.scipy.org/doc/numpy/', None),
                        'pandas': ('http://pandas.pydata.org/pandas-docs/version/0.16.2/', None),
                        'matplotlib': ('http://matplotlib.org/', None),
                        'click': ('http://click.pocoo.org/5/', None),
                        'seaborn': ('http://stanford.edu/~mwaskom/software/seaborn/', None),
+                       'scipy': ('http://docs.scipy.org/doc/scipy/reference', None),
                       }

@@ -19,18 +19,28 @@ from string import ascii_uppercase
 def plot_wells(df, x='Time', y='OD', plot_func=plt.plot, output_filename=None):
 	"""Plot a grid of plots, one for each well in the plate.
 
-	The facetting is done by the `Row` and `Col` columns of `df`.
-	The colors are given by the `Color` column, the labels of the colors are given by the `Strain` column.
+	The facetting is done by the ``Row`` and ``Col`` columns of `df`.
+	The colors are given by the ``Color`` column, 
+	the labels of the colors are given by the ``Strain`` column.
+	If ``Strain`` is missing then the coloring is done by the ``Well`` column.
 
-	Args:
-		- df: :py:class:`pandas.DataFrame`.
-		- x: name of column for x-axis, string.
-		- y: name of column for y-axis, string.
-		- plot_func: a function to use for plotting, defaults to :py:func:`matplotlib.pyplot.plot`
-		- output_filename: optional filename to save the resulting figure, string.
+	Parameters
+	----------
+	df : pandas.DataFrame
+		growth curve data, see :py:mod:`curveball.ioutils` for a detailed definition.
+	x : str, optional
+		name of column for x-axis, defaults to ``Time``.
+	y : str, optional
+		name of column for y-axis, defaults to ``OD``.
+	plot_func : func, optional
+		function to use for plotting, defaults to :py:func:`matplotlib.pyplot.plot`
+	output_filename : str, optional 
+		filename to save the resulting figure; if not given, figure is not saved.
 
-	Returns:
-		g: :py:class:`seaborn.FacetGrid`
+	Returns
+	-------
+	seaborn.FacetGrid
+		figure object.
 	"""
 	if 'Strain' in df:
 		hue = 'Strain'
@@ -62,20 +72,36 @@ def plot_wells(df, x='Time', y='OD', plot_func=plt.plot, output_filename=None):
 def plot_strains(df, x='Time', y='OD', plot_func=plt.plot, by=None, agg_func=np.mean, hue='Strain', output_filename=None):
 	"""Aggregate by strain and plot the results on one figure with different color for each strain.
 
-	The grouping of the data is done by the `Strain` and `Cycle Nr.` columns; the aggregation is done by the `agg_func`, which defaults to `mean`.
-	The colors are given by the `Color` column, the labels of the colors are given by the `Strain` column.
+	The grouping of the data is done by the ``Strain`` and either ``Cycle Nr.`` or ``Time`` columns of `df`; 
+	the aggregation is done by the `agg_func`, which defaults to :py:func:`numpy.mean`.
+	The colors are given by the ``Color`` column, the labels of the colors are given by the ``Strain`` column of `df`.
 
-	Args:
-		- df: :py:class:`pandas.DataFrame`.
-		- x: name of column for x-axis, string.
-		- y: name of column for y-axis, string.
-		- plot_func: a function to use for plotting, defaults to :py:func:`matplotlib.pyplot.plot`.
-		- by: a :py:class:tuple to use for grouping the data, defaults to `('Strain', 'Cycle Nr.')` or `('Strain', 'Time')`, whichever is available.
-		- agg_func: a function to use for aggregating the data, defaults to :py:func:`numpy.mean`.
-		- output_filename: optional filename to save the resulting figure, string.
+	Parameters
+	----------
+	df : pandas.DataFrame
+		growth curve data, see :py:mod:`curveball.ioutils` for a detailed definition.
+	x : str, optional
+		name of column for x-axis, defaults to ``Time``.
+	y : str, optional
+		name of column for y-axis, defaults to ``OD``.
+	plot_func : func, optional
+		function to use for plotting, defaults to :py:func:`matplotlib.pyplot.plot`
+	by : tuple of str, optional
+		used for grouping the data, defaults to ``('Strain', 'Cycle Nr.')`` or ``('Strain', 'Time')``, whichever is available.
+	plot_func : func, optional
+		function to use for aggregating the data, defaults to :py:func:`numpy.mean`
+	output_filename : str, optional 
+		filename to save the resulting figure; if not given, figure is not saved.
 
-	Returns:
-		g: :py:class:`seaborn.FacetGrid`
+	Returns
+	-------
+	seaborn.FacetGrid
+		figure object.
+
+	Raises
+	------
+	ValueError
+		raised if `by` isn't set and `df` doesn't contain ``Strain`` and either ``Time`` or ``Cycle Nr.``.
 	"""
 	palette = df.Color.unique() if 'Color' in df else sns.color_palette()
 	palette[palette == '#ffffff'] = '#000000'
@@ -98,21 +124,33 @@ def plot_strains(df, x='Time', y='OD', plot_func=plt.plot, by=None, agg_func=np.
 
 
 def tsplot(df, x='Time', y='OD', ci_level=95, output_filename=None):
-	"""tsplot plot of the data by strain (if applicable) or well.
+	"""Time series plot of the data by strain (if applicable) or well.
 
-	The grouping of the data is done by `x` and `Strain` if such a column exists; otherwise it is done by `x` and `Well`.
-	The aggregation is done by `seaborn.tsplot` which calculates the mean with a confidence interval.
-	The colors are given by the `Color` column, the labels of the colors are given by the `Strain` column; if `Strain` and `Color` don't exist the function will use a default palette and color the lines by well.
+	The grouping of the data is done by the value of `x` and ``Strain``, if such a column exists in `df`; 
+	otherwise it is done by `x` and ``Well``.
+	The aggregation is done by :py:func`seaborn.tsplot` which calculates the mean with a confidence interval.
+	The colors are given by the ``Color`` column, the labels of the colors are given by the ``Strain`` column; 
+	if ``Strain`` and ``Color`` don't exist in `df` then 
+	the function will use a default palette and color the lines by well.
 
-	Args:
-		- df: :py:class:`pandas.DataFrame`.
-		- x: name of column for x-axis, string.
-		- y: name of column for y-axis, string.
-		- ci_level: confidence interval width in precent (int; 0-100).
-		- output_filename: optional filename to save the resulting figure, string.
+	Parameters
+	----------
+	df : pandas.DataFrame
+		growth curve data, see :py:mod:`curveball.ioutils` for a detailed definition.
+	x : str, optional
+		name of column for x-axis, defaults to ``Time``.
+	y : str, optional
+		name of column for y-axis, defaults to ``OD``.
+	ci_level : int, optional
+		confidence interval width in precent (0-100), defaults to 95.	
+	output_filename : str, optional 
+		filename to save the resulting figure; if not given, figure is not saved.
+	
 
-	Returns:
-		g: :py:class:`matplotlib.axes.Axes`
+	Returns
+	-------
+	matplotlib.axes.Axes
+		figure object.
 	"""
 	if 'Strain' in df:
 		condition = 'Strain'
@@ -132,16 +170,23 @@ def tsplot(df, x='Time', y='OD', ci_level=95, output_filename=None):
 def plot_plate(df, edge_color='#888888', output_filename=None):
 	"""Plot of the plate color mapping.
 
-	The function will plot the color mapping in `df`: a grid with enough columns and rows for the `Col` and `Row` columns in `df`, where the color of each grid cell given by the `Color` column.
+	The function will plot the color mapping in `df`: 
+	a grid with enough columns and rows for the ``Col`` and ``Row`` columns in `df`, 
+	where the color of each grid cell given by the ``Color`` column.
 
-	Args:
-		- df: :py:class:`pandas.DataFrame`.
-		- edge_color: a color hex string for the grid edges.
+	Parameters
+	----------
+	df : pandas.DataFrame
+		growth curve data, see :py:mod:`curveball.ioutils` for a detailed definition.
+	edge_color : str
+		color hex string for the grid edges.
 
-	Returns:
-		fig, ax : :py:class:`tuple`
-			- fig: the :py:class:`matplotlib.figure.Figure` object
-			- ax: an array of axis objects.
+	Returns
+	-------
+	fig : matplotlib.figure.Figure
+		figure object
+	ax : numpy.ndarray
+		array of axis objects.
 	"""
 	plate = df.pivot('Row', 'Col', 'Color').as_matrix()
 	height, width = plate.shape
@@ -177,6 +222,20 @@ def plot_plate(df, edge_color='#888888', output_filename=None):
 
 
 def plot_params_distribution(param_samples, alpha=None):
+	"""Plots a distribution of model parameter samples generated with :py:func:`curveball.models.sample_params`.
+
+	Parameters
+	----------
+	param_samples : pandas.DataFrame
+		data frame of samples; each row is one sample, each column is one parameter.
+	alpha : float
+		transparency of plot markers, defaults to :math:`1/n^{1/4}` where *n* is number of rows in `param_samples`.
+
+	Returns
+	-------
+	sns.Grid
+		figure object
+	"""
 	nsamples = param_samples.shape[0]
 	g = sns.PairGrid(param_samples)
 	if alpha is None:
