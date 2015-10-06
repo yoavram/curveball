@@ -46,5 +46,5 @@ deploy:
   environment: production
   on:
     repo: yoavram/curveball
-    branch: docs
+    branch: master
   skip_cleanup: true
