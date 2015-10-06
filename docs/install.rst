@@ -23,7 +23,7 @@ Dependencies
 -  lxml
 -  click
 
-Installing
+Users
 ------------
 
 The recommended way to install the dependencies is to download and
@@ -65,7 +65,7 @@ The same installation can be achieved using ``pip`` instead of
 ``conda``, but on Windows and sometimes Linux, too, it is easier to use
 conda. Therefore, a ``requirements.txt`` file is not provided.
 
-For Developers
+Developers
 --------------
 
 Follow the
