@@ -33,3 +33,4 @@ deploy:
   on:
     repo: yoavram/curveball
     branch: docs
+  skip_cleanup: true
