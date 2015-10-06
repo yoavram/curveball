@@ -85,22 +85,37 @@ def load_plate(plate_path):
 	return plate
 
 
+def where(ctx, param, value):
+	"""Prints the path where Curveball is installed and exists that app. 
+
+	Parameters are ignored, except that if `value` or `ctx.resilient_parsing`
+	are not empty/False/None, the function returns without doing anything.
+	"""
+	if not value or ctx.resilient_parsing:
+		return
+	path = curveball.__file__
+	folder = os.path.split(path)[0]
+	click.secho(click.format_filename(folder))
+	ctx.exit()
+
+
 @click.group()
 @click.option('-v/-V', '--verbose/--no-verbose', default=False)
 @click.option('-l/-L', '--plot/--no-plot', default=True)
 @click.option('-p/-P', '--prompt/--no-prompt', default=False)
+@click.option('--where', is_flag=True, default=False, is_eager=True, callback=where, help='prints the path where Curveball is installed')
 @click.version_option(version=curveball.__version__, prog_name=curveball.__name__)
-def cli(verbose, plot, prompt):
+def cli(verbose, plot, prompt, where):
 	global VERBOSE
 	VERBOSE = verbose
 	global PLOT
 	PLOT = plot
-	global PROMPT 
+	global PROMPT
 	PROMPT = prompt
 	if VERBOSE:
 		click.secho('=' * 40, fg='cyan')
-		click.secho('Curveball %s' % curveball.__version__, fg='cyan')	
-		click.secho('=' * 40, fg='cyan')		
+		click.secho('Curveball %s' % curveball.__version__, fg='cyan')
+		click.secho('=' * 40, fg='cyan')
 
 
 @click.option('--plate_folder', default='plate_templates', help='plate templates default folder', type=click.Path())
