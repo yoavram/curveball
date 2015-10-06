@@ -17,48 +17,158 @@ import seaborn as sns
 sns.set_style("ticks")
 
 
-def double_logistic_ode(y, t, r, K):
-    dydt = r[0] * y[0] * (1 - (y[0] / K[0] + y[1] / K[1])), r[1] * y[1] * (1 - (y[0] / K[0] + y[1] / K[1]))
-    return dydt
-
-
-# def richards_ode(y, t, r, K, nu):    
-#     return r * y * (1 - (y/K)**nu)
-
-
-# def double_richards_ode(y, t, r, K, nu):    
-#     dydt = r[0] * y[0] * (1 - (y.sum() / K[0])**nu[0]), r[1] * y[1] * (1 - (y.sum() / K[1])**nu[1])
-#     return dydt
-
-
-def baranyi_roberts_ode(y, t, r, K, nu, q0, v):
-    alfa = q0 / (q0 + np.exp(-v * t))
-    return alfa * r * y * (1 - (y/K)**nu)
-
-
 def double_baranyi_roberts_ode0(y, t, r, K, nu, q0, v):
-    alfa = q0[0] / (q0[0] + np.exp(-v[0] * t)), q0[1] / (q0[1] + np.exp(-v[1] * t))
-    dydt = alfa[0] * r[0] * y[0] * (1 - ((y[0] + y[1]) / K[0])**nu[0]), alfa[1] * r[1] * y[1] * (1 - ((y[0] + y[1]) / K[1])**nu[1])
-    return dydt
+	r"""A two species Baranyi-Roberts model [1]_. The function calculates the population growth rate at given time points.
+
+	.. math::
+
+		\frac{dN_i}{dt} = r_i \alpha_i(t) N_i \Big(1 - \Big(\frac{\sum_{j}{N_j}}{K_i}\Big)^{\nu_i}\Big)
+	
+    - :math:`N_i`: population size of strain *i*.
+    - :math:`r_i`: initial per capita growth rate of strain *i*
+    - :math:`K_i`: maximum population size of strain *i*
+    - :math:`\nu_i`: curvature of the logsitic term of strain *i*
+    - :math:`\alpha_i(t)= \frac{q_{0,i}}{q_{0,i} + e^{-v_i t}}`
+    - :math:`q_{0,i}`: initial adjustment of strain *i* to current environment 
+    - :math:`v_i`: adjustment rate of strain *i*
+
+    Parameters
+    ----------
+    y : float
+        population size
+	t : float
+        time, usually in hours
+    r : float
+        initial per capita growth rate
+    K : float
+        maximum population size (:math:`K>0`)
+    nu : float
+        curvature of the logsitic term (:math:`\nu>0`)
+    q0 : float
+        initial adjustment to current environment (:math:`0<q_0<1`)
+    v : float
+        adjustment rate (:math:`v>0`)
+
+    Returns
+    -------
+    float
+        population growth rate.
+
+    References
+    ----------
+    .. [1] Baranyi, J., Roberts, T. A., 1994. `A dynamic approach to predicting bacterial growth in food <www.ncbi.nlm.nih.gov/pubmed/7873331>`_. Int. J. Food Microbiol.
+	"""
+	alfa = q0[0] / (q0[0] + np.exp(-v[0] * t)), q0[1] / (q0[1] + np.exp(-v[1] * t))
+	dydt = alfa[0] * r[0] * y[0] * (1 - ((y[0] + y[1]) / K[0])**nu[0]), alfa[1] * r[1] * y[1] * (1 - ((y[0] + y[1]) / K[1])**nu[1])
+	return dydt
 
 
 def double_baranyi_roberts_ode1(y, t, r, K, nu, q0, v):
-    alfa = q0[0] / (q0[0] + np.exp(-v[0] * t)), q0[1] / (q0[1] + np.exp(-v[1] * t))
-    dydt = alfa[0] * r[0] * y[0] * (1 - (y[0] / K[0] + y[1] / K[1])**nu[0]), alfa[1] * r[1] * y[1] * (1 - (y[0] / K[0] + y[1] / K[1])**nu[1])
-    return dydt
+	r"""A two species Baranyi-Roberts model. The function calculates the population growth rate at given time points.
+
+	.. math::
+
+		\frac{dN_i}{dt} = r_i \alpha_i(t) N_i \Big(1 - \Big(\sum_{j}{\frac{N_j}{K_j}}\Big)^{\nu_i}\Big)
+
+	See also
+	--------
+	curveball.competitions.double_baranyi_roberts_ode0
+	"""
+	alfa = q0[0] / (q0[0] + np.exp(-v[0] * t)), q0[1] / (q0[1] + np.exp(-v[1] * t))
+	dydt = alfa[0] * r[0] * y[0] * (1 - (y[0] / K[0] + y[1] / K[1])**nu[0]), alfa[1] * r[1] * y[1] * (1 - (y[0] / K[0] + y[1] / K[1])**nu[1])
+	return dydt
 
 
 def double_baranyi_roberts_ode2(y, t, r, K, nu, q0, v):
-    alfa = q0[0] / (q0[0] + np.exp(-v[0] * t)), q0[1] / (q0[1] + np.exp(-v[1] * t))
-    dydt = alfa[0] * r[0] * y[0] * (1 - (y[0] / K[0])**nu[0] - (y[1] / K[1])**nu[1]), alfa[1] * r[1] * y[1] * (1 - (y[0] / K[0])**nu[0] - (y[1] / K[1])**nu[1])
-    return dydt
+	r"""A two species Baranyi-Roberts model. The function calculates the population growth rate at given time points.
+
+	.. math::
+
+		\frac{dN_i}{dt} = r_i \alpha_i(t) N_i \Big(1 - \sum_{j}{\Big(\frac{N_j}{K_j}\Big)^{\nu_j}}\Big)
+
+	See also
+	--------
+	curveball.competitions.double_baranyi_roberts_ode0
+	"""
+	alfa = q0[0] / (q0[0] + np.exp(-v[0] * t)), q0[1] / (q0[1] + np.exp(-v[1] * t))
+	dydt = alfa[0] * r[0] * y[0] * (1 - (y[0] / K[0])**nu[0] - (y[1] / K[1])**nu[1]), alfa[1] * r[1] * y[1] * (1 - (y[0] / K[0])**nu[0] - (y[1] / K[1])**nu[1])
+	return dydt
 
 
 def compete(m1, m2, y0=None, hours=24, nsamples=1, lag_phase=True, ode=double_baranyi_roberts_ode1, num_of_points=100, colors=None, ax=None, PLOT=False):
+	"""Simulate competitions between two strains using growth parameters estimated
+	by fitting growth models to growth curves data.
+
+	Integrates a 2-dimensional ODE system given by `ode` 
+	with parameters extracted from :py:class:`lmfit.model.ModelResult` instances `m1` and `m2`.
+	This implementation includes plotting (if required by `PLOT`);
+	resampling from the distribution of model parameters (when `nsamples` > 1);
+	changing the ODE system (by providing a different function in `ode`); 
+	and more.
+
+	The function competes two strains/species; 
+	therefore it expects two :py:class:`lmfit.model.ModelResult` objects, 
+	two initial values in `y0`, etc.
+
+	Parameters
+	----------
+	m1, m2 : lmfit.model.ModelResult
+		model fitting results of growth models defined in :py:mod:`curveball.models`.
+	y0 : tuple, optional
+		initial population sizes/densities. Defaults to a tuple with twice the average of the ``y0`` parameter of `m1` and `m2`.
+	hours : int, optional
+		how many hours should the competition proceed, defaults to 24.
+	nsamples : int, optional
+		how many replicates of the competition should be simulated; if `nsamples` = 1, only one competition is simulated with the estimated parameters; otherwise `nsamples` competitions are simulated with parameters drawn from a distribution based on the covariance matrix of the parameter estimates (see :py:func:`curveball.models.sample_params`). Defaults to 1.
+	lag_phase : bool, optional
+		if :py:const:`True`, use lag phase as given by `m1` and `m2`. Otherwise, override the lag phase parameters to prevent a lag phase. Defaults to :py:const:`True`.
+	ode : func, optional
+		an ordinary differential systems system defined by a function that accepts ``y``, ``t``, and additional arguments, and returns the derivate of ``y`` with respect to ``t``. Defaults to :py:func:`.double_baranyi_roberts_ode0`.
+	num_of_points : int, optional
+		number of time points to use, defaults to 100.
+	colors : sequence of str, optional
+		if `PLOT` is :py:const:`True`, this sets the colors of the drawn lines. `colors[0]` will be used for `m1`; `colors[1]` for `m2`. If not provided, defaults to the current pallete.
+	ax : matplotlib.axes.Axes, optional
+		if `PLOT` is :py:const:`True`, an axes to plot into; if not provided, a new one is created.
+	PLOT : bool, optional
+		if :py:const:`True`, the function will plot the curves of *y* as a function of *t*. Defaults to :py:const:`False`.
+
+	Returns
+	-------
+	t : numpy.ndarray
+		1d (or 2d, if `nsamples`>1) array of time points, in hours.
+	y: numpy.ndarray
+		2d (or 3d, if `nsamples`>1) array of strain frequencies. First axis is time, second axis is strain, third axis (if applicable) is sample.
+	fig : matplotlib.figure.Figure
+		figure object.
+	ax : numpy.ndarray
+		array of :py:class:`matplotlib.axes.Axes` objects.
+
+	Raises
+	------
+	TypeError
+		if `m1` or `m2` are not :py:class:`lmfit.model.ModelResult`.
+	AssertionError
+		if an intermediate calculation produced an invalid result (not guaranteed).
+
+	Example
+	-------
+	>>> import pandas as pd
+	>>> import curveball
+	>>> plate = pd.read_csv('plate_templates/G-RG-R.csv')
+	>>> df = curveball.ioutils.read_tecan_xlsx('data/Tecan_280715.xlsx', label='OD', plate=plate)
+	>>> green = curveball.models.fit_model(df[df.Strain == 'G'], PLOT=False, PRINT=False)[0]
+	>>> red = curveball.models.fit_model(df[df.Strain == 'R'], PLOT=False, PRINT=False)[0]
+	>>> t, y = curveball.competitions.compete(green, red, PLOT=False)
+
+	Notes
+	-----
+	To debug, uncomment lines to return the ``infodict`` that is returned from :py:func:`scipy.integrate.odeint` is run with ``full_output=1``.
+	"""
 	if not isinstance(m1, lmfit.model.ModelResult):
-		raise ValueError("m1 must be %s, instead it is %s", lmfit.model.ModelResult, type(m1))
+		raise TypeError("m1 must be %s, instead it is %s", lmfit.model.ModelResult, type(m1))
 	if not isinstance(m2, lmfit.model.ModelResult):
-		raise ValueError("m2 must be %s, instead it is %s", lmfit.model.ModelResult, type(m2))
+		raise TypeError("m2 must be %s, instead it is %s", lmfit.model.ModelResult, type(m2))
 
 	t = np.linspace(0, hours, num_of_points)
 	if y0 is None:		
@@ -122,6 +232,43 @@ def compete(m1, m2, y0=None, hours=24, nsamples=1, lag_phase=True, ode=double_ba
 
 
 def selection_coefs_ts(t, y, ax=None, PLOT=False):
+	r"""Calculate selection coefficient according to the following formula[2]_, 	
+	where :math:`A(t), B(t)` are population densities of assay strain *A* and reference strain *B* at time *t*:
+
+	.. math::
+
+		s = \frac{d}{dt} \log{\frac{A(t)}{B(t)}}
+
+
+	Parameters
+	----------
+	t : numpy.ndarray
+		array of time points, as produced by :py:func:`compete`
+	y : numpy.ndarray
+		array of population densities, as produced by :py:func:`compete`, where the first axis is time and the second axis is strain.
+	ax : matplotlib.axes.Axes, optional
+		if `PLOT` is :py:const:`True`, an axes to plot into; if not provided, a new one is created.    
+	PLOT : bool, optional
+		if :py:const:`True`, the function will plot the curve of *s* as a function of *t*.
+
+	Returns
+	-------
+	svals : numpy.ndarray
+		the selection coefficients of the assay strain relative to the reference strain over time.
+	fig : matplotlib.figure.Figure
+		figure object.
+	ax : numpy.ndarray
+		array of :py:class:`matplotlib.axes.Axes` objects.
+
+	Notes
+	-----
+	This formula assumes that the frequencies of the strains follow a logistic curve. 
+	Lag phases, interactions, etc. may cause this formula to become irrelevant.
+
+	References
+	----------
+	.. [12] Chevin, L-M. 2011. `On Measuring Selection in Experimental Evolution <http://dx.doi.org/10.1098/rsbl.2010.0580>`_. Biology Letters.	
+	"""
 	svals = np.gradient(np.log(y[:,0]/y[:,1]), t)
 	svals[np.isinf(svals)] = svals[np.isfinite(svals)].max()
 
@@ -140,32 +287,41 @@ def selection_coefs_ts(t, y, ax=None, PLOT=False):
 
 
 def fitness_LTEE(y, ref_strain=0, assay_strain=1, t0=0, t1=-1):
-	r'''Calculate relative fitness according to the definition used in the Long Term Evolutionary Experiment (LTEE):
+	r"""Calculate relative fitness according to the definition used in the *Long Term Evolutionary Experiment* (LTEE) [3]_,
+	where :math:`A(t), B(t)` are population densities of assay strain *A* and reference strain *B* at time *t*:
 
 	.. math::
 
 		\omega = \frac{\log{(A(t)/A(0))}}{\log{(B(t)/B(0))}}
 
 
-	where :math:`A(t), B(t)` are population densities of assay strain :math:`A` and reference strain :math:`B` at time :math:`t`.
+	Parameters
+	----------
+	y : numpy.ndarray
+		array of population densities, as produced by :py:func:`compete`, where the first axis is time and the second axis is strain.
+	ref_strain : int, optional
+		the index of the reference strain within `y`. This strain's fitness is set to 1 by definition. Defaults to 0 (first).
+	assay_strain : int, optional
+		the index of the assay strain within `y`. The result will be the fitness of this strain relative to the fitness of the reference strain. Defaults to 1 (second).
+	t0 : int, optional 
+		the index of the time point from which to start the calculation of the relative fitness, defaults to 0 (first).
+	t1 : int, optional
+		the index of the time point at which to end the calculation of the relative fitness, defaults to -1 (last).
 
-	Args:
-        - y: :py:class:`numpy.ndarray` array of population densities, as produced by :py:func:`curveball.competitions.compete`, where the first axis is time and the second axis is strain.
-        - ref_strain: :py:class:`int` of the index of the reference strain within `y`. This strain's fitness is set to 1 by definition.
-        - assay_strain: :py:class:`int` of the index of the assay strain within `y`. The result will be the fitness of this strain relative to the fitness of the reference strain.
-        - t0: :py:class:`int` the index of the time point from which to start the calculation of the relative fitness. 0 by default.
-        - t1: :py:class:`int` the index of the time point at which to end the calculation of the relative fitness. -1 (last) by default.
+	Returns
+	-------
+	float
+		the fitness of the assay strain relative to the reference strain.
 
-    Returns:
-        w: :py:class:`float`, the fitness of the assay strain relative to the reference strain. Note that this may depend on the choice of `t0` and `t1` as well as the reference strain.
-    
+	Notes
+	-----
+	The result may depend on the choice of `t0` and `t1` as well as the strain designations (`ref_strain` and `assay_strain`).	
 
-	See also: `Wiser, M. J. & Lenski, R. E., 2015 A Comparison of Methods to Measure Fitness in *Escherichia coli*. PLoS One 10, e0126210. <http://dx.plos.org/10.1371/journal.pone.0126210>`_
-	'''
+
+	References
+	----------
+	.. [3] Wiser, M. J. & Lenski, R. E. 2015 `A Comparison of Methods to Measure Fitness in Escherichia coli <http://dx.plos.org/10.1371/journal.pone.0126210>`_. PLoS One.
+	"""
 	At0,Bt0 = y[t0,assay_strain],y[t0,ref_strain]
 	At1,Bt1 = y[t1,assay_strain],y[t1,ref_strain]
 	return (np.log(At1/At0) / np.log(Bt1/Bt0))[0]
-
-
-
-

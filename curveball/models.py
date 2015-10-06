@@ -8,6 +8,7 @@
 # http://www.opensource.org/licenses/MIT-license
 # Copyright (c) 2015, Yoav Ram <yoav@yoavram.com>
 import sys
+from warnings import warn
 import numpy as np
 import matplotlib.pyplot as plt
 import collections
@@ -26,11 +27,39 @@ sns.set_style("ticks")
 
 
 def poly_smooth(x, y):
+    """Polynomial smoothing function.
+
+    Parameters
+    ----------
+    x : numpy.ndarray
+        array of floats for the independent variable
+    y : numpy.ndarray
+        array of floats for the dependent variable
+
+    Returns
+    -------
+    numpy.ndarray
+        array of floats for the smoothed dependent variable
+    """
     p = np.poly1d(np.polyfit(x, y, 3))
     return p(x)
 
 
 def lowess_smooth(x, y, PLOT=False):
+    """Lowess smoothing function.
+
+    Parameters
+    ----------
+    x : numpy.ndarray
+        array of floats for the independent variable
+    y : numpy.ndarray
+        array of floats for the dependent variable
+
+    Returns
+    -------
+    numpy.ndarray
+        array of floats for the smoothed dependent variable
+    """
     yhat = lowess(y, x, 0.1, return_sorted=False)
     if PLOT:
         fig, ax = plt.subplots(1, 1)
@@ -50,17 +79,36 @@ def logistic_function(t, y0, r, K):
         y(t) = \frac{K}{1 - \Big(1 - \frac{K}{y_0} \Big)e^{-r t}}
 
 
-    - :math:`y_0`: initial population size
-    - K: maximum population size
-    - r: initial growth rate per capita
+    - **:math:`y_0`**: initial population size
+    - **r**: initial per capita growth rate 
+    - **K**: maximum population size
+    
 
-    See also: `Wikipedia <http://en.wikipedia.org/wiki/Logistic_function>`_
+    Parameters
+    ----------
+    t : numpy.ndarray
+        array of floats for time, usually in hours (:math:`t>0`)
+    y0 : float
+        initial population size (:math:`y_0>0`)
+    r : float
+        initial per capita growth rate
+    K : float
+        maximum population size (:math:`K>0`)
+
+    Returns
+    -------
+    numpy.ndarray
+        population size per time point in ``t``.
+
+    See also
+    --------
+    `Logistic function at Wikipedia <https://en.wikipedia.org/wiki/Logistic_function#In_ecology:_modeling_population_growth>`_
     """
     return richards_function(t ,y0, r, K, 1.)
 
 
 def richards_function(t, y0, r, K, nu):
-    r"""Richards growth model (or the generalized logistic model) in a generalization of the logistic model that allows the inflection point to be anywhere along the curve.
+    r"""Richards growth model (or the generalised logistic model) in a generalisation of the logistic model that allows the inflection point to be anywhere along the curve.
 
     .. math::
 
@@ -69,17 +117,37 @@ def richards_function(t, y0, r, K, nu):
         y(t) = \frac{K}{\Big[1 - \Big(1 - \Big(\frac{K}{y_0}\Big)^{\nu}\Big) e^{-r \nu t}\Big]^{1/\nu}}
 
     - :math:`y_0`: initial population size
-    - K: maximum population size
-    - r: initial growth rate per capita
+    - r: initial per capita growth rate
+    - K: maximum population size    
     - :math:`\nu`: curvature of the logsitic term
 
-    See also: `Wikipedia <http://en.wikipedia.org/wiki/Generalised_logistic_function>`_
+    Parameters
+    ----------
+    t : numpy.ndarray
+        array of floats for time, usually in hours (:math:`t>0`)
+    y0 : float
+        initial population size (:math:`y_0>0`)
+    r : float
+        initial per capita growth rate
+    K : float
+        maximum population size (:math:`K>0`)
+    nu : float
+        curvature of the logsitic term (:math:`\nu>0`)
+
+    Returns
+    -------
+    numpy.ndarray
+        population size per time point in `t`.
+
+    See also
+    --------
+    `Generalised logistic function in Wikipedia <http://en.wikipedia.org/wiki/Generalised_logistic_function>`_
     """
     return K / ((1 - (1 - (K/y0)**nu) * np.exp(-r * nu * t))**(1./nu))
 
 
 def baranyi_roberts_function(t, y0, r, K, nu, q0, v):
-    r"""The Baranyi-Roberts growth model is an extension of the Richards model that adds time lag.
+    r"""The Baranyi-Roberts growth model is an extension of the Richards model that adds a lag phase [1]_.
 
     .. math::
 
@@ -87,23 +155,62 @@ def baranyi_roberts_function(t, y0, r, K, nu, q0, v):
 
         y(t) = \frac{K}{\Big[1 - \Big(1 - \Big(\frac{K}{y_0}\Big)^{\nu}\Big) e^{-r \nu A(t)}\Big]^{1/\nu}}
 
-        A(t) = \int_0^t{\alpha(s)ds} = \int_0^t{\frac{q_0}{q_0 + e^{-v t}} ds} = t + \frac{1}{v} \log{\Big( \frac{e^{-v t} + q0}{1 + q0} \Big)}
+        A(t) = \int_0^t{\alpha(s)ds} = \int_0^t{\frac{q_0}{q_0 + e^{-v s}} ds} = t + \frac{1}{v} \log{\Big( \frac{e^{-v t} + q0}{1 + q0} \Big)}
 
 
     - :math:`y_0`: initial population size
+    - r: initial per capita growth rate
     - K: maximum population size
-    - r: initial growth rate per capita
     - :math:`\nu`: curvature of the logsitic term
     - :math:`q_0`: initial adjustment to current environment
     - v: adjustment rate
 
-    See also: `Baranyi, J., Roberts, T. A., 1994. A dynamic approach to predicting bacterial growth in food. Int. J. Food Microbiol. 23, 277–294. <www.ncbi.nlm.nih.gov/pubmed/7873331>`_
+    Parameters
+    ----------
+    t : numpy.ndarray
+        array of floats for time, usually in hours (:math:`t>0`)
+    y0 : float
+        initial population size (:math:`y_0>0`)
+    r : float
+        initial per capita growth rate
+    K : float
+        maximum population size (:math:`K>0`)
+    nu : float
+        curvature of the logsitic term (:math:`\nu>0`)
+    q0 : float
+        initial adjustment to current environment (:math:`0<q_0<1`)
+    v : float
+        adjustment rate (:math:`v>0`)
+
+    Returns
+    -------
+    numpy.ndarray
+        population size per time point in `t`.
+
+    References
+    ----------
+    .. [1] Baranyi, J., Roberts, T. A., 1994. `A dynamic approach to predicting bacterial growth in food <www.ncbi.nlm.nih.gov/pubmed/7873331>`_. Int. J. Food Microbiol.
     """
     At = t + (1./v) * np.log((np.exp(-v * t) + q0)/(1 + q0))
     return K / ((1 - (1 - (K/y0)**nu) * np.exp( -r * nu * At ))**(1./nu))
 
 
 def sample_params(model_fit, nsamples):
+    """Random sample of parameter values from a truncated multivariate normal distribution defined by the 
+    covariance matrix of the a model fitting result.
+
+    Parameters
+    ----------
+    model_fit : lmfit.model.ModelResult
+        the model fit that defines the sampled distribution
+    nsamples : int
+        number of samples to make
+
+    Returns
+    -------
+    pandas.DataFrame
+        data frame of samples; each row is a sample, each column is a parameter.
+    """
     names = [p.name for p in model_fit.params.values() if p.vary]
     means = [p.value for p in model_fit.params.values() if p.vary]
     cov = model_fit.covar
@@ -117,7 +224,7 @@ def sample_params(model_fit, nsamples):
     
 
 def lrtest(m0, m1, alfa=0.05):
-    r"""Perform a likelihood ratio test on two nested models.
+    r"""Performs a likelihood ratio test on two nested models.
 
     For two models, one nested in the other (meaning that the nested model estimated parameters are a subset of the nesting model), the test statistic :math:`D` is:
 
@@ -130,24 +237,44 @@ def lrtest(m0, m1, alfa=0.05):
         lim_{n \to \infty} D \sim \chi^2_{df=\Delta}
 
 
-    where :math:`\Lambda` is the likelihood ratio, :math:`D` is the statistic, :math:`X_{i}` are the data points, :math:`\hat{X_i}(\theta)` is the model prediction with parameters :math:`\theta`, :math:`\theta_i` is the parameters estimation for model :math:`i`, $n$ is the number of data points and :math:`\Delta` is the difference in number of parameters between the models.
+    where :math:`\Lambda` is the likelihood ratio, :math:`D` is the statistic, 
+    :math:`X_{i}` are the data points, :math:`\hat{X_i}(\theta)` is the model prediction with parameters :math:`\theta`, 
+    :math:`\theta_i` is the parameters estimation for model :math:`i`, 
+    :math:`n` is the number of data points, and :math:`\Delta` is the difference in number of parameters between the models.
 
-    The function compares between two :py:class:`lmfit.ModelResult` objects. These are the results of fitting models to the same data set using the `lmfit <lmfit.github.io/lmfit-py>`_ package
+    The function compares between two :py:class:`lmfit.model.ModelResult` objects. 
+    These are the results of fitting models to the same data set using the `lmfit <lmfit.github.io/lmfit-py>`_ package
 
-    The function compares between model fit `m0` and `m1` and assumes that `m0` is nested in `m1`, meaning that the set of varying parameters of `m0` is a subset of the varying parameters of `m1`. The property `chisqr` of the :py:class:`ModelResult` objects is the sum of the square of the residuals of the fit. `ndata` is the number of data points. `nvarys` is the number of varying parameters.
+    The function compares between model fit `m0` and `m1` and assumes that `m0` is nested in `m1`, 
+    meaning that the set of varying parameters of `m0` is a subset of the varying parameters of `m1`. 
+    The property ``chisqr`` of the :py:class:`lmfit.model.ModelResult` objects is 
+    the sum of the square of the residuals of the fit. 
+    ``ndata`` is the number of data points. 
+    ``nvarys`` is the number of varying parameters.
 
-    Args:
-        - m0, m1: :py:class:`lmfit.Model` objects representing two models. `m0` is nested in `m1`.
-        - alfa: The test significance level (default: 5%).
+    Parameters
+    ----------
+    m0, m1 : lmfit.model.ModelResult
+        objects representing two model fitting results. `m0` is assumed to be nested in `m1`.
+    alfa : float, optional
+        test significance level, defaults to 0.05 = 5%.
 
-    Returns:
-        prefer_m1, pval, D, ddf: :py:class:`tuple`
-            - prefer_m1: should we prefer `m1` over `m0`, :py:class:`bool`
-            - pval: the test p-value, :py:class:`float`
-            - D: the test statistic, :py:class:`float`
-            - ddf: the number of degrees of freedom, :py:class:`int`
+    Returns
+    -------
+    prefer_m1 : bool
+        should we prefer `m1` over `m0`
+    pval : float
+        the test p-value
+    D : float
+        the test statistic
+    ddf : int 
+        the number of degrees of freedom
 
-    See also: `Generalized Likelihood Ratio Test Example <http://www.stat.sc.edu/~habing/courses/703/GLRTExample.pdf>`_, `IPython notebook <http://nbviewer.ipython.org/github/yoavram/ipython-notebooks/blob/master/likelihood%20ratio%20test.ipynb>`_
+    See also
+    --------
+    `Generalised Likelihood Ratio Test Example <http://www.stat.sc.edu/~habing/courses/703/GLRTExample.pdf>`_
+
+    `IPython notebook <http://nbviewer.ipython.org/github/yoavram/ipython-notebooks/blob/master/likelihood%20ratio%20test.ipynb>`_
     """
     n0 = m0.ndata
     k0 = m0.nvarys
@@ -171,11 +298,14 @@ def lrtest(m0, m1, alfa=0.05):
 def find_max_growth(model_fit, after_lag=True, PLOT=True):
     r"""Estimates the maximum population growth rate from the model fit.
 
-    The function calculates the maximum population growth rate :math:`a=\max{\frac{dy}{dt}}` as the derivative of the model curve and calculates its maximum. 
+    The function calculates the maximum population growth rate :math:`a=\max{\frac{dy}{dt}}` 
+    as the derivative of the model curve and calculates its maximum. 
     It also calculates the maximum of the per capita growth rate :math:`\mu = \max{\frac{dy}{y \cdot dt}}`.
-    The latter is more useful as a metric to compare different strains or treatments as it does not depend on the population size/density.    
+    The latter is more useful as a metric to compare different strains or treatments 
+    as it does not depend on the population size/density.    
 
-    For example, for the logistic model the population growth rate is a quadratic function of :math:`y` so the maximum is realized when the 2nd derivative is zero:
+    For example, in the logistic model the population growth rate is a quadratic function of :math:`y` 
+    so the maximum is realized when the 2nd derivative is zero:
 
     .. math::
 
@@ -187,7 +317,8 @@ def find_max_growth(model_fit, after_lag=True, PLOT=True):
 
         \max{\frac{dy}{dt}} = \frac{r K}{4}
 
-    In contrast, the per capita growth rate a linear function of :math:`y` and so its maximum is realized when :math:`y=y_0`:
+    In contrast, the per capita growth rate a linear function of :math:`y` 
+    and so its maximum is realized when :math:`y=y_0`:
 
     .. math::
 
@@ -195,20 +326,35 @@ def find_max_growth(model_fit, after_lag=True, PLOT=True):
 
         \max{\frac{dy}{y \cdot dt}} = \frac{dy}{y \cdot dt}(y=y_0) = r (1 - \frac{y_0}{K})     
 
-    Args:
-        - model_fit: :py:class:`lmfit.model.ModelResult` object.
-        - after_lag: :py:class:`bool`. If true, only explore the time after the lag phase. Otherwise start at time zero. Default is :py:const:`True`.
-        - PLOT: :py:class:`bool`. If true, the function will plot a figure that illustrates the calculation. Default is :py:const:`False`.
+    Parameters
+    ----------
+    model_fit : lmfit.model.ModelResult
+        the result of a model fitting procedure
+    after_lag : bool
+        if true, only explore the time after the lag phase. Otherwise start at time zero. Defaults to :py:const:`True`.
+    PLOT : bool, optional
+        if true, the function will plot a figure that illustrates the calculation. Defaults to is :py:const:`False`; defaults to :py:const:`False`.
 
-    Returns:
-        t1, y1, a, t2, y2, mu [, fig, ax, ax2]: :py:class:`tuple`
-            - t1: :py:class:`float`, the time when the maximum population growth rate is achieved in the units of the model_fit `Time` variable.
-            - y1: :py:class:`float`, the population size or density (OD) for which the maximum population growth rate is achieved.
-            - a: :py:class:`float`, the maximum population growth rate.
-            - t2: :py:class:`float`, the time when the maximum per capita growth rate is achieved in the units of the model_fit `Time` variable.
-            - y2: :py:class:`float`, the population size or density (OD) for which the maximum per capita growth rate is achieved.
-            - mu: :py:class:`float`, the the maximum per capita growth rate.
-            - fig, ax, ax2: if the argument `PLOT` was :py:const:`True`, fig is the generated figure, ax is the left y-axis representing growth, and ax2 is the right y-axis representing growth rate.
+    Returns
+    -------
+    t1 : float
+        the time when the maximum population growth rate is achieved in the units of the `model_fit` ``Time`` variable.
+    y1 : float
+        the population size or density (OD) for which the maximum population growth rate is achieved.
+    a : float
+        the maximum population growth rate.
+    t2 : float
+        the time when the maximum per capita growth rate is achieved in the units of the `model_fit` `Time` variable.
+    y2 : float
+        the population size or density (OD) for which the maximum per capita growth rate is achieved.
+    mu : float
+        the the maximum per capita growth rate.
+    fig : matplotlib.figure.Figure
+        if the argument `PLOT` was :py:const:`True`, the generated figure.
+    ax : matplotlib.axes.Axes
+        if the argument `PLOT` was :py:const:`True`, the left y-axis representing growth.
+    ax2 : matplotlib.axes.Axes 
+        if the argument `PLOT` was :py:const:`True`, the right y-axis representing growth rate.
     """
     y0 = model_fit.params['y0'].value
     K  = model_fit.params['K'].value
@@ -277,18 +423,31 @@ def find_max_growth(model_fit, after_lag=True, PLOT=True):
 def find_lag(model_fit, PLOT=True):
     """Estimates the lag duration from the model fit.
 
-    The function calculates the tangent line to the model curve at the point of maximum derivative (the inflection point). The time when this line intersects with :math:`y0` (the initial population size) is labeled :math:`\lambda` and is called the lag duration time.
+    The function calculates the tangent line to the model curve at the point of maximum derivative (the inflection point). 
+    The time when this line intersects with :math:`N_0` (the initial population size) 
+    is labeled :math:`\lambda` and is called the lag duration time [2]_.
 
-    Args:
-        - model_fit: :py:class:`lmfit.model.ModelResult` object.
-        - PLOT: :py:class:`bool`. If true, the function will plot a figure that illustrates the calculation. Default is :py:const:`False`.
+    Parameters
+    ----------
+    model_fit : lmfit.model.ModelResult
+        the result of a model fitting procedure
+    PLOT : bool, optional
+        if true, the function will plot a figure that illustrates the calculation. Defaults to is :py:const:`False`; defaults to :py:const:`False`.
 
-    Returns:
-        lam [, fig, ax, ax2]: :py:class:`float` or :py:class:`tuple`
-            - lam: :py:class:`float`, the lag phase duration in the units of the model_fit `Time` variable.
-            - fig, ax, ax2: if the argument `PLOT` was :py:const:`True`, fig is the generated figure, ax is the left y-axis representing growth, and ax2 is the right y-axis representing growth rate.
+    Returns
+    -------
+    lam : float
+        the lag phase duration in the units of the `model_fit` ``Time`` variable (usually hours).
+    fig : matplotlib.figure.Figure
+        if the argument `PLOT` was :py:const:`True`, the generated figure.
+    ax : matplotlib.axes.Axes
+        if the argument `PLOT` was :py:const:`True`, the left y-axis representing growth
+    ax2 : matplotlib.axes.Axes 
+        if the argument `PLOT` was :py:const:`True`, the right y-axis representing growth rate.
 
-    See also: Fig. 2.2 pg. 19 in `Baranyi, J., 2010. Modelling and parameter estimation of bacterial growth with distributed lag time. <http://www2.sci.u-szeged.hu/fokozatok/PDF/Baranyi_Jozsef/Disszertacio.pdf>`_.
+    References
+    ----------
+    .. [2] Fig. 2.2 pg. 19 in Baranyi, J., 2010. `Modelling and parameter estimation of bacterial growth with distributed lag time. <http://www2.sci.u-szeged.hu/fokozatok/PDF/Baranyi_Jozsef/Disszertacio.pdf>`_.
     """
     y0 = model_fit.params['y0'].value
     K  = model_fit.params['K'].value
@@ -353,19 +512,34 @@ def find_lag(model_fit, PLOT=True):
 def has_lag(model_fits, alfa=0.05, PRINT=False):
     r"""Checks if if the best fit has statisticaly significant lag phase :math:`\lambda > 0`.
 
-    If the best fitted model doesn't has a lag phase to begin with, return :py:const:`False`. This includes the logistic model and Richards model.
+    If the best fitted model doesn't has a lag phase to begin with, return :py:const:`False`. 
+    This includes the logistic model and Richards model.
+
     Otherwise, a likelihood ratio test will be perfomed with nesting determined according to Figure 1. 
-    The null hypothesis of the test is that :math:`\frac{1}{v} = 0` , i.e. the adjustment rate :math:`v` is infinite and therefore there is no lag phase. 
+    The null hypothesis of the test is that :math:`\frac{1}{v} = 0` , 
+    i.e. the adjustment rate :math:`v` is infinite and therefore there is no lag phase.
+
     If the null hypothesis is rejected than the function will return :py:const:`True`.
     Otherwise it will return :py:const:`False`.
 
-    Args:
-        - model_fits: :py:class:`list` of py:class:`lmfit.model.ModelResult` objects, ordered by their preference. Generated by :py:func:`curveball.models.fit_model`.
-        - alfa: :py:class:`float`. Determines the significance level of the underlying statistical test. Default is 0.05 for a 5% significance level.
-        - PRINT: :py:class:`bool`. If :py:const:`True`, the function will print the result of the underlying statistical test.
+    Parameters
+    ----------
+    model_fits : list lmfit.model.ModelResult
+        the results of several model fitting procedures, ordered by their statistical preference. Generated by :py:func:`fit_model`.
+    alfa : float, optional
+        test significance level, defaults to 0.05 = 5%.
+    PRINT : bool, optional
+        if :py:const:`True`, the function will print the result of the underlying statistical test; defaults to :py:const:`False`.
 
-    Returns:
-        has_lag: :py:class:`bool`
+    Returns
+    -------
+    bool
+        the result of the hypothesis test. :py:const:`True` if the null hypothesis was rejected and the data suggest that there is a significant lag phase.
+
+    Raises
+    ------
+    ValueError
+        raised if the fittest of the :py:class:`lmfit.model.ModelResult` objects in `model_fits` is of an unknown model.
     """
     best_fit = model_fits[0]
     if best_fit.model.name in (richards_model.name, logistic_model.name):
@@ -397,13 +571,24 @@ def has_nu(model_fits, alfa=0.05, PRINT=False):
     The null hypothesis of the test is that :math:`\nu = 1`; if it is rejected than the function will return :py:const:`True`.
     Otherwise it will return :py:const:`False`.
 
-    Args:
-        - model_fits: :py:class:`list` of py:class:`lmfit.model.ModelResult` objects, ordered by their preference. Generated by :py:func:`curveball.models.fit_model`.
-        - alfa: :py:class:`float`. Determines the significance level of the underlying statistical test. Default is 0.05 for a 5% significance level.
-        - PRINT: :py:class:`bool`. If :py:const:`True`, the function will print the result of the underlying statistical test.
-    
-    Returns:
-        has_nu: :py:class:`bool`
+    Parameters
+    ----------
+    model_fits : list lmfit.model.ModelResult
+        the results of several model fitting procedures, ordered by their statistical preference. Generated by :py:func:`fit_model`.
+    alfa : float, optional
+        test significance level, defaults to 0.05 = 5%.
+    PRINT : bool, optional
+        if :py:const:`True`, the function will print the result of the underlying statistical test; defaults to :py:const:`False`.
+
+    Returns
+    -------
+    bool
+        the result of the hypothesis test. :py:const:`True` if the null hypothesis was rejected and the data suggest that :math:`\nu` is significantly different from one.
+
+    Raises
+    ------
+    ValueError
+        raised if the fittest of the :py:class:`lmfit.model.ModelResult` objects in `model_fits` is of an unknown model.
     """
     best_fit = model_fits[0]
     if best_fit.model.name == logistic_model.name:
@@ -431,7 +616,7 @@ def has_nu(model_fits, alfa=0.05, PRINT=False):
     return prefer_m1
 
 
-def make_Dfun(expr, t, args):
+def _make_Dfun(expr, t, args):
     partial_derivs = [None]*len(args)
     for i,v in enumerate(args):
         dydv = expr.diff(v)
@@ -444,21 +629,21 @@ def make_Dfun(expr, t, args):
     return Dfun
 
 
-def make_model_Dfuns():
+def _make_model_Dfuns():
     t, y0, r, K, nu, q0, v = sympy.symbols('t y0 r K nu q0 v')
     logistic = K/( 1 - (1 - K/y0) * sympy.exp(-r * t) )
-    logistic_Dfun = make_Dfun(logistic, t, (y0, r, K))
+    logistic_Dfun = _make_Dfun(logistic, t, (y0, r, K))
 
     richards = K/( 1 - (1 - (K/y0)**nu) * sympy.exp(-r * nu * t) )**(1/nu)
-    richards_Dfun = make_Dfun(richards, t, (y0, r, K, nu)) 
+    richards_Dfun = _make_Dfun(richards, t, (y0, r, K, nu)) 
 
     A = t + 1/v * sympy.log( (sympy.exp(-v * t) + q0) / (1 + q0)  )
     baranyi_roberts5 = K/( 1 - (1 - K/y0) * sympy.exp(-r * A) )
-    baranyi_roberts5_Dfun = make_Dfun(baranyi_roberts5, t, (y0, r, K, q0, v))
+    baranyi_roberts5_Dfun = _make_Dfun(baranyi_roberts5, t, (y0, r, K, q0, v))
 
     A = t + 1/v * sympy.log( (sympy.exp(-v * t) + q0) / (1 + q0)  )
     baranyi_roberts6 = K/( 1 - (1 - (K/y0)**nu) * sympy.exp(-r * nu * A) )**(1/nu)
-    baranyi_roberts6_Dfun = make_Dfun(baranyi_roberts6, t, (y0, r, K, nu, q0, v))
+    baranyi_roberts6_Dfun = _make_Dfun(baranyi_roberts6, t, (y0, r, K, nu, q0, v))
     
     return logistic_Dfun, richards_Dfun, baranyi_roberts5_Dfun, baranyi_roberts6_Dfun
 
@@ -466,20 +651,37 @@ def make_model_Dfuns():
 def benchmark(model_fits, deltaBIC=6, PRINT=False, PLOT=False):
     """Benchmark a model fit (or the best fit out of a sequence of fits).
 
-    The benchmark is successful -- the model fit is considered "better" then the benchmark fit -- if the `BIC <http://en.wikipedia.org/wiki/Bayesian_information_criterion>`_ of the benchmark fit is higher then the BIC of the model fit by at least `deltaBIC`.
-    For typical values of `deltaBIC` and their interpretation, see pg. 777 in Kass & Raftery (1995). 
-    The benchmark is done against a linear model. 
+    The benchmark is successful -- the model fit is considered "better" then the benchmark fit -- 
+    if the `BIC <http://en.wikipedia.org/wiki/Bayesian_information_criterion>`_ of the benchmark fit 
+    is higher then the BIC of the model fit by at least `deltaBIC`.
+    For typical values of `deltaBIC` and their interpretation, see [3]_. 
+    The benchmark is done against a **linear model**. 
 
-    Args:
-        - model_fits: One or more :py:class:`lmfit.model.ModelResult` instances. The first element model fit will be benchmarked.
-        - deltaBIC: The minimal difference in BIC that is interpreted as meaningful evidence in favor of the model fit.
-        - PLOT: :py:class:`bool`. If :py:const:`True`, the function will plot the model fit and the benchmark fit.
+    Parameters
+    ----------
+    model_fits : lmfit.model.ModelResult / list
+        one or more results of model fitting procedures. The first element will be benchmarked.
+    deltaBIC : float
+        the minimal difference in BIC that is interpreted as meaningful evidence in favor of the model fit.
+    PLOT : bool, optional
+        if :py:const:`True`, the function will plot the model fit and the benchmark fit; defaults to :py:const:`False`.
 
-    Returns:
-        passed: :py:class:`bool`. :py:const:`True` if the model fit is significantly better than the benchmark, :py:const:`False` otherwise.
+    Returns
+    -------
+    passed : bool
+        :py:const:`True` if the model fit is significantly better than the benchmark, :py:const:`False` otherwise.
+    fig : matplotlib.figure.Figure
+        if the argument `PLOT` was :py:const:`True`, the generated figure.
+    ax : matplotlib.axes.Axes
+        if the argument `PLOT` was :py:const:`True`, the generated axis.
 
+    References
+    ----------
+    .. [3] Kass, R., Raftery, A., 1995. `Bayes Factors <http://www.tandfonline.com/doi/abs/10.1080/01621459.1995.10476572>`_. J. Am. Stat. Assoc.
 
-    See also: `Kass, R., Raftery, A., 1995. Bayes Factors. J. Am. Stat. Assoc. 773–795. <http://www.tandfonline.com/doi/abs/10.1080/01621459.1995.10476572>`_ and relevant information on `Wikipedia <http://en.wikipedia.org/wiki/Bayesian_information_criterion#Gaussian_Case>`_
+    See also
+    --------
+    Relevant information on `Wikipedia <http://en.wikipedia.org/wiki/Bayesian_information_criterion#Gaussian_Case>`_
     """
     best_fit = model_fits[0] if isinstance(model_fits, collections.Iterable) else model_fits
     t = best_fit.userkws['t']
@@ -510,6 +712,30 @@ def benchmark(model_fits, deltaBIC=6, PRINT=False, PLOT=False):
 
 
 def cooks_distance(df, model_fit, use_weights=True):
+    """Calculates Cook's distance of each well given a specific model fit. 
+
+    Cook's distance is an estimate of the influence of a data curve when performing model fitting; 
+    it is used to find wells (growth curve replicates) that are suspicious as outliers.
+    The higher the distance, the more suspicious the curve.
+
+    Parameters
+    ----------
+    df : pandas.DataFrame
+        growth curve data, see :py:mod:`curveball.ioutils` for a detailed definition.
+    model_fit : lmfit.model.ModelResult
+        result of model fitting procedure
+    use_weights : bool, optional
+        should the function use standard deviation across replicates as weights for the fitting procedure, defaults to :py:const:`True`.
+
+    Returns
+    -------
+    dict
+        a dictionary of Cook's distances: keys are wells (from the `Well` column in `df`), values are Cook's distances.
+
+    See also
+    --------
+    `Wikipedia <https://en.wikipedia.org/wiki/Cook's_distance>`_
+    """
     p = model_fit.nvarys
     MSE = model_fit.chisqr / model_fit.ndata
     wells = df.Well.unique()
@@ -526,8 +752,38 @@ def cooks_distance(df, model_fit, use_weights=True):
 
 
 def find_outliers(df, model_fit, deviations=2, use_weights=True, ax=None, PLOT=False):
+    """Find outlier wells in growth curve data.
+
+    Uses the Cook's distance approach (`cooks_distance`); 
+    values of Cook's distance that are `deviations` standard deviations **above** the mean
+    are defined as outliers.
+
+    Parameters
+    ----------
+    df : pandas.DataFrame
+        growth curve data, see :py:mod:`curveball.ioutils` for a detailed definition.
+    model_fit : lmfit.model.ModelResult
+        result of model fitting procedure
+    deviations : float, optional
+        the number of standard deviations that defines an outlier, defaults to 2.
+    use_weights : bool, optional
+        should the function use standard deviation across replicates as weights for the fitting procedure, defaults to :py:const:`True`.
+    ax : matplotlib.axes.Axes, optional
+        an axes to plot into; if not provided, a new one is created.
+    PLOT : bool, optional
+        if :py:const:`True`, the function will plot the Cook's distances of the wells and the threshold.
+
+    Returns
+    -------
+    outliers : list
+        the labels of the outlier wells.
+    fig : matplotlib.figure.Figure
+        if the argument `PLOT` was :py:const:`True`, the generated figure.
+    ax : matplotlib.axes.Axes
+        if the argument `PLOT` was :py:const:`True`, the generated axis.
+    """
     D = cooks_distance(df, model_fit, use_weights=use_weights)
-    D = sorted(D.items())
+    D = sorted(D.items()) # TODO SortedDict?
     distances = [x[1] for x in D]        
     dist_mean, dist_std = np.mean(distances), np.std(distances)
     outliers = [well for well,dist in D if dist > dist_mean + deviations * dist_std]
@@ -551,6 +807,38 @@ def find_outliers(df, model_fit, deviations=2, use_weights=True, ax=None, PLOT=F
 
 
 def find_all_outliers(df, model_fit, deviations=2, max_outlier_fraction=0.1, use_weights=True, PLOT=False):    
+    """Iteratively find outlier wells in growth curve data.
+
+    At each iteration, calls :py:func:`find_outliers`.
+    Iterations stop when no more outliers are found or when the fraction of wells defined as outliers
+    is above `max_outlier_fraction`.
+        
+    Parameters
+    ----------
+    df : pandas.DataFrame
+        growth curve data, see :py:mod:`curveball.ioutils` for a detailed definition.
+    model_fit : lmfit.model.ModelResult
+        result of model fitting procedure
+    deviations : float, optional
+        the number of standard deviations that defines an outlier, defaults to 2.
+    max_outlier_fraction : float, optional
+        maximum fraction of wells to define as outliers, defaults to 0.1 = 10%.
+    use_weights : bool, optional
+        should the function use standard deviation across replicates as weights for the fitting procedure, defaults to :py:const:`True`.
+    ax : matplotlib.axes.Axes
+        an axes to plot into; if not provided, a new one is created.
+    PLOT : bool, optional
+        if :py:const:`True`, the function will plot the Cook's distances of the wells and the threshold.
+
+    Returns
+    -------
+    outliers : list
+        a list of lists: the list nested at index *i* contains the labels of the outlier wells found at iteration *i*.
+    fig : matplotlib.figure.Figure
+        if the argument `PLOT` was :py:const:`True`, the generated figure.
+    ax : matplotlib.axes.Axes
+        if the argument `PLOT` was :py:const:`True`, the generated axis.
+    """
     outliers = []
     num_wells = len(df.Well.unique())
     df = copy.deepcopy(df)
@@ -575,10 +863,11 @@ def find_all_outliers(df, model_fit, deviations=2, max_outlier_fraction=0.1, use
 
 
 def _calc_weights(df):
-    """if there is more than one replicate, use the standard deviations as weight
+    """If there is more than one replicate, use the standard deviations as weight.
+    Warn about NaN and infinite values.
     """
     if np.isnan(df['std']).any():
-        print "Warning: NaN in standard deviations, can't use weights"
+        warn("Warning: NaN in standard deviations, can't use weights")
         weights = None
     else:
         weights = 1./df['std']
@@ -589,12 +878,52 @@ def _calc_weights(df):
         # if any weight is infinite, change to the max
         idx = np.isinf(weights)
         if idx.any():
-            print "Warning: found infinite weight, changing to maximum (%d occurences)" % idx.sum()
+            warn("Warning: found infinite weight, changing to maximum (%d occurences)" % idx.sum())
             weights[idx] = weights[~idx].max()
     return weights
 
 
 def guess_nu(t, N, K=None, PLOT=False, PRINT=False):
+    r"""Guesses the value of :math:`\nu` from the shape of the growth curve.
+
+    Following [4]_:
+
+    .. math::
+
+        K (1 + \nu)^{-\frac{1}{\nu}} = N_{max}
+
+
+    - :math:`N_{max}`: population size when the population growth rate (:math:`\frac{dN}{dt}`) is maximum
+    - r: initial per capita growth rate 
+    - K: maximum population size
+    - :math:`\nu`: curvature of the logsitic term
+
+    Parameters
+    ----------
+    t : numpy.ndarray
+        time
+    N : numpy:ndarray
+        `N[i]` is the population size at time `t[i]`
+    K : float, optional
+        a guess of `K`, the maximum population size. If not given, it is guessed.
+    PLOT : bool, optional
+        if :py:const:`True`, the function will plot the calculations.
+    PRINT : bool, optional
+        if :py:const:`True`, the function will print intermediate results of the calculations.
+
+    Returns
+    -------
+    x : float
+        the guess of :math:`\nu`.
+    fig : matplotlib.figure.Figure
+        if the argument `PLOT` was :py:const:`True`, the generated figure.
+    ax : matplotlib.axes.Axes
+        if the argument `PLOT` was :py:const:`True`, the generated axis.
+
+    References
+    ----------
+    .. [4] Richards, F. J. 1959. `A Flexible Growth Function for Empirical Use <http://dx.doi.org/10.1093/jxb/10.2.290>`_. Journal of Experimental Botany
+    """
     N_smooth = smooth(t, N)
     dNdt = np.gradient(N_smooth, t[1]-t[0])   
     dNdt_smooth = smooth(t, dNdt)
@@ -610,7 +939,7 @@ def guess_nu(t, N, K=None, PLOT=False, PRINT=False):
     y1 = target(1.0)
     
     if not opt_res.success and not np.allclose(y, 0):
-        print "Minimization warning in %s: %s\nGuessed nu=%.4f with f(nu)=%.4f" % (sys._getframe().f_code.co_name, opt_res.message, x, y)
+        warn("Minimization warning in %s: %s\nGuessed nu=%.4f with f(nu)=%.4f" % (sys._getframe().f_code.co_name, opt_res.message, x, y))
     if y1 < y:
         print "f(1)=%.4f < f(%.4f)=%.4f, Setting nu=1" % (y1, x, y)
         x = 1.0
@@ -636,6 +965,40 @@ def guess_nu(t, N, K=None, PLOT=False, PRINT=False):
 
 
 def guess_r(t, N, nu=None, K=None):
+    r"""Guesses the value of *r* from the shape of the growth curve.
+
+    Following [5]_:
+
+    .. math::
+
+        \frac{dN}{dt}_{max} = r K \nu (1 + \nu)^{-\frac{1 + \nu}{\nu}}
+
+
+    - :math:`\frac{dN}{dt}_{max}`: maximum population growth rate
+    - r: initial per capita growth rate 
+    - K: maximum population size
+    - :math:`\nu`: curvature of the logsitic term
+
+    Parameters
+    ----------
+    t : numpy.ndarray
+        time
+    N : numpy:ndarray
+        `N[i]` is the population size at time `t[i]`
+    nu : float, optional
+        a guess of `nu`, the maximum population size. If not given, it is guessed.
+    K : float, optional
+        a guess of `K`, the curvature of the logsitic term. If not given, it is guessed.
+
+    Returns
+    -------
+    float
+        the guess of *r*.
+
+    References
+    ----------
+    .. [5] Richards, F. J. 1959. `A Flexible Growth Function for Empirical Use <http://dx.doi.org/10.1093/jxb/10.2.290>`_. Journal of Experimental Botany
+    """
     dNdt = np.gradient(N, t[1]-t[0])
     smoothed = smooth(t, dNdt)
     dNdtmax = smoothed.max()    
@@ -647,10 +1010,54 @@ def guess_r(t, N, nu=None, K=None):
 
 
 def fit_model(df, ax=None, param_guess=None, param_max=None, use_weights=True, use_Dfun=False, PLOT=True, PRINT=True):
-    r"""Fit a growth model to data.
+    r"""Fit and select a growth model to growth curve data.
 
-    This function will attempt to fit a growth model to `OD~Time` taken from the `df` :py:class:`pandas.DataFrame`.
-    The function is still being developed.
+    This function fits several growth models to growth curve data (``OD`` as a function of ``Time``).
+
+    Parameters
+    ----------
+    df : pandas.DataFrame
+        growth curve data, see :py:mod:`curveball.ioutils` for a detailed definition.
+    ax : matplotlib.axes.Axes, optional
+        an axes to plot into; if not provided, a new one is created.
+    param_guess : dict, optional
+        a dictionary of parameter guesses to use (key: :py:class:`str` of param name; value: :py:class:`float` of param guess).
+    param_max : dict, optional
+        a dictionary of parameter maximum bounds to use (key: :py:class:`str` of param name; value: :py:class:`float` of param max bound).
+    use_weights : bool, optional
+        should the function use standard deviation across replicates as weights for the fitting procedure, defaults to :py:const:`True`. 
+    use_Dfun : bool, optional
+        should the function calculate the partial derivatives of the model functions to be used in the fitting procedure, defaults to :py:const:`False`.
+    PLOT : bool, optional
+        if :py:const:`True`, the function will plot the all model fitting results.
+    PRINT : bool, optional
+        if :py:const:`True`, the function will print the all model fitting results.
+
+    Returns
+    -------
+    models : list
+        a list of :py:class:`lmfit.model.ModelResult` objects, sorted by the fitting quality.
+    fig : matplotlib.figure.Figure
+        figure object.
+    ax : numpy.ndarray
+        array of :py:class:`matplotlib.axes.Axes` objects, one for each model result, with the same order as `models`.
+
+    Raises
+    ------
+    TypeError
+        if one of the input parameters is of the wrong type (not guaranteed).
+    ValueError
+        if the input is bad, for example, `df` is empty (not guaranteed).
+    AssertionError
+        if any of the intermediate calculated values are inconsistent (for example, ``y0<0``).
+
+    Example
+    -------
+    >>> import curveball
+    >>> import pandas as pd
+    >>> plate = pd.read_csv('plate_templates/G-RG-R.csv')
+    >>> df = curveball.ioutils.read_tecan_xlsx('data/Tecan_280715.xlsx', label='OD', plate=plate)
+    >>> green_models = curveball.models.fit_model(df[df.Strain == 'G'])
     """
     if not isinstance(df, pd.DataFrame):
         raise TypeError("Input df must be a %s, but it is %s" % (pd.DataFrame.__name__, df.__class__.__name__))
@@ -780,4 +1187,4 @@ linear_model.name = 'linear-benchmark'
 logistic_model = Model(logistic_function)
 richards_model = Model(richards_function)
 baranyi_roberts_model = Model(baranyi_roberts_function)
-logistic_Dfun, richards_Dfun, baranyi_roberts5_Dfun, baranyi_roberts6_Dfun = make_model_Dfuns()
+logistic_Dfun, richards_Dfun, baranyi_roberts5_Dfun, baranyi_roberts6_Dfun = _make_model_Dfuns()

@@ -30,3 +30,20 @@ install:
 # Run test
 script:  
   - nosetests tests --with-coverage --cover-package=curveball --cover-inclusive --cover-html --cover-html-dir=coverage_report
+
+# Build docs
+before_deploy:
+  - cd docs 
+  - make html
+  - cd ..
+
+# Deploy docs to divshot
+deploy:
+  provider: divshot
+  api_key:
+    secure: ou0wBUsGCDzlA5oOmGGlLqiECV2SyCBsfU1e2j+FzVermDrowhNCNdVk9TVeO6lvIzc2F8R40sMk/SOjaAdT/A9+CRNgFdOJcTTbW1bWRBhU4EEaW9TLYXp0gkHS9xhHG+3xHF1Ox5tIQt912OUnhxnWIuOUEecUMvObScg7bdE0KNHdhyFLcC6g+o9Ny/HkZc3czKoKdy+kAjn1/hvP+LrPEEQoVWPsuYVnPHn7U1ERE/LBxH8zEdFWAYlFz4nqEda/cOfYcvr4Ua5ye8iSuA3c8OHv/Hsgkj2Fx9eCh4DnTPmij87Bq9wEvFqcMsJz0VvL0ecxKZ8GF2nUTsFVsXEl/hublpFaJwWKJFLcKdkNozRsjaICM1zWp4949tkc6U8dEYb/iZdZc6eRX2RD7eNWRFYZEWNYFRZ6ESQpAnD10CZGcBlLBZzsrw6W8/9G57+kQB3aT9ceCqhoqq8vF+VXDo1NJE5MpMQVpPOT+x7DDGot6gaXCxteCSySIcZLLnXwPZouhZeZqFrpnciDkhjnIkViKsQ9VXXGyr7YqhrERx2Z7rH00c+668BwgBmo8US99VGQiCR/FoUJ37vw2LYpxWv8+U0Mzor5pGinwq8X3yjynh/Bcz5PfBJ/s0UVyXl79eQZw62WbFi6ymudIDvMittLJ2vEGhshYNprzEc=
+  environment: production
+  on:
+    repo: yoavram/curveball
+    branch: docs
+  skip_cleanup: true
