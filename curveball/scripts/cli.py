@@ -87,12 +87,12 @@ def find_plate_file(plate_file):
 
 def load_plate(plate_path):
 	"""Loads a plate template from a CSV file.
-	
+
 	Parameters
 	----------
-    plate_path : str
-    	full or relative path to the plate template file.
-	
+	plate_path : str
+		full or relative path to the plate template file.
+
 	Returns
 	--------
 	pandas.DataFrame
@@ -115,7 +115,7 @@ def where(ctx, param, value):
 	"""Prints the path where Curveball is installed and exists the app. 
 
 	Parameters are ignored, except that if `value` or `ctx.resilient_parsing`
-	are not empty/:py:const`False`/:py:const:`None`, the function returns without doing anything.
+	are not empty/:py:const:`False`/:py:const:`None`, the function returns without doing anything.
 	"""
 	if not value or ctx.resilient_parsing:
 		return
