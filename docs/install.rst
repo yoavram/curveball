@@ -30,12 +30,32 @@ The recommended way to install the dependencies is to download and
 install `Anaconda <https://www.continuum.io/downloads>`_, available for
 Windows, OS X, and Linux.
 
-After installing Anaconda, open a terminal or command line, and write the following commands:
+After installing Anaconda, open a terminal or command line, and write the following commands to install the dependencies:
 
 >>> conda update conda --yes
 >>> conda install --yes requests pip numpy scipy matplotlib dateutil pandas statsmodels lxml seaborn sympy xlrd
 >>> pip install lmfit
->>> pip install git+https://github.com/yoavram/curveball.git
+
+Then install Curveball (from `PyPi <https://pypi.python.org/pypi/curveball/>`_):
+
+>>> pip install curveball
+
+
+.. note::
+
+	Another way to install Curveball is directly from `GitHub <https://github.com/yoavram/curveball>`_:
+
+	>>> pip install git+https://github.com/yoavram/curveball.git
+
+	or with a zip-file of Curveball, by running:
+
+	>>> pip install <zip-file>
+
+	replacing ``<zip-file>`` with the path to the zip-file.
+
+
+Verify installation
+^^^^^^^^^^^^^^^^^^^
 
 To verify the installation, run this command:
 
@@ -44,6 +64,7 @@ curveball, version x.x.x
 
 where ``x.x.x`` will be replaced by the current version number (|release|).
 
+
 .. note::
 
 	To open a command line (or terminal) in:
@@ -51,6 +72,24 @@ where ``x.x.x`` will be replaced by the current version number (|release|).
 	- **Windows**: click the *Start* button, type :command:`cmd.exe` and click *Enter*.
 	- **Linux**: click *Ctrl-T*.
   	- **OS X**: search for :command:`terminal` in *Spotlight*.
+
+
+Updating
+^^^^^^^^
+
+To update the depndencies installed with :command:`conda`, run:
+
+>>> conda update <package-name>
+
+replacing ``<package-name>`` with the name of the package you wish to update.
+
+To update the packages installed with :command:`pip`:
+
+>>> pip install --upgrade <package-name>
+
+To update Curveball:
+
+>>> pip install --upgrade curveball
 
 Dependencies versions
 ^^^^^^^^^^^^^^^^^^^^^
