@@ -63,7 +63,7 @@ def get_filename(filepath):
 	return filename
 
 
-def find_plate_file(plate_file):
+def find_plate_file(plate_folder, plate_file):
 	"""Finds a plate file, either in the current working dir or in the package data resources.
 
 	Parameters
@@ -76,13 +76,13 @@ def find_plate_file(plate_file):
 	str
 		the full path of the plate file.
 	"""
-	plate_file = os.path.join(os.curdir, plate_file)
-	if not os.path.exists(plate_file):
-		# if plate file doesn't exist try to get it from package data
-		plate_file = pkg_resources.resource_filename('plate_templates', plate_file)
-	if not os.path.exists(plate_file):
-		raise click.FileError(plate_file, hint="can't find file.")
-	return plate_file
+	plate_path = os.path.join(plate_folder, plate_file)
+	if not os.path.exists(plate_path):
+		# if plate path doesn't exist try to get it from package data
+		plate_path = pkg_resources.resource_filename(plate_folder, plate_file)
+	if not os.path.exists(plate_path):
+		raise click.FileError(plate_path, hint="can't find file.")
+	return plate_path
 
 
 def load_plate(plate_path):
@@ -170,7 +170,7 @@ def plate(plate_folder, plate_file, output_file, list):
 		files = os.linesep.join(files)
 		click.echo(files)
 		return
-	plate_path = find_plate_file(os.join.path(plate_folder, plate_file))
+	plate_path = find_plate_file(plate_folder, plate_file)
 	plate = load_plate(plate_path)
 	plate.to_csv(output_file, index=False)
 	if VERBOSE and output_file.name != '-':
