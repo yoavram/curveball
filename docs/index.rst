@@ -17,6 +17,7 @@ Curveball:
 * uses estimated **growth traits** and **competition models** to predict results of **competition experiments**
 * infers **fitness** and **selection coefficients** from predicted **competition results**
 
+
 Who is this for?
 ----------------
 
@@ -30,6 +31,17 @@ that can directly work with collections of growth curve measurements (e.g., 96-w
 basic familiarity with the **Python programming language** is recommended for using the API.
 
 Proceed to the :doc:`Installation instructions <install>` and then to the :doc:`tutorial`.
+
+
+.. note::
+   
+   This documentation provides technical details on using Curveball.
+   For more information on the theoretical and computational aspects of Curveball, read the preprint:
+
+   .. pull-quote::
+
+      Ram et al. 2015. `Predicting competition results from growth curves <https://dx.doi.org/10.1101/022640>`_. *bioRxiv*. doi:10.1101/022640.
+
 
 Contents:
 ---------
@@ -45,6 +57,12 @@ Contents:
    competitions
    cli
 
+API
+---
+
+* :ref:`genindex`
+* :ref:`modindex`
+
 Resources:
 ----------
 
@@ -55,12 +73,5 @@ Resources:
 * `Change log <https://github.com/yoavram/curveball/tree/master>`_
 * `Contributing <https://github.com/yoavram/curveball/blob/master/CONTRIBUTING.md>`_
 * `License <https://github.com/yoavram/curveball/blob/master/LICENCE.txt>`_
-
-Indices and tables
-------------------
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
 
 Logo `designed by Freepik <http://www.freepik.com/free-vector/ball-of-wool_762106.htm>`_.
