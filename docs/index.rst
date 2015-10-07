@@ -7,7 +7,8 @@ Curveball: Predicting competition results from growth curves
 ============================================================
 **Author**: `Yoav Ram <http://www.yoavram.com>`_
 
-Curveball is an open source software for analysis and visualization of high-throughput growth curve data 
+Curveball is an open source software for analysis and 
+visualization of high-throughput growth curve data 
 and prediction of competition experiment results.
 
 Curveball:
@@ -28,9 +29,7 @@ that can directly work with collections of growth curve measurements (e.g., 96-w
 **No programmings skills** are required for using the CLI; 
 basic familiarity with the **Python programming language** is recommended for using the API.
 
-You can find a few examples that load, plot, and analyse growth curve data and predict competitions results in the gallery page.
-
-If you like what you see, then proceed to the installation page and then to the tutorial.
+Proceed to the :doc:`Installation instructions <install>` and then to the :doc:`tutorial`.
 
 Contents:
 ---------
