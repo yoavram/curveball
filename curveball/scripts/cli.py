@@ -26,10 +26,8 @@ PLOT = True
 PROMPT = True
 ERROR_COLOR = 'red'
 INFO_COLOR = 'white'
-file_extension_handlers = {
-							'.mat': curveball.ioutils.read_tecan_mat, 
-							'.xlsx': curveball.ioutils.read_tecan_xlsx
-						  }
+file_extension_handlers = {'.mat': curveball.ioutils.read_tecan_mat, 
+						   '.xlsx': curveball.ioutils.read_tecan_xlsx}
 
 
 def echo_error(message):
@@ -46,6 +44,17 @@ def ioerror_to_click_exception(io_error):
 
 
 def get_filename(filepath):
+	"""Get a file name out of a file path.
+
+	Parameters
+	----------
+	filepath : str
+
+	Returns
+	-------
+	str
+		filename
+	"""
 	if filepath is None:
 		return ''
 	filename = os.path.split(filepath)[-1]
@@ -55,9 +64,17 @@ def get_filename(filepath):
 
 
 def find_plate_file(plate_folder, plate_file):
-	"""Finds a plate file in the specified folder, either in the current working dir or in the package data resources.
+	"""Finds a plate file, either in the current working dir or in the package data resources.
 
-	Returns a string of the plate file full path.
+	Parameters
+	----------
+	plate_file : str
+		the filename of the plate file, may include absolute or relative path
+
+	Returns
+	-------
+	str
+		the full path of the plate file.
 	"""
 	plate_path = os.path.join(plate_folder, plate_file)
 	if not os.path.exists(plate_path):
@@ -69,12 +86,21 @@ def find_plate_file(plate_folder, plate_file):
 
 
 def load_plate(plate_path):
-	"""Loads a plate from a CSV file.
-	
-	Args:
-        - plate_path: a string of the plate file full or relative path. Use `find_plate_file` to find the plate path.
-	
-	Returns :py:class:`pandas.DataFrame`.
+	"""Loads a plate template from a CSV file.
+
+	Parameters
+	----------
+	plate_path : str
+		full or relative path to the plate template file.
+
+	Returns
+	--------
+	pandas.DataFrame
+		the plate template in tidy data format (see :py:mod:`ioutils`).
+
+	See also
+	--------
+	`find_plate_file`
 	"""	
 	try:
 		plate = pd.read_csv(plate_path)
@@ -85,22 +111,43 @@ def load_plate(plate_path):
 	return plate
 
 
+def where(ctx, param, value):
+	"""Prints the path where Curveball is installed and exists the app. 
+
+	Parameters are ignored, except that if `value` or `ctx.resilient_parsing`
+	are not empty/:py:const:`False`/:py:const:`None`, the function returns without doing anything.
+	"""
+	if not value or ctx.resilient_parsing:
+		return
+	path = curveball.__file__
+	folder = os.path.split(path)[0]
+	click.secho(click.format_filename(folder))
+	ctx.exit()
+
+
 @click.group()
 @click.option('-v/-V', '--verbose/--no-verbose', default=False)
 @click.option('-l/-L', '--plot/--no-plot', default=True)
 @click.option('-p/-P', '--prompt/--no-prompt', default=False)
+@click.option('--where', is_flag=True, default=False, is_eager=True, callback=where, help='prints the path where Curveball is installed')
 @click.version_option(version=curveball.__version__, prog_name=curveball.__name__)
-def cli(verbose, plot, prompt):
+def cli(verbose, plot, prompt, where):
+	"""Main entry point to curveball
+
+	To get help for the parameters, run:
+
+	>>> curveball --help
+	"""
 	global VERBOSE
 	VERBOSE = verbose
 	global PLOT
 	PLOT = plot
-	global PROMPT 
+	global PROMPT
 	PROMPT = prompt
 	if VERBOSE:
 		click.secho('=' * 40, fg='cyan')
-		click.secho('Curveball %s' % curveball.__version__, fg='cyan')	
-		click.secho('=' * 40, fg='cyan')		
+		click.secho('Curveball %s' % curveball.__version__, fg='cyan')
+		click.secho('=' * 40, fg='cyan')
 
 
 @click.option('--plate_folder', default='plate_templates', help='plate templates default folder', type=click.Path())
@@ -109,8 +156,12 @@ def cli(verbose, plot, prompt):
 @click.option('--list', is_flag=True, default=False, help='list plate templates in the default folder')
 @cli.command()
 def plate(plate_folder, plate_file, output_file, list):
-	"""Read and output a plate from a plate file.
-	Default is to dump the plate file to the standard output.
+	"""Read and print a plate template from a plate template CSV file.
+
+	To get help for the parameters, run:
+
+	>>> curveball plate --help
+	
 	TODO: plot the plate.
 	"""
 	if list:
@@ -123,7 +174,7 @@ def plate(plate_folder, plate_file, output_file, list):
 	plate = load_plate(plate_path)
 	plate.to_csv(output_file, index=False)
 	if VERBOSE and output_file.name != '-':
-		click.secho("Wrote output to %s" % output_file.name, fg='green')
+		click.secho("Wrote output to {0}".format(click.format_filename(output_file.name)), fg='green')
 
 
 @click.argument('path', type=click.Path(exists=True, readable=True))
@@ -135,8 +186,11 @@ def plate(plate_folder, plate_file, output_file, list):
 @click.option('--max_time', default=np.inf, help='omit data after max_time hours')
 @cli.command()
 def analyse(path, output_file, plate_folder, plate_file, blank_strain, ref_strain, max_time):
-	"""Analyse growth curves using Curveball.
-	Outputs estimated growth traits and fitness of all strains in all files in folder PATH or matching the pattern PATH.
+	"""Analyse growth curves data using Curveball.
+
+	To get help for the parameters, run:
+
+	>>> curveball plate --help
 	"""
 	results = []
 	plate_path = find_plate_file(plate_folder, plate_file)
@@ -169,7 +223,7 @@ def analyse(path, output_file, plate_folder, plate_file, blank_strain, ref_strai
 	
 	with click.progressbar(files, label='Processing files:', item_show_func=get_filename, color='green') as bar:
 		for filepath in bar:		
-			file_results = process_file(filepath, plate, blank_strain, ref_strain, max_time)
+			file_results = _process_file(filepath, plate, blank_strain, ref_strain, max_time)
 			results.extend(file_results)
 	
 	output_table = pd.DataFrame(results)
@@ -178,7 +232,13 @@ def analyse(path, output_file, plate_folder, plate_file, blank_strain, ref_strai
 		click.secho("Wrote output to %s" % output_file.name, fg='green')
 
 
-def process_file(filepath, plate, blank_strain, ref_strain, max_time):
+def _process_file(filepath, plate, blank_strain, ref_strain, max_time):
+	"""Analyses a single growth curves file.
+
+	See also
+	--------
+	`analyse`
+	"""
 	results = []	
 	fn,ext = os.path.splitext(filepath)
 	handler = file_extension_handlers.get(ext)

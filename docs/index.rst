@@ -7,7 +7,8 @@ Curveball: Predicting competition results from growth curves
 ============================================================
 **Author**: `Yoav Ram <http://www.yoavram.com>`_
 
-Curveball is an open source software for analysis and visualization of high-throughput growth curve data 
+Curveball is an open source software for analysis and 
+visualization of high-throughput growth curve data 
 and prediction of competition experiment results.
 
 Curveball:
@@ -15,6 +16,7 @@ Curveball:
 * fits **growth models** to **growth curve data** to estimate values of **growth traits**
 * uses estimated **growth traits** and **competition models** to predict results of **competition experiments**
 * infers **fitness** and **selection coefficients** from predicted **competition results**
+
 
 Who is this for?
 ----------------
@@ -28,9 +30,18 @@ that can directly work with collections of growth curve measurements (e.g., 96-w
 **No programmings skills** are required for using the CLI; 
 basic familiarity with the **Python programming language** is recommended for using the API.
 
-You can find a few examples that load, plot, and analyse growth curve data and predict competitions results in the gallery page.
+Proceed to the :doc:`Installation instructions <install>` and then to the :doc:`tutorial`.
 
-If you like what you see, then proceed to the installation page and then to the tutorial.
+
+.. note::
+   
+   This documentation provides technical details on using Curveball.
+   For more information on the theoretical and computational aspects of Curveball, read the preprint:
+
+   .. pull-quote::
+
+      Ram et al. 2015. `Predicting competition results from growth curves <https://dx.doi.org/10.1101/022640>`_. *bioRxiv*. doi:10.1101/022640.
+
 
 Contents:
 ---------
@@ -40,12 +51,17 @@ Contents:
 
    install
    tutorial
-   gallery
    ioutils
    plots
    models
    competitions
    cli
+
+API
+---
+
+* :ref:`genindex`
+* :ref:`modindex`
 
 Resources:
 ----------
@@ -57,12 +73,5 @@ Resources:
 * `Change log <https://github.com/yoavram/curveball/tree/master>`_
 * `Contributing <https://github.com/yoavram/curveball/blob/master/CONTRIBUTING.md>`_
 * `License <https://github.com/yoavram/curveball/blob/master/LICENCE.txt>`_
-
-Indices and tables
-------------------
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
 
 Logo `designed by Freepik <http://www.freepik.com/free-vector/ball-of-wool_762106.htm>`_.
