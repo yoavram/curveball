@@ -95,13 +95,13 @@ def load_plate(plate_path):
 		full or relative path to the plate template file.
 
 	Returns
-	--------
+	-------
 	pandas.DataFrame
-		the plate template in tidy data format (see :py:mod:`ioutils`).
+		the plate template in tidy data format (see :py:mod:`.ioutils`).
 
 	See also
 	--------
-	`find_plate_file`
+	:py:func:`find_plate_file`
 	"""	
 	try:
 		plate = pd.read_csv(plate_path)
