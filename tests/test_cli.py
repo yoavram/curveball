@@ -96,9 +96,14 @@ class PlateTestCase(TestCase):
 
 
 	def test_bad_plate_file(self):
-		result = self.runner.invoke(cli.cli, ['plate', '--plate_file={0}'.format(__file__)])
-		self.assertNotEquals(result.exit_code, 0)
-		self.assertIn(__file__, result.output)
+		filename = 'bad_plate.csv'
+		with self.runner.isolated_filesystem():
+			with open(filename, 'w') as f:
+				import this
+				f.write(this.s)
+			result = self.runner.invoke(cli.cli, ['plate', '--plate_file={0}'.format(filename)])
+			self.assertNotEquals(result.exit_code, 0, result.output)
+			self.assertIn(filename, result.output)
 
 
 	def test_plate_list(self):
