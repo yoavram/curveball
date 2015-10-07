@@ -8,4 +8,4 @@
 # http://www.opensource.org/licenses/MIT-license
 # Copyright (c) 2015, Yoav Ram <yoav@yoavram.com>
 
-__version__ = u'0.1.4dev'  # NOQA
+__version__ = u'0.1.5'  # NOQA
