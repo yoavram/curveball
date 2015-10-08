@@ -25,7 +25,6 @@ dependencies:
 - seaborn=0.6.0=np19py27_0
 - setuptools=18.3.2=py27_0
 - six=1.9.0=py27_0
-- sphinx=1.2.3=py27_0
 - statsmodels=0.6.1=np19py27_0
 - sympy=0.7.6.1=py27_0
 - wheel=0.26.0=py27_1
@@ -37,13 +36,15 @@ dependencies:
   - babel==2.1.1
   - beautifulsoup4==4.4.1
   - click==5.1
-  - curveball (d:\workspace\curveball_project\code)==0.1.3.dev0
+  - curveball (d:\workspace\curveball_project\code)==0.1.4.dev0
   - decorator==4.0.4
+  - future==0.15.2
   - lmfit==0.9.0
   - logilab-common==1.0.2
   - nose-notify-send==0.2.1
   - pylint==1.4.4
   - snowballstemmer==1.2.0
+  - sphinx==1.3.1
   - sphinx-rtd-theme==0.1.9
   - waitress==0.8.10
   - webob==1.4.1
