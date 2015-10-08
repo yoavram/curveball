@@ -24,39 +24,39 @@ def double_baranyi_roberts_ode0(y, t, r, K, nu, q0, v):
 
 		\frac{dN_i}{dt} = r_i \alpha_i(t) N_i \Big(1 - \Big(\frac{\sum_{j}{N_j}}{K_i}\Big)^{\nu_i}\Big)
 	
-    - :math:`N_i`: population size of strain *i*.
-    - :math:`r_i`: initial per capita growth rate of strain *i*
-    - :math:`K_i`: maximum population size of strain *i*
-    - :math:`\nu_i`: curvature of the logsitic term of strain *i*
-    - :math:`\alpha_i(t)= \frac{q_{0,i}}{q_{0,i} + e^{-v_i t}}`
-    - :math:`q_{0,i}`: initial adjustment of strain *i* to current environment 
-    - :math:`v_i`: adjustment rate of strain *i*
+	- :math:`N_i`: population size of strain *i*.
+	- :math:`r_i`: initial per capita growth rate of strain *i*
+	- :math:`K_i`: maximum population size of strain *i*
+	- :math:`\nu_i`: curvature of the logsitic term of strain *i*
+	- :math:`\alpha_i(t)= \frac{q_{0,i}}{q_{0,i} + e^{-v_i t}}`
+	- :math:`q_{0,i}`: initial adjustment of strain *i* to current environment 
+	- :math:`v_i`: adjustment rate of strain *i*
 
-    Parameters
-    ----------
-    y : float
-        population size
+	Parameters
+	----------
+	y : float
+		population size
 	t : float
-        time, usually in hours
-    r : float
-        initial per capita growth rate
-    K : float
-        maximum population size (:math:`K>0`)
-    nu : float
-        curvature of the logsitic term (:math:`\nu>0`)
-    q0 : float
-        initial adjustment to current environment (:math:`0<q_0<1`)
-    v : float
-        adjustment rate (:math:`v>0`)
+		time, usually in hours
+	r : float
+		initial per capita growth rate
+	K : float
+		maximum population size (:math:`K>0`)
+	nu : float
+		curvature of the logsitic term (:math:`\nu>0`)
+	q0 : float
+		initial adjustment to current environment (:math:`0<q_0<1`)
+	v : float
+		adjustment rate (:math:`v>0`)
 
-    Returns
-    -------
-    float
-        population growth rate.
+	Returns
+	-------
+	float
+		population growth rate.
 
-    References
-    ----------
-    .. [1] Baranyi, J., Roberts, T. A., 1994. `A dynamic approach to predicting bacterial growth in food <www.ncbi.nlm.nih.gov/pubmed/7873331>`_. Int. J. Food Microbiol.
+	References
+	----------
+	.. [1] Baranyi, J., Roberts, T. A., 1994. `A dynamic approach to predicting bacterial growth in food <www.ncbi.nlm.nih.gov/pubmed/7873331>`_. Int. J. Food Microbiol.
 	"""
 	alfa = q0[0] / (q0[0] + np.exp(-v[0] * t)), q0[1] / (q0[1] + np.exp(-v[1] * t))
 	dydt = alfa[0] * r[0] * y[0] * (1 - ((y[0] + y[1]) / K[0])**nu[0]), alfa[1] * r[1] * y[1] * (1 - ((y[0] + y[1]) / K[1])**nu[1])
@@ -95,7 +95,7 @@ def double_baranyi_roberts_ode2(y, t, r, K, nu, q0, v):
 	return dydt
 
 
-def compete(m1, m2, y0=None, hours=24, nsamples=1, lag_phase=True, ode=double_baranyi_roberts_ode1, num_of_points=100, colors=None, ax=None, PLOT=False):
+def compete(m1, m2, y0=None, hours=24, nsamples=1, lag_phase=True, ode=double_baranyi_roberts_ode1, num_of_points=100, ci=95, colors=None, ax=None, PLOT=False):
 	"""Simulate competitions between two strains using growth parameters estimated
 	by fitting growth models to growth curves data.
 
@@ -126,6 +126,8 @@ def compete(m1, m2, y0=None, hours=24, nsamples=1, lag_phase=True, ode=double_ba
 		an ordinary differential systems system defined by a function that accepts ``y``, ``t``, and additional arguments, and returns the derivate of ``y`` with respect to ``t``. Defaults to :py:func:`.double_baranyi_roberts_ode0`.
 	num_of_points : int, optional
 		number of time points to use, defaults to 100.
+	ci : float, optional
+		confidence interval size, in (0, 100), only applicable when `PLOT` is :py:const:`True`, defaults to 95%.
 	colors : sequence of str, optional
 		if `PLOT` is :py:const:`True`, this sets the colors of the drawn lines. `colors[0]` will be used for `m1`; `colors[1]` for `m2`. If not provided, defaults to the current pallete.
 	ax : matplotlib.axes.Axes, optional
@@ -188,46 +190,48 @@ def compete(m1, m2, y0=None, hours=24, nsamples=1, lag_phase=True, ode=double_ba
 
 	y = np.zeros((num_of_points, 2, nsamples))
 	#infodict = [None]*nsamples # DEBUG
-    
+	
 	for i in range(nsamples):
-	    r = m1_samples.iloc[i]['r'], m2_samples.iloc[i]['r']
-	    K = m1_samples.iloc[i]['K'], m2_samples.iloc[i]['K']
-	    nu = m1_samples.iloc[i].get('nu', 1.0), m2_samples.iloc[i].get('nu', 1.0)
-	    q0 = 1.0,1.0
-	    v = 1e6,1e6
-	    if lag_phase:
-	        q0 = m1_samples.iloc[i].get('q0', 1.0), m2_samples.iloc[i].get('q0', 1.0)
-	        v = m1_samples.iloc[i].get('v', 1e6), m2_samples.iloc[i].get('v', 1e6)
-	    args = (r, K, nu, q0, v)
-	    
-	    y[:,:,i] = odeint(ode, y0, t, args=args)
+		r = m1_samples.iloc[i]['r'], m2_samples.iloc[i]['r']
+		K = m1_samples.iloc[i]['K'], m2_samples.iloc[i]['K']
+		nu = m1_samples.iloc[i].get('nu', 1.0), m2_samples.iloc[i].get('nu', 1.0)
+		q0 = 1.0,1.0
+		v = 1e6,1e6
+		if lag_phase:
+			q0 = m1_samples.iloc[i].get('q0', 1.0), m2_samples.iloc[i].get('q0', 1.0)
+			v = m1_samples.iloc[i].get('v', 1e6), m2_samples.iloc[i].get('v', 1e6)
+		args = (r, K, nu, q0, v)
+		
+		y[:,:,i] = odeint(ode, y0, t, args=args)
 
-	    # DEBUG
-	    # _y_,info = odeint(double_baranyi_roberts_ode, y0, t, args=args, full_output=1)        
-	    # info['args'] = (y0,) + args
-	    # infodict[i] = info
-	    # if info['message'] == 'Integration successful.':
-	    #    y[:,:,i] = _y_
+		# DEBUG
+		# _y_,info = odeint(double_baranyi_roberts_ode, y0, t, args=args, full_output=1)        
+		# info['args'] = (y0,) + args
+		# infodict[i] = info
+		# if info['message'] == 'Integration successful.':
+		#    y[:,:,i] = _y_
 
 	if PLOT:
-	    if ax is None:
-	        fig,ax = plt.subplots(1, 1)
-	    else:
-	        fig = ax.get_figure()
-	    for i in range(nsamples):
-	        ax.plot(t, y[:,:,i], alpha=nsamples**(-0.2))
-	        if not colors is None:
-	            ax.get_lines()[-2].set_color(colors[0])
-	            ax.get_lines()[-1].set_color(colors[1])
-	    ax.plot(t, y.mean(axis=2), lw=5)
-	    if not colors is None:
-	    	ax.get_lines()[-2].set_color(colors[0])
-	    	ax.get_lines()[-1].set_color(colors[1])
-	    ax.set_xlabel('Time (hour)')
-	    ax.set_ylabel('OD')
-	    sns.despine()
-	    return t,y,fig,ax
-
+		if ax is None:
+			fig,ax = plt.subplots(1, 1)
+		else:
+			fig = ax.get_figure()
+		
+		df = pd.DataFrame()
+		for i in range(y.shape[1]):
+			_df = pd.DataFrame(y[:,i,:])
+			_df['Time'] = t
+			_df = pd.melt(_df, id_vars='Time', var_name='Replicate', value_name='y')
+			_df['Strain'] = i
+			df = pd.concat((df, _df))
+		
+		color_dict = {i:c for i,c in enumerate(colors)} if colors else None
+		sns.tsplot(df, time='Time', unit='Replicate', condition='Strain', value='y', 
+						ci=ci, color=color_dict, ax=ax)
+		ax.set_xlabel('Time (hour)')
+		ax.set_ylabel('OD')
+		sns.despine()
+		return t,y,fig,ax
 	return t,y#,infodict
 
 
