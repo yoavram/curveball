@@ -218,9 +218,12 @@ def sample_params(model_fit, nsamples):
     param_samples = pd.DataFrame(param_samples, columns=names)
     idx = np.zeros(nsamples) == 0
     for p in model_fit.params.values():
-        if not p.vary: continue
+        if not p.vary:
+            continue
         idx = idx & (param_samples[p.name] >= p.min) & (param_samples[p.name] <= p.max)
-    return param_samples[idx].copy()
+    if param_samples.shape[0] < nsamples:
+        warn("Warning: truncated {0} parameter samples; please report at {1}, including the data and use case.".format(nsamples - param_samples.shape[0], "https://github.com/yoavram/curveball/issues"))
+    return param_samples[idx]
     
 
 def lrtest(m0, m1, alfa=0.05):
