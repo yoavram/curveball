@@ -53,6 +53,14 @@ class SimpleTestCase(TestCase):
 		self.assertIn(curveball.__version__, result.output)
 
 
+	def test_where(self):
+		result = self.runner.invoke(cli.cli, ['--where'])
+		self.assertEquals(result.exit_code, 0)
+		self.assertIn("curveball", result.output.lower())
+		path = result.output.strip()
+		self.assertTrue(os.path.exists(path), msg=path)
+
+
 class PlateTestCase(TestCase):
 	_multiprocess_can_split_ = True
 
@@ -111,6 +119,20 @@ class PlateTestCase(TestCase):
 		self.assertEquals(result.exit_code, 0)
 		self.assertIn('G-RG-R.csv', result.output)
 		self.assertTrue(result.output.count('\n') > 2)
+
+
+	def test_plate_plot(self):
+		result = self.runner.invoke(cli.cli, ['plate', '--show'])
+		self.assertEquals(result.exit_code, 0)		
+
+
+	def test_plate_plot_to_file(self):
+		filename = 'plate.png'
+		with self.runner.isolated_filesystem():
+			result = self.runner.invoke(cli.cli, ['plate', '--show', '--output_file={0}'.format(filename)])
+			self.assertEquals(result.exit_code, 0)
+			self.assertTrue(os.path.exists(filename))		
+
 
 class AnalysisTestCase(TestCase):
 	_multiprocess_can_split_ = True
