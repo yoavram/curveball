@@ -423,7 +423,7 @@ def find_max_growth(model_fit, after_lag=True, PLOT=True):
     return t1,y1,a,t2,y2,mu
 
 
-def find_lag(model_fit, PLOT=True):
+def find_lag(model_fit, params=None, PLOT=True):
     """Estimates the lag duration from the model fit.
 
     The function calculates the tangent line to the model curve at the point of maximum derivative (the inflection point). 
@@ -434,8 +434,10 @@ def find_lag(model_fit, PLOT=True):
     ----------
     model_fit : lmfit.model.ModelResult
         the result of a model fitting procedure
+    params : lmfit.parameter.Parameters, optional
+        if provided, these parameters will override `model_fit`'s parameters
     PLOT : bool, optional
-        if true, the function will plot a figure that illustrates the calculation. Defaults to is :py:const:`False`; defaults to :py:const:`False`.
+        if true, the function will plot a figure that illustrates the calculation, defaults to is :py:const:`False`.
 
     Returns
     -------
@@ -451,12 +453,20 @@ def find_lag(model_fit, PLOT=True):
     References
     ----------
     .. [2] Fig. 2.2 pg. 19 in Baranyi, J., 2010. `Modelling and parameter estimation of bacterial growth with distributed lag time. <http://www2.sci.u-szeged.hu/fokozatok/PDF/Baranyi_Jozsef/Disszertacio.pdf>`_.
+
+    See also
+    --------
+    :py:func:`find_lag_ci`,
+    :py:func:`has_lag`
     """
-    y0 = model_fit.params['y0'].value
-    K  = model_fit.params['K'].value
+    if params is None:
+        params = model_fit.params
+    
+    y0 = params['y0'].value
+    K  = params['K'].value
 
     t = np.linspace(0, 24)
-    f = lambda t: model_fit.eval(t=t)
+    f = lambda t: model_fit.model.eval(t=t, params=params)
     y = f(t)
     dfdt = derivative(f, t)
 
@@ -471,9 +481,9 @@ def find_lag(model_fit, PLOT=True):
         fig,ax = plt.subplots()
         ax2 = ax.twinx()        
         
-        r = model_fit.params['r'].value
-        if 'nu' in model_fit.params:
-            nu = model_fit.params['nu'].value
+        r = params['r'].value
+        if 'nu' in params:
+            nu = params['nu'].value
         else:
             nu = 1.0       
         v = r
@@ -510,6 +520,77 @@ def find_lag(model_fit, PLOT=True):
         ax2.legend(title='dODdTime', loc='lower right', frameon=True).get_frame().set_color('w')
         return lam,fig,ax,ax2
     return lam
+
+
+def find_lag_ci(model_fit, nsamples=1000, ci=0.95, PLOT=True):
+    """Estimates a confidence interval for the lag duration from the model fit.
+
+    The function uses *parameteric bootstrap*:
+    `nsamples` random parameter sets are sampled using :py:func:`sample_params`.
+    The lag duration for each parameter sample is calculated.
+    The confidence interval of the lag is the lower and higher percentiles such that 
+    `ci` percent of the random lag durations are within the confidence interval.
+
+    Parameters
+    ----------
+    model_fit : lmfit.model.ModelResult
+        the result of a model fitting procedure
+    nsamples : int, optional
+        number of samples, defaults to 1000
+    ci : float, optional
+        the fraction of lag durations that should be within the calculated limits. 0 < `ci` <, defaults to 0.95.
+    PLOT : bool, optional
+        if true, the function will plot a histogram of the sampled lag durations, defaults to :py:const:`False`.
+
+    Returns
+    -------
+    lam : float
+        the lag phase duration in the units of the `model_fit` ``Time`` variable (usually hours).
+    fig : matplotlib.figure.Figure
+        if the argument `PLOT` was :py:const:`True`, the generated figure.
+    ax : matplotlib.axes.Axes
+        if the argument `PLOT` was :py:const:`True`, the generated axes.
+
+    See also
+    --------
+    :py:func:`find_lag`,
+    :py:func:`has_lag`,
+    :py:func:`sample_params`
+    """
+    lam = find_lag(model_fit, PLOT=False)
+    if not 0 <= ci <= 1:
+        raise ValueError("ci must be between 0 and 1")
+    lags = np.zeros(nsamples)
+    param_samples = sample_params(model_fit, nsamples)
+    params = copy.deepcopy(model_fit.params)
+    for i in range(nsamples):
+        sample = param_samples.iloc[i,:]
+        for k,v in params.items():
+            params[k].set(value=sample[k])
+        lags[i] = find_lag(model_fit, params=params, PLOT=False)
+    
+    margin = (1.0 - ci) * 50.0
+    idx = np.isfinite(lags) & (lags >= 0)
+    if not idx.all():
+        warn("Warning: omitting {0} non-finite lag values".format(len(lags) - idx.sum()))
+    lags = lags[idx]
+    low = np.percentile(lags, margin)
+    high = np.percentile(lags, ci * 100.0 + margin)
+    assert high > low, lags.tolist()
+
+    if PLOT:
+        fig,ax = plt.subplots(1,1)
+        sns.distplot(lags, ax=ax)
+        ax.axvline(x=low, ls='--', color='k')
+        ax.axvline(x=lam, color='k')
+        ax.axvline(x=high, ls='--', color='k')
+        ax.set_xlabel('Lag duration')
+        ax.set_ylabel('Frequency')
+        sns.despine(top=True, right=False)
+        fig.tight_layout()
+        return low,high,fig,ax
+    return low,high
+
 
 
 def has_lag(model_fits, alfa=0.05, PRINT=False):
