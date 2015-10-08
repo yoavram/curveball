@@ -120,6 +120,22 @@ class PlateTestCase(TestCase):
 		self.assertIn('G-RG-R.csv', result.output)
 		self.assertTrue(result.output.count('\n') > 2)
 
+
+	def test_plate_plot(self):
+		result = self.runner.invoke(cli.cli, ['plate', '--show'])
+		self.assertEquals(result.exit_code, 0)
+		# TODO how to test plot was shown on headless?
+
+
+	def test_plate_plot_to_file(self):
+		filename = 'plate.png'
+		result = self.runner.invoke(cli.cli, ['plate', '--show', '--output_file={0}'.format(filename)])
+		self.assertEquals(result.exit_code, 0)
+		path = result.output.strip()
+		self.assertTrue(os.path.exists(path))
+		self.assertTrue(path.endswith(filename))
+
+
 class AnalysisTestCase(TestCase):
 	_multiprocess_can_split_ = True
 
