@@ -53,6 +53,14 @@ class SimpleTestCase(TestCase):
 		self.assertIn(curveball.__version__, result.output)
 
 
+	def test_where(self):
+		result = self.runner.invoke(cli.cli, ['--where'])
+		self.assertEquals(result.exit_code, 0)
+		self.assertIn("curveball", result.output.lower())
+		path = result.output.strip()
+		self.assertTrue(os.path.exists(path), msg=path)
+
+
 class PlateTestCase(TestCase):
 	_multiprocess_can_split_ = True
 
