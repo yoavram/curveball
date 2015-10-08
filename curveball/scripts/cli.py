@@ -152,17 +152,16 @@ def cli(verbose, plot, prompt, where):
 
 @click.option('--plate_folder', default='plate_templates', help='plate templates default folder', type=click.Path())
 @click.option('--plate_file', default='checkerboard.csv', help='plate templates csv file')
-@click.option('-o', '--output_file', default='-', help='output csv file path', type=click.File(mode='w', lazy=True))
+@click.option('-o', '--output_file', default='-', help='output file path', type=click.File(mode='w', lazy=True))
 @click.option('--list', is_flag=True, default=False, help='list plate templates in the default folder')
+@click.option('--show', is_flag=True, default=False, help='display the plate template as an image')
 @cli.command()
-def plate(plate_folder, plate_file, output_file, list):
+def plate(plate_folder, plate_file, output_file, list, show):
 	"""Read and print a plate template from a plate template CSV file.
 
 	To get help for the parameters, run:
 
 	>>> curveball plate --help
-	
-	TODO: plot the plate.
 	"""
 	if list:
 		files = pkg_resources.resource_listdir('plate_templates', '')
@@ -172,9 +171,16 @@ def plate(plate_folder, plate_file, output_file, list):
 		return
 	plate_path = find_plate_file(plate_folder, plate_file)
 	plate = load_plate(plate_path)
-	plate.to_csv(output_file, index=False)
-	if VERBOSE and output_file.name != '-':
-		click.secho("Wrote output to {0}".format(click.format_filename(output_file.name)), fg='green')
+	if show:
+		fig, ax = curveball.plots.plot_plate(plate)
+		if output_file.name == '-':
+			plt.show()
+		else:
+			fig.savefig(output_file.name)
+	else:
+		plate.to_csv(output_file, index=False)
+	if output_file.name != '-':
+		echo_info("Wrote output to {0}".format(click.format_filename(output_file.name)))
 
 
 @click.argument('path', type=click.Path(exists=True, readable=True))

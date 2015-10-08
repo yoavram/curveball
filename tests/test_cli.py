@@ -123,17 +123,15 @@ class PlateTestCase(TestCase):
 
 	def test_plate_plot(self):
 		result = self.runner.invoke(cli.cli, ['plate', '--show'])
-		self.assertEquals(result.exit_code, 0)
-		# TODO how to test plot was shown on headless?
+		self.assertEquals(result.exit_code, 0)		
 
 
 	def test_plate_plot_to_file(self):
 		filename = 'plate.png'
-		result = self.runner.invoke(cli.cli, ['plate', '--show', '--output_file={0}'.format(filename)])
-		self.assertEquals(result.exit_code, 0)
-		path = result.output.strip()
-		self.assertTrue(os.path.exists(path))
-		self.assertTrue(path.endswith(filename))
+		with self.runner.isolated_filesystem():
+			result = self.runner.invoke(cli.cli, ['plate', '--show', '--output_file={0}'.format(filename)])
+			self.assertEquals(result.exit_code, 0)
+			self.assertTrue(os.path.exists(filename))		
 
 
 class AnalysisTestCase(TestCase):
