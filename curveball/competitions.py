@@ -286,7 +286,7 @@ def selection_coefs_ts(t, y, ax=None, PLOT=False):
 	return svals
 
 
-def fitness_LTEE(y, ref_strain=0, assay_strain=1, t0=0, t1=-1):
+def fitness_LTEE(y, ref_strain=0, assay_strain=1, t0=0, t1=-1, ci=0):
 	r"""Calculate relative fitness according to the definition used in the *Long Term Evolutionary Experiment* (LTEE) [3]_,
 	where :math:`A(t), B(t)` are population densities of assay strain *A* and reference strain *B* at time *t*:
 
@@ -294,11 +294,12 @@ def fitness_LTEE(y, ref_strain=0, assay_strain=1, t0=0, t1=-1):
 
 		\omega = \frac{\log{(A(t)/A(0))}}{\log{(B(t)/B(0))}}
 
+	If `ci` > 0, treats the third axis of `y` as replicates (from a parameteric boostrap) to calculate the confidence interval on the fitness.
 
 	Parameters
 	----------
 	y : numpy.ndarray
-		array of population densities, as produced by :py:func:`compete`, where the first axis is time and the second axis is strain.
+		array of population densities, as produced by :py:func:`compete`, where the first axis is time and the second axis is strain. A third axis is also applicable if `ci`>0.
 	ref_strain : int, optional
 		the index of the reference strain within `y`. This strain's fitness is set to 1 by definition. Defaults to 0 (first).
 	assay_strain : int, optional
@@ -307,21 +308,43 @@ def fitness_LTEE(y, ref_strain=0, assay_strain=1, t0=0, t1=-1):
 		the index of the time point from which to start the calculation of the relative fitness, defaults to 0 (first).
 	t1 : int, optional
 		the index of the time point at which to end the calculation of the relative fitness, defaults to -1 (last).
-
+	ci : bool, optional
+		if :py:const:`True`, a confidence interval will be calculated using the third axis of `y` as replicates.
+	
 	Returns
 	-------
-	float
+	w : float
 		the fitness of the assay strain relative to the reference strain.
+	low : float
+		if `ci` > 0 and `y.ndim` = 3, this is the low limit of the confidence interval of the fitness
+	high : float
+		if `ci` > 0 and `y.ndim` = 3, this is the higher limit of the confidence interval of the fitness
+
+	Raises
+	------
+	ValueError
+		if confidence interval is requested (`ci` > 0) but there are no replicates (`y.ndim` != 3).
 
 	Notes
 	-----
-	The result may depend on the choice of `t0` and `t1` as well as the strain designations (`ref_strain` and `assay_strain`).	
-
+	The result may depend on the choice of `t0` and `t1` as well as the strain designations (`ref_strain` and `assay_strain`).
 
 	References
 	----------
 	.. [3] Wiser, M. J. & Lenski, R. E. 2015 `A Comparison of Methods to Measure Fitness in Escherichia coli <http://dx.plos.org/10.1371/journal.pone.0126210>`_. PLoS One.
 	"""
-	At0,Bt0 = y[t0,assay_strain],y[t0,ref_strain]
-	At1,Bt1 = y[t1,assay_strain],y[t1,ref_strain]
-	return (np.log(At1/At0) / np.log(Bt1/Bt0))[0]
+	if ci == 0:
+		y = y.reshape(y.shape + (1,))
+	elif y.ndim != 3:
+		raise ValueError()
+	w = np.zeros(y.shape[2])
+	for i in range(y.shape[2]):
+		At0, Bt0 = y[t0,assay_strain,i], y[t0,ref_strain,i]
+		At1, Bt1 = y[t1,assay_strain,i], y[t1,ref_strain,i]
+		w[i] = (np.log(At1/At0) / np.log(Bt1/Bt0))
+
+	if ci == 0:
+		return w.mean()
+	else:
+		margin = (1 - ci) * 50
+		return w.mean(), np.percentile(w, margin), np.percentile(w, ci * 100 + margin)
