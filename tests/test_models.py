@@ -197,26 +197,59 @@ class FindLagTestCase(TestCase):
         self.assertTrue(lam < 1, "Lambda is " + str(lam))
 
 
+    def test_find_lag_ci_logistic(self):
+        y0=0.1; r=0.75; K=1.0
+        t = np.linspace(0,12)
+        df = randomize_data(logistic_ode, t=t, y0=y0, r=r, K=K, reps=1)
+        model_fit = curveball.models.logistic_model.fit(df.OD, t=df.Time, y0=y0, K=K, r=r)        
+        if not CI:
+            lam = curveball.models.find_lag(model_fit, PLOT=False)
+            lam_low,lam_high,fig,ax = curveball.models.find_lag_ci(model_fit, PLOT=True)
+            func_name = sys._getframe().f_code.co_name
+            fig.savefig(func_name + ".png")
+        else:
+            lam = curveball.models.find_lag(model_fit, PLOT=False)
+            lam_low, lam_high = curveball.models.find_lag_ci(model_fit, PLOT=False)
+        self.assertTrue(lam_low < lam < lam_high, "Lambda is {2}, Lambda CI is ({0},{1})".format(lam, lam_low, lam_high))
+
+
     def test_find_lag_richards(self):
         y0=0.1; r=0.75; K=1.0
         t = np.linspace(0,12)
-        for nu in [0.5,1.0,2.0]:
+        for nu in [1.0, 2.0, 5.0]:
             df = randomize_data(richards_ode, t=t, y0=y0, r=r, K=K, nu=nu, reps=1)
             model_fit = curveball.models.richards_model.fit(df.OD, t=df.Time, y0=y0, K=K, r=r, nu=nu)
             if not CI:
                 lam,fig,ax1,ax2 = curveball.models.find_lag(model_fit, PLOT=True)
-                func_name = sys._getframe().f_code.co_name
+                func_name = sys._getframe().f_code.co_name + ".nu.%.1f" % nu
                 fig.savefig(func_name + ".png")
             else:
                 lam = curveball.models.find_lag(model_fit, PLOT=False)
             self.assertTrue(lam < 1, "Lambda is " + str(lam))
 
 
+    def test_find_lag_ci_richards(self):
+        y0=0.1; r=0.75; K=1.0
+        t = np.linspace(0,12)
+        for nu in [1.0, 2.0, 5.0]:
+            df = randomize_data(richards_ode, t=t, y0=y0, r=r, K=K, nu=nu, reps=1)
+            model_fit = curveball.models.richards_model.fit(df.OD, t=df.Time, y0=y0, K=K, r=r, nu=nu)        
+            if not CI:
+                lam = curveball.models.find_lag(model_fit, PLOT=False)
+                lam_low,lam_high,fig,ax = curveball.models.find_lag_ci(model_fit, PLOT=True)
+                func_name = sys._getframe().f_code.co_name + ".nu.%.1f" % nu
+                fig.savefig(func_name + ".png")
+            else:
+                lam = curveball.models.find_lag(model_fit, PLOT=False)
+                lam_low, lam_high = curveball.models.find_lag_ci(model_fit, PLOT=False)
+            self.assertTrue(lam_low < lam < lam_high, "Lambda is {2}, Lambda CI is ({0},{1})".format(lam, lam_low, lam_high))
+
+
     def test_find_lag_baranyi_roberts(self):
         t = np.linspace(0,16)
         y0=0.1; r=0.75; K=1.0
         v=r;
-        for nu in [0.5, 1.0, 2.0]: 
+        for nu in [1.0, 2.0, 5.0]: 
             for _lam in [2., 3., 4.]:
                 q0 = 1/(np.exp(_lam * v) - 1)
                 df = randomize_data(baranyi_roberts_ode, t=t, y0=y0, r=r, K=K, nu=nu, q0=q0, v=v, reps=1)
@@ -228,6 +261,26 @@ class FindLagTestCase(TestCase):
                 else:
                     lam = curveball.models.find_lag(model_fit, PLOT=False)
                 self.assertTrue((_lam + 1) > lam > (_lam - 1), "Lambda is " + str(lam) + " but should be " + str(_lam))
+
+
+    def test_find_lag_ci_baranyi_roberts(self):        
+        t = np.linspace(0,16)
+        y0=0.1; r=0.75; K=1.0
+        v=r
+        for nu in [1.0, 2.0, 5.0]:
+            for _lam in [2., 3., 4.]:
+                q0 = 1/(np.exp(_lam * v) - 1)
+                df = randomize_data(baranyi_roberts_ode, t=t, y0=y0, r=r, K=K, nu=nu, q0=q0, v=v, reps=1)
+                model_fit = curveball.models.baranyi_roberts_model.fit(df.OD, t=df.Time, y0=y0, K=K, r=r, nu=nu, q0=q0, v=v)
+                if not CI:
+                    lam = curveball.models.find_lag(model_fit, PLOT=False)
+                    lam_low,lam_high,fig,ax = curveball.models.find_lag_ci(model_fit, nsamples=1000, PLOT=True)
+                    func_name = sys._getframe().f_code.co_name + ".nu.%.1f.lam.%d" % (nu, lam)
+                    fig.savefig(func_name + ".png")
+                else:
+                    lam = curveball.models.find_lag(model_fit, PLOT=False)
+                    lam_low, lam_high = curveball.models.find_lag_ci(model_fit, nsamples=1000, PLOT=False)
+                self.assertTrue(lam_low < lam < lam_high, "Lambda is {2}, Lambda CI is ({0},{1})".format(lam, lam_low, lam_high))
 
 
 class FindMaxGrowthTestCase(TestCase):
