@@ -7,6 +7,13 @@
 # Licensed under the MIT license:
 # http://www.opensource.org/licenses/MIT-license
 # Copyright (c) 2015, Yoav Ram <yoav@yoavram.com>
+from __future__ import division
+from builtins import zip
+from builtins import str
+from builtins import filter
+from builtins import map
+from builtins import range
+from past.utils import old_div
 import xlrd
 import numpy as np
 import pandas as pd
@@ -82,7 +89,7 @@ def read_tecan_xlsx(filename, label='OD', sheet=None, max_time=None, plate=None)
                 row = sh.row_values(i)
 
                 if row[0].startswith('Date'):
-                    if isinstance(row[1], str) or isinstance(row[1], unicode):                        
+                    if isinstance(row[1], str) or isinstance(row[1], str):                        
                         date = str.join('', row[1:])
                         next_row = sh.row_values(i+1)                
                         time = str.join('', next_row[1:])
@@ -101,16 +108,16 @@ def read_tecan_xlsx(filename, label='OD', sheet=None, max_time=None, plate=None)
                     break
                 data[row[0].value] = [x.value for x in row[1:] if x.ctype == 2]
 
-            min_length = min(map(len, data.values()))
-            for k,v in data.items():
+            min_length = min(list(map(len, list(data.values()))))
+            for k,v in list(data.items()):
                 data[k] =  v[:min_length]
 
             df = pd.DataFrame(data)
             df = pd.melt(df, id_vars=('Time [s]',u'Temp. [°C]','Cycle Nr.'), var_name='Well', value_name=lbl)
             df.rename(columns={'Time [s]': 'Time'}, inplace=True)
-            df.Time = map(lambda t: dateandtime + datetime.timedelta(0, t), df.Time)        
-            df['Row'] = map(lambda x: x[0], df.Well)
-            df['Col'] = map(lambda x: int(x[1:]), df.Well)
+            df.Time = [dateandtime + datetime.timedelta(0, t) for t in df.Time]        
+            df['Row'] = [x[0] for x in df.Well]
+            df['Col'] = [int(x[1:]) for x in df.Well]
             sheet_dataframes.append(df)
     ## FOR sheet ENDS
         if len(sheet_dataframes) == 0:
@@ -121,7 +128,7 @@ def read_tecan_xlsx(filename, label='OD', sheet=None, max_time=None, plate=None)
             df = pd.concat(sheet_dataframes)
 
         min_time = df.Time.min()
-        df.Time = map(lambda t: (t - min_time).total_seconds()/3600., df.Time)
+        df.Time = [old_div((t - min_time).total_seconds(),3600.) for t in df.Time]
         if not max_time is None:
             df = df[df.Time <= max_time]
         df.sort(['Row', 'Col', 'Time'], inplace=True)
@@ -186,12 +193,12 @@ def read_tecan_mat(filename, time_label='tps', value_label='plate_mat', value_na
     assert y.shape[1] == t.shape[0]
 
     df = pd.DataFrame(y.T, columns=np.arange(y.shape[0]) + 1)
-    df['Time'] = t / 3600.
+    df['Time'] = old_div(t, 3600.)
     df['Cycle Nr.'] = np.arange(1, 1 + len(t))
     df = pd.melt(df, id_vars=('Cycle Nr.', 'Time'), var_name='Well', value_name=value_name)
-    df['Well'] = map(lambda w: ascii_uppercase[(int(w)-1)/plate_width] + str(w%plate_width if w%plate_width > 0 else plate_width), df['Well'])
-    df['Row'] = map(lambda w: w[0], df['Well'])
-    df['Col'] = map(lambda w: int(w[1:]), df['Well'])
+    df['Well'] = [ascii_uppercase[old_div((int(w)-1),plate_width)] + str(w%plate_width if w%plate_width > 0 else plate_width) for w in df['Well']]
+    df['Row'] = [w[0] for w in df['Well']]
+    df['Col'] = [int(w[1:]) for w in df['Well']]
     
     if plate is None:
         df['Strain'] = 0
@@ -278,14 +285,14 @@ def read_tecan_xml(filename, label='OD', max_time=None, plate=None):
 
         # Add to data frame
         df = pd.DataFrame(well_data)
-        df['Row'] = map(lambda x: x[0], df.Well)
-        df['Col'] = map(lambda x: int(x[1:]), df.Well)
+        df['Row'] = [x[0] for x in df.Well]
+        df['Col'] = [int(x[1:]) for x in df.Well]
         df['Time'] = dateutil.parser.parse(time_start)
         df['Filename'] = os.path.split(filename)[-1]
         dataframes.append(df)
     df = pd.concat(dataframes)
     min_time = df.Time.min()
-    df.Time = map(lambda t: (t - min_time).total_seconds()/3600., df.Time)
+    df.Time = [old_div((t - min_time).total_seconds(),3600.) for t in df.Time]
     if plate is None:
         df['Strain'] = 0
         df['Color'] = '#000000'
@@ -345,13 +352,13 @@ def read_sunrise_xlsx(filename, label='OD', max_time=None, plate=None):
                 time = filter(lambda x: isinstance(x,float), row[1:])[0]
                 time = xlrd.xldate_as_tuple(time, 0)
             elif row[0] == '<>':
-                columns = map(int,row[1:])
+                columns = list(map(int,row[1:]))
                 parse_data = True
             elif row[0] == '' and parse_data:
                 break
             elif parse_data:
                 index.append(row[0])
-                data.append(map(float, row[1:]))
+                data.append(list(map(float, row[1:])))
                 
         dateandtime = date[:3] + time[-3:]
         dateandtime = datetime.datetime(*dateandtime)
@@ -360,12 +367,12 @@ def read_sunrise_xlsx(filename, label='OD', max_time=None, plate=None):
         df['Row'] = index
         df = pd.melt(df, id_vars='Row', var_name='Col', value_name=label)
         df['Time'] = dateandtime
-        df['Well'] = map(lambda x: x[0] + str(x[1]), zip(df.Row,df.Col))
+        df['Well'] = [x[0] + str(x[1]) for x in zip(df.Row,df.Col)]
         df['Filename'] = os.path.split(filename)[-1]
         dataframes.append(df)
     df = pd.concat(dataframes)
     min_time = df.Time.min()
-    df.Time = map(lambda t: (t - min_time).total_seconds()/3600., df.Time)
+    df.Time = [old_div((t - min_time).total_seconds(),3600.) for t in df.Time]
     if plate is None:
         df['Strain'] = 0
         df['Color'] = '#000000'

@@ -1,3 +1,4 @@
+from builtins import map
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
@@ -26,8 +27,8 @@ CI = os.environ.get('CI', 'false').lower() == 'true'
 
 def is_csv(data):
 	lines = data.splitlines()
-	data  = map(lambda line: line.split(','), lines)
-	lengths = map(len, data)
+	data  = [line.split(',') for line in lines]
+	lengths = list(map(len, data))
 	return all(x==lengths[0] for x in lengths)
 
 
@@ -149,7 +150,7 @@ class AnalysisTestCase(TestCase):
 
 	def setUp(self):
 		self.files = pkg_resources.resource_listdir('data', '')
-		self.files = filter(lambda fn: os.path.splitext(fn)[-1] in ['.xlsx', '.mat'], self.files)
+		self.files = [fn for fn in self.files if os.path.splitext(fn)[-1] in ['.xlsx', '.mat']]
 		self.runner = CliRunner()
 		self.ctx = self.setup_with_context_manager(self.runner.isolated_filesystem())
 		self.dirpath = os.getcwd()
@@ -171,7 +172,7 @@ class AnalysisTestCase(TestCase):
 	def test_process_file(self):
 		result = self.runner.invoke(cli.cli, ['--no-plot', '--no-verbose', '--no-prompt', 'analyse', self.filepath, '--plate_file=G-RG-R.csv', '--ref_strain=G'])
 		self.assertEquals(result.exit_code, 0, result.output)		
-		lines = filter(lambda line: len(line) > 0, result.output.splitlines()) 
+		lines = [line for line in result.output.splitlines() if len(line) > 0] 
 		data = os.linesep.join(lines[-4:]) # only last 4 lines
 		self.assertTrue(is_csv(data))
 
@@ -180,7 +181,7 @@ class AnalysisTestCase(TestCase):
 		filepath = os.path.join(self.dirpath, self.files[1])
 		result = self.runner.invoke(cli.cli, ['--no-plot', '--no-verbose', '--no-prompt', 'analyse', filepath, '--plate_file=G-RG-R.csv', '--ref_strain=G'])
 		self.assertEquals(result.exit_code, 0, result.output)		
-		lines = filter(lambda line: len(line) > 0, result.output.splitlines()) 
+		lines = [line for line in result.output.splitlines() if len(line) > 0] 
 		data = os.linesep.join(lines[-4:]) # only last 4 lines
 		self.assertTrue(is_csv(data))
 
@@ -204,7 +205,7 @@ class AnalysisTestCase(TestCase):
 	def test_process_dir(self):
 		result = self.runner.invoke(cli.cli, ['--no-plot', '--verbose', '--no-prompt', 'analyse', self.dirpath, '--plate_file=G-RG-R.csv', '--ref_strain=G'])
 		self.assertEquals(result.exit_code, 0, result.output)		
-		lines = filter(lambda line: len(line) > 0, result.output.splitlines()) 
+		lines = [line for line in result.output.splitlines() if len(line) > 0] 
 		num_lines = len(self.files) * 3 + 1
 		data = os.linesep.join(lines[-num_lines:])
 		self.assertTrue(is_csv(data), result.output)

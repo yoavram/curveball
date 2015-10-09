@@ -7,6 +7,9 @@
 # Licensed under the MIT license:
 # http://www.opensource.org/licenses/MIT-license
 # Copyright (c) 2015, Yoav Ram <yoav@yoavram.com>
+from __future__ import division
+from builtins import range
+from past.utils import old_div
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
@@ -56,7 +59,7 @@ def plot_wells(df, x='Time', y='OD', plot_func=plt.plot, output_filename=None):
 	g = sns.FacetGrid(df, hue=hue, col='Col', row='Row',
                       palette=palette, hue_order=hue_order,
                       sharex=True, sharey=True, size=1,
-                      aspect=width/float(height), despine=True,margin_titles=True)
+                      aspect=old_div(width,float(height)), despine=True,margin_titles=True)
 	g.map(plot_func, x, y)
 	g.fig.set_figwidth(width)
 	g.fig.set_figheight(height)
@@ -190,7 +193,7 @@ def plot_plate(df, edge_color='#888888', output_filename=None):
 	"""
 	plate = df.pivot('Row', 'Col', 'Color').as_matrix()
 	height, width = plate.shape
-	fig = plt.figure(figsize=((width + 2) / 3., (height + 2) / 3.))
+	fig = plt.figure(figsize=(old_div((width + 2), 3.), old_div((height + 2), 3.)))
 	ax = fig.add_axes((0.05, 0.05, 0.9, 0.9),
 	                            aspect='equal', frameon=False,
 	                            xlim=(-0.05, width + 0.05),
@@ -203,7 +206,7 @@ def plot_plate(df, edge_color='#888888', output_filename=None):
 	squares = np.array([[RegularPolygon((i + 0.5, j + 0.5),
 	                                         numVertices=4,
 	                                         radius=0.5 * np.sqrt(2),
-	                                         orientation=np.pi / 4,
+	                                         orientation=old_div(np.pi, 4),
 	                                         ec=edge_color,
 	                                         fc=plate[height-1-j,i])
 	                          for j in range(height)]
@@ -239,7 +242,7 @@ def plot_params_distribution(param_samples, alpha=None):
 	nsamples = param_samples.shape[0]
 	g = sns.PairGrid(param_samples)
 	if alpha is None:
-		alpha = 1/np.power(nsamples, 1./4)
+		alpha = old_div(1,np.power(nsamples, old_div(1.,4)))
 	g.map_upper(plt.scatter, alpha=alpha)
 	g.map_lower(sns.kdeplot, cmap="Blues_d", legend=False)
 	g.map_diag(plt.hist)

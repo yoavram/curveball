@@ -1,3 +1,4 @@
+from builtins import map
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
@@ -165,7 +166,7 @@ def plate(plate_folder, plate_file, output_file, list, show):
 	"""
 	if list:
 		files = pkg_resources.resource_listdir('plate_templates', '')
-		files = filter(lambda fn: os.path.splitext(fn)[-1].lower() == '.csv', files)
+		files = [fn for fn in files if os.path.splitext(fn)[-1].lower() == '.csv']
 		files = os.linesep.join(files)
 		click.echo(files)
 		return
@@ -209,7 +210,7 @@ def analyse(path, output_file, plate_folder, plate_file, blank_strain, ref_strai
 		click.echo('-' * 40)
 	
 	plate = load_plate(plate_path)
-	plate.Strain = map(unicode, plate.Strain)
+	plate.Strain = list(map(str, plate.Strain))
 	plate_strains = plate.Strain.unique().tolist()	
 	if PROMPT:
 		fig,ax = curveball.plots.plot_plate(plate)
@@ -219,11 +220,11 @@ def analyse(path, output_file, plate_folder, plate_file, blank_strain, ref_strai
 
 	if os.path.isdir(path):
 		files = glob.glob(os.path.join(path, '*'))
-		files = map(lambda fn: os.path.join(path, fn), files)
+		files = [os.path.join(path, fn) for fn in files]
 	else:
 		files = glob.glob(path)
 	
-	files = filter(lambda fn: os.path.splitext(fn)[-1].lower() in file_extension_handlers.keys(), files)
+	files = [fn for fn in files if os.path.splitext(fn)[-1].lower() in list(file_extension_handlers.keys())]
 	if not files:
 		raise click.ClickException("No data files found in folder {0}".format(click.format_filename(path)))
 	

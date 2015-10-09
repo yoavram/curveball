@@ -7,6 +7,9 @@
 # Licensed under the MIT license:
 # http://www.opensource.org/licenses/MIT-license
 # Copyright (c) 2015, Yoav Ram <yoav@yoavram.com>
+from __future__ import division
+from builtins import range
+from past.utils import old_div
 from unittest import TestCase, main
 import sys
 import os
@@ -20,7 +23,7 @@ RANDOM_SEED = int(os.environ.get('RANDOM_SEED', 0))
 
 
 def logistic(t, y0, r, K):
-	return K / (1 + (K/y0 - 1) * np.exp(-r * t))
+	return old_div(K, (1 + (old_div(K,y0) - 1) * np.exp(-r * t)))
 
 
 class CompetitionTestCase(TestCase):
