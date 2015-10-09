@@ -7,6 +7,7 @@
 # Licensed under the MIT license:
 # http://www.opensource.org/licenses/MIT-license
 # Copyright (c) 2015, Yoav Ram <yoav@yoavram.com>
+from __future__ import print_function
 import sys
 from warnings import warn
 import numpy as np
@@ -641,7 +642,7 @@ def has_lag(model_fits, alfa=0.05, PRINT=False):
             m0 = filter(lambda m: m.model.name == richards_model.name, model_fits)[0]
         prefer_m1, pval, D, ddf = lrtest(m0, m1, alfa=alfa)
         if PRINT:
-            print "Tested H0: %s vs. H1: %s; D=%.2g, ddf=%d, p-value=%.2g" % (m0.model.name, m1.model.name, D, ddf, pval)    
+            print("Tested H0: %s vs. H1: %s; D=%.2g, ddf=%d, p-value=%.2g" % (m0.model.name, m1.model.name, D, ddf, pval))    
         return prefer_m1
     else:
         raise ValueError("Unknown model: %s" % best_fit.model.name)
@@ -696,7 +697,7 @@ def has_nu(model_fits, alfa=0.05, PRINT=False):
     prefer_m1, pval, D, ddf = lrtest(m0, m1, alfa=alfa)
     if PRINT:
         msg = "Tested H0: %s (nu=%.2g) vs. H1: %s (nu=%.2g); D=%.2g, ddf=%d, p-value=%.2g"  
-        print msg % (m0.model.name, m0.best_values.get('nu', 1), m1.model.name, m1.best_values.get('nu', 1), D, ddf, pval)
+        print(msg % (m0.model.name, m0.best_values.get('nu', 1), m1.model.name, m1.best_values.get('nu', 1), D, ddf, pval))
     return prefer_m1
 
 
@@ -778,9 +779,9 @@ def benchmark(model_fits, deltaBIC=6, PRINT=False, PLOT=False):
     success = best_fit.bic + deltaBIC < linear_fit.bic
 
     if PRINT:
-        print "Model fit: %s, BIC %.2f" % (best_fit.model.name, best_fit.bic)
-        print "Benchmark: %s, BIC %.2f" % (linear_fit.model.name, linear_fit.bic)
-        print "Fit success: %s" % success
+        print("Model fit: %s, BIC %.2f" % (best_fit.model.name, best_fit.bic))
+        print("Benchmark: %s, BIC %.2f" % (linear_fit.model.name, linear_fit.bic))
+        print("Fit success: %s" % success)
     if PLOT:
         fig,ax = plt.subplots(1,1)
         ax = best_fit.plot_fit(ax=ax, init_kws={'ls':''})
@@ -1025,7 +1026,7 @@ def guess_nu(t, N, K=None, PLOT=False, PRINT=False):
     if not opt_res.success and not np.allclose(y, 0):
         warn("Minimization warning in %s: %s\nGuessed nu=%.4f with f(nu)=%.4f" % (sys._getframe().f_code.co_name, opt_res.message, x, y))
     if y1 < y:
-        print "f(1)=%.4f < f(%.4f)=%.4f, Setting nu=1" % (y1, x, y)
+        print("f(1)=%.4f < f(%.4f)=%.4f, Setting nu=1" % (y1, x, y))
         x = 1.0
     if PLOT:
         fs = plt.rcParams['figure.figsize']
@@ -1241,7 +1242,7 @@ def fit_model(df, ax=None, param_guess=None, param_max=None, use_weights=True, u
     models.sort(key=lambda m: m.bic)
 
     if PRINT:
-        print models[0].fit_report(show_correl=False)
+        print(models[0].fit_report(show_correl=False))
     if PLOT:        
         dy = _df.OD.max()/50.
         dx = _df.Time.max()/25.

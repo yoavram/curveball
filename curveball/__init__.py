@@ -8,8 +8,9 @@
 # http://www.opensource.org/licenses/MIT-license
 # Copyright (c) 2015, Yoav Ram <yoav@yoavram.com>
 
+from __future__ import absolute_import
 from .version import __version__  # NOQA
-import ioutils
-import plots
-import models
-import competitions
+from . import ioutils
+from . import plots
+from . import models
+from . import competitions
