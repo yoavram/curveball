@@ -228,9 +228,10 @@ def compete(m1, m2, y0=None, hours=24, nsamples=1, lag_phase=True, ode=double_ba
 			_df['Strain'] = i
 			df = pd.concat((df, _df))
 		
-		color_dict = {i:c for i,c in enumerate(colors)} if colors else None
+		if not colors is None:
+			colors = {i:c for i,c in enumerate(colors)}
 		sns.tsplot(df, time='Time', unit='Replicate', condition='Strain', value='y', 
-						ci=ci, color=color_dict, ax=ax)
+						ci=ci, color=colors, ax=ax)
 		ax.set_xlabel('Time (hour)')
 		ax.set_ylabel('OD')
 		sns.despine()

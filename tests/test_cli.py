@@ -202,8 +202,9 @@ class AnalysisTestCase(TestCase):
 	# 	self.assertNotEqual(len(plot_files), 0, result.output)
 
 
-	def test_process_dir(self):
-		result = self.runner.invoke(cli.cli, ['--no-plot', '--verbose', '--no-prompt', 'analyse', self.dirpath, '--plate_file=G-RG-R.csv', '--ref_strain=G'])
+	def test_process_folder(self):
+		result = self.runner.invoke(cli.cli, ['--no-plot', '--verbose', '--no-prompt', 
+			'analyse', self.dirpath, '--plate_file=G-RG-R.csv', '--ref_strain=G'])
 		self.assertEquals(result.exit_code, 0, result.output)		
 		lines = [line for line in result.output.splitlines() if len(line) > 0] 
 		num_lines = len(self.files) * 3 + 1

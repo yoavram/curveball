@@ -8,6 +8,7 @@
 # http://www.opensource.org/licenses/MIT-license
 # Copyright (c) 2015, Yoav Ram <yoav@yoavram.com>
 from unittest import TestCase, main
+from builtins import str
 import tempfile
 import os
 import shutil
