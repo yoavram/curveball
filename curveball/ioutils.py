@@ -10,10 +10,11 @@
 from __future__ import print_function
 from __future__ import division
 from builtins import zip
-#from builtins import str # causes test_ioutils.py to fail
+from builtins import str
 from builtins import filter
 from builtins import map
 from builtins import range
+from six import string_types
 from past.utils import old_div
 import xlrd
 import numpy as np
@@ -80,7 +81,7 @@ def read_tecan_xlsx(filename, label=u'OD', sheet=None, max_time=None, plate=None
     wb = xlrd.open_workbook(filename)
     dateandtime = datetime.datetime.now() # default
 
-    if isinstance(label, str) or isinstance(label, unicode):
+    if isinstance(label, string_types):
         label = [label]
     
     label_dataframes = []
@@ -92,10 +93,9 @@ def read_tecan_xlsx(filename, label=u'OD', sheet=None, max_time=None, plate=None
         ## FOR sheet
             for i in range(sh.nrows):
                 ## FOR row
-                row = sh.row_values(i)
-                print(row[0], lbl, row[0] == lbl)              
+                row = sh.row_values(i)                
                 if row[0].startswith(u'Date'):
-                    if isinstance(row[1], str) or isinstance(row[1], unicode):                        
+                    if isinstance(row[1], string_types):
                         date = ''.join(row[1:])
                         next_row = sh.row_values(i+1)                
                         time = ''.join(next_row[1:])
