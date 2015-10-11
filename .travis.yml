@@ -20,7 +20,8 @@ before_install:
   - chmod +x miniconda.sh
   - ./miniconda.sh -b
   - export PATH=/home/travis/miniconda/bin:$PATH
-  - conda update --yes conda  
+  - conda update --yes conda
+  - pip install codecov
 
 # Install packages
 install:
@@ -33,6 +34,10 @@ install:
 # Run test
 script:  
   - nosetests tests --with-coverage --cover-package=curveball --cover-inclusive --cover-html --cover-html-dir=coverage_report
+
+# Code coverage
+after_success:
+  - codecov --token=$CODECOV_TOKEN
 
 # Build docs
 before_deploy:
