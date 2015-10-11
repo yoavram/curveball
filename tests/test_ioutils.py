@@ -84,7 +84,7 @@ class MatTestCase(TestCase):
 
 
     def test_read_tecan_mat(self):
-        df = curveball.ioutils.read_tecan_mat(self.filename, time_label=u'timepoints_OD', value_label='wells_data_OD', plate=self.plate)
+        df = curveball.ioutils.read_tecan_mat(self.filename, plate=self.plate)
         self.assertIsNotNone(df)
         self.assertIsInstance(df, pd.DataFrame)
         self.assertEquals(df.shape, (2496, 8))
