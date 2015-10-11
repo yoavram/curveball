@@ -189,6 +189,7 @@ def read_tecan_mat(filename, time_label=u'tps', value_label=u'plate_mat', value_
         Data frame containing the columns:
 
         - ``Time`` (:py:class:`float`, in hours)
+        - ``OD`` (:py:class:`float`)
         - ``Well`` (:py:class:`str`): the well name, usually a letter for the row and a number of the column.
         - ``Row`` (:py:class:`str`): the letter corresponding to the well row.
         - ``Col`` (:py:class:`str`): the number corresponding to the well column.

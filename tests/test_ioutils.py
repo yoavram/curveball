@@ -77,5 +77,19 @@ class XMLTestCase(TestCase):
         self.assertEquals(df.columns.tolist() , ['OD', 'Well', 'Row', 'Col', 'Time', 'Filename', 'Strain', 'Color'])    
 
 
+class MatTestCase(TestCase):
+    def setUp(self):
+        self.filename = pkg_resources.resource_filename("data", "plate_9_OD.mat")
+        self.plate = pd.read_csv(pkg_resources.resource_filename("plate_templates", "checkerboard.csv"))
+
+
+    def test_read_tecan_mat(self):
+        df = curveball.ioutils.read_tecan_mat(self.filename, time_label=u'timepoints_OD', value_label='wells_data_OD', plate=self.plate)
+        self.assertIsNotNone(df)
+        self.assertIsInstance(df, pd.DataFrame)
+        self.assertEquals(df.shape, (2496, 8))
+        self.assertEquals(df.columns.tolist() , [u'Cycle Nr.', u'Time', u'Well', u'OD', u'Row', u'Col', 'Strain', 'Color'])
+
+
 if __name__ == '__main__':
     main()
