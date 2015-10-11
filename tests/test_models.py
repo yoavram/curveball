@@ -24,7 +24,7 @@ from lmfit import Model
 from lmfit.model import ModelResult
 import matplotlib
 from PIL import Image
-
+import tempfile
 
 CI = os.environ.get('CI', 'false').lower() == 'true'
 RANDOM_SEED = int(os.environ.get('RANDOM_SEED', 0))
