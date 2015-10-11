@@ -10,6 +10,7 @@
 
 from setuptools import setup, find_packages
 from curveball import __version__
+import os
 
 tests_require = [
     'mock',
@@ -22,22 +23,31 @@ tests_require = [
     'sphinx',
 ]
 
+if os.path.exists('README.rst'):
+    f = open('README.rst')
+else:
+    f = open('README.md')
+README = f.read()
+f.close()
+
 setup(
     name='curveball',
     version=__version__,
-    description='model microbial growth curves',
-    long_description='''Curveball uses ecological and evolutionary models to analyze microbial growth curves''',
+    description='Predicting competition results from growth curves',
+    long_description=README,
     keywords='microbiology biomath evolution',
     author='Yoav Ram',
     author_email='yoav@yoavram.com',
     url='https://github.com/yoavram/curveball',
     license='MIT',
     classifiers=[
-        'Development Status :: 4 - Beta',
+        'Development Status :: 1 - Planning',
         'Intended Audience :: Developers',
+        'Intended Audience :: End Users/Desktop',
+        'Intended Audience :: Science/Research',
+        'Topic :: Scientific/Engineering :: Bio-Informatics',
         'License :: OSI Approved :: MIT License',
         'Natural Language :: English',
-        'Operating System :: Unix',
         'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3.4',
         'Operating System :: OS Independent',

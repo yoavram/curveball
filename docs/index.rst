@@ -72,6 +72,11 @@ Resources:
 * Bugs & feature requests: `GitHub Issues <https://github.com/yoavram/curveball/issues>`_
 * `Change log <https://github.com/yoavram/curveball/tree/master>`_
 * `Contributing <https://github.com/yoavram/curveball/blob/master/CONTRIBUTING.md>`_
-* `License <https://github.com/yoavram/curveball/blob/master/LICENCE.txt>`_
+
+.. note::
+   
+   Curveball source code and examples are licensed under the terms of the `MIT license <http://opensource.org/licenses/MIT>`_.
+   
+   Curveball documentation, examples, and other materials are licensed under the terms of the `Attribution 4.0 International (CC BY 4.0) license <https://creativecommons.org/licenses/by/4.0/>`_.
 
 Logo `designed by Freepik <http://www.freepik.com/free-vector/ball-of-wool_762106.htm>`_.
