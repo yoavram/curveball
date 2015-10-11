@@ -7,6 +7,9 @@
 # Licensed under the MIT license:
 # http://www.opensource.org/licenses/MIT-license
 # Copyright (c) 2015, Yoav Ram <yoav@yoavram.com>
+from __future__ import division
+from builtins import str
+from past.utils import old_div
 from unittest import TestCase, main
 from nose.plugins.skip import SkipTest
 import sys
@@ -25,24 +28,24 @@ RANDOM_SEED = int(os.environ.get('RANDOM_SEED', 0))
 
 
 def logistic_ode(y, t, r, K, nu, q0, v):
-    return r * y * (1 - y/K)
+    return r * y * (1 - old_div(y,K))
 
 
 def richards_ode(y, t, r, K, nu, q0, v):
-    return r * y * (1 - (y/K)**nu)
+    return r * y * (1 - (old_div(y,K))**nu)
 
 
 def baranyi_roberts_ode(y, t, r, K, nu, q0, v):
-    alfa = q0 / (q0 + np.exp(-v * t))
-    return alfa * r * y * (1 - (y/K)**nu)
+    alfa = old_div(q0, (q0 + np.exp(-v * t)))
+    return alfa * r * y * (1 - (old_div(y,K))**nu)
 
 
 def compare_curves(y1, y2):
-    return (abs(y1 - y2) / y1).mean()
+    return (old_div(abs(y1 - y2), y1)).mean()
 
 
 def relative_error(exp, obs):
-        return abs(exp - obs) / exp
+        return old_div(abs(exp - obs), exp)
 
 
 def randomize_data(func_ode, t=None, y0=0.1, r=0.75, K=1.0, nu=0.5, q0=0.1, v=0.1, reps=30, noise=0.02):
@@ -251,7 +254,7 @@ class FindLagTestCase(TestCase):
         v=r;
         for nu in [1.0, 2.0, 5.0]: 
             for _lam in [2., 3., 4.]:
-                q0 = 1/(np.exp(_lam * v) - 1)
+                q0 = old_div(1,(np.exp(_lam * v) - 1))
                 df = randomize_data(baranyi_roberts_ode, t=t, y0=y0, r=r, K=K, nu=nu, q0=q0, v=v, reps=1)
                 model_fit = curveball.models.baranyi_roberts_model.fit(df.OD, t=df.Time, y0=y0, K=K, r=r, nu=nu, q0=q0, v=v)
                 if not CI:
@@ -269,7 +272,7 @@ class FindLagTestCase(TestCase):
         v=r
         for nu in [1.0, 2.0, 5.0]:
             for _lam in [2., 3., 4.]:
-                q0 = 1/(np.exp(_lam * v) - 1)
+                q0 = old_div(1,(np.exp(_lam * v) - 1))
                 df = randomize_data(baranyi_roberts_ode, t=t, y0=y0, r=r, K=K, nu=nu, q0=q0, v=v, reps=1)
                 model_fit = curveball.models.baranyi_roberts_model.fit(df.OD, t=df.Time, y0=y0, K=K, r=r, nu=nu, q0=q0, v=v)
                 if not CI:
@@ -301,16 +304,16 @@ class FindMaxGrowthTestCase(TestCase):
             fig.savefig(func_name + ".png")
         else:
             t1,y1,a,t2,y2,mu = curveball.models.find_max_growth(model_fit, PLOT=False)
-        self.assertTrue(relative_error(K / 2, y1) < 1, "y1=%.4g, K/2=%.4g" % (y1, K / 2))
+        self.assertTrue(relative_error(old_div(K, 2), y1) < 1, "y1=%.4g, K/2=%.4g" % (y1, old_div(K, 2)))
         self.assertTrue(relative_error(K * r / 4, a) < 1, "a=%.4g, Kr/4=%.4g" % (a, K * r / 4))
         self.assertTrue(relative_error(y0, y2) < 1, "y2=%.4g, y0=%.4g" % (y2, y0))
-        self.assertTrue(relative_error(r * (1 - y0/K), mu) < 1, "mu=%.4g, r(1-y0/K)=%.4g" % (mu, r * (1-y0/K)))
+        self.assertTrue(relative_error(r * (1 - old_div(y0,K)), mu) < 1, "mu=%.4g, r(1-y0/K)=%.4g" % (mu, r * (1-old_div(y0,K))))
 
 
     def test_find_max_growth_logistic_lag(self):
         y0=0.1; r=0.75; K=1.0; nu=1.0
         v=r; lam=3.0
-        q0 = 1/(np.exp(lam * v) - 1)
+        q0 = old_div(1,(np.exp(lam * v) - 1))
         t = np.linspace(0,12)
         df = randomize_data(baranyi_roberts_ode, t=t, y0=y0, r=r, K=K, nu=nu, q0=q0, v=v, reps=10)
         model_fit = curveball.models.baranyi_roberts_model.fit(df.OD, t=df.Time, y0=y0, K=K, r=r, nu=nu, q0=q0, v=v)        
@@ -320,11 +323,11 @@ class FindMaxGrowthTestCase(TestCase):
             fig.savefig(func_name + ".png")
         else:
             t1,y1,a,t2,y2,mu = curveball.models.find_max_growth(model_fit, PLOT=False)
-        self.assertTrue(K > y1 > K / 2, "y1=%.4g, K/2=%.4g" % (y1, K / 2))
+        self.assertTrue(K > y1 > old_div(K, 2), "y1=%.4g, K/2=%.4g" % (y1, old_div(K, 2)))
         self.assertTrue(K * r / 8 < a < K * r / 4, "a=%.4g, Kr/4=%.4g" % (a, K * r / 4))
         self.assertTrue(y0 < y2 < y1, "y0=%.4g, y1=%.4g, y2=%.4g," % (y0, y1, y2))
         self.assertTrue(0 < t2 < t1, "t1=%.4g, t2=%.4g," % (t1, t2))
-        self.assertTrue(a < mu < r * (1 - y0/K), "a = %.4g, mu=%.4g, r(1-y0/K)=%.4g" % (a, mu, r * (1-y0/K)))
+        self.assertTrue(a < mu < r * (1 - old_div(y0,K)), "a = %.4g, mu=%.4g, r(1-y0/K)=%.4g" % (a, mu, r * (1-old_div(y0,K))))
 
 
     def test_find_max_growth_richards(self):
@@ -338,12 +341,12 @@ class FindMaxGrowthTestCase(TestCase):
             fig.savefig(func_name + ".png")
         else:
             t1,y1,a,t2,y2,mu = curveball.models.find_max_growth(model_fit, PLOT=False)
-        exp_y1 = K * (nu + 1)**(-1/nu)
+        exp_y1 = K * (nu + 1)**(old_div(-1,nu))
         self.assertTrue(relative_error(exp_y1, y1) < 1, "y1=%.4g, K/(nu+1)**(1/nu)=%.4g" % (y1, exp_y1))
-        exp_a = r * K * nu * (nu + 1)**(- 1 - 1/nu)
+        exp_a = r * K * nu * (nu + 1)**(- 1 - old_div(1,nu))
         self.assertTrue(relative_error(exp_a, a) < 1, "a=%.4g, rKnu/(nu+1)**(1+1/nu)=%.4g" % (a, exp_a))
         self.assertTrue(relative_error(y0, y2) < 1, "y2=%.4g, y0=%.4g" % (y2, y0))
-        self.assertTrue(relative_error(r * (1 - (y0/K)**nu), mu) < 1, "mu=%.4g, r(1-(y0/K)**nu)=%.4g" % (mu, r * (1 - (y0/K)**nu)))
+        self.assertTrue(relative_error(r * (1 - (old_div(y0,K))**nu), mu) < 1, "mu=%.4g, r(1-(y0/K)**nu)=%.4g" % (mu, r * (1 - (old_div(y0,K))**nu)))
 
 
 class LRTestTestCase(TestCase):
@@ -482,7 +485,7 @@ class BenchmarkTestCase(TestCase):
     def test_benchmark_success(self):
         y0=0.1; r=0.75; K=1.0; nu=5.0
         v=r; lam=3.0
-        q0 = 1/(np.exp(lam * v) - 1)
+        q0 = old_div(1,(np.exp(lam * v) - 1))
         t = np.linspace(0,12)
         df = randomize_data(baranyi_roberts_ode, t=t, r=r, y0=y0, K=K, nu=nu, q0=q0, v=v, reps=1)
         params = curveball.models.baranyi_roberts_model.make_params(r=0.1, y0=df.OD.min(), K=df.OD.max(), nu=1.0, q0=1.0, v=1.0)
@@ -499,7 +502,7 @@ class BenchmarkTestCase(TestCase):
     def test_benchmark_failure(self):
         y0=0.1; r=0.75; K=1.0; nu=5.0
         v=r; lam=3.0
-        q0 = 1/(np.exp(lam * v) - 1)
+        q0 = old_div(1,(np.exp(lam * v) - 1))
         t = np.linspace(0,12)
         df = randomize_data(baranyi_roberts_ode, t=t, r=r, y0=y0, K=K, nu=nu, q0=q0, v=v, reps=1)
         params = curveball.models.logistic_model.make_params(r=0.1, y0=df.OD.min(), K=df.OD.max())
@@ -529,9 +532,9 @@ class OutliersTestCase(TestCase):
 
     def test_cooks_distance(self):
         D = curveball.models.cooks_distance(self.df, self.model_fit)
-        self.assertEquals(set(D.keys()), set(self.df.Well), msg=D.keys())
-        self.assertTrue( (np.array(D.values()) < 14).all(), msg=D.values() )
-        self.assertTrue( (np.array(D.values()) > 0).all(), msg=D.values() )
+        self.assertEquals(set(D.keys()), set(self.df.Well), msg=list(D.keys()))
+        self.assertTrue( (np.array(list(D.values())) < 14).all(), msg=list(D.values()) )
+        self.assertTrue( (np.array(list(D.values())) > 0).all(), msg=list(D.values()) )
 
 
     def test_find_outliers(self):

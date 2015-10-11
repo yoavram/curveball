@@ -14,6 +14,9 @@ the appropriate options to ``use_setuptools()``.
 
 This file can also be run as a script to install or upgrade setuptools.
 """
+from past.builtins import cmp
+from future import standard_library
+standard_library.install_aliases()
 import os
 import shutil
 import sys
@@ -152,7 +155,7 @@ attempt.
     try:
         from urllib.request import urlopen
     except ImportError:
-        from urllib2 import urlopen
+        from urllib.request import urlopen
     tgz_name = "setuptools-%s.tar.gz" % version
     url = download_base + tgz_name
     saveto = os.path.join(to_dir, tgz_name)

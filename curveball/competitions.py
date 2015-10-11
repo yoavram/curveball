@@ -7,6 +7,9 @@
 # Licensed under the MIT license:
 # http://www.opensource.org/licenses/MIT-license
 # Copyright (c) 2015, Yoav Ram <yoav@yoavram.com>
+from __future__ import division
+from builtins import range
+from past.utils import old_div
 import curveball
 import numpy as np
 import matplotlib.pyplot as plt
@@ -58,8 +61,8 @@ def double_baranyi_roberts_ode0(y, t, r, K, nu, q0, v):
 	----------
 	.. [1] Baranyi, J., Roberts, T. A., 1994. `A dynamic approach to predicting bacterial growth in food <www.ncbi.nlm.nih.gov/pubmed/7873331>`_. Int. J. Food Microbiol.
 	"""
-	alfa = q0[0] / (q0[0] + np.exp(-v[0] * t)), q0[1] / (q0[1] + np.exp(-v[1] * t))
-	dydt = alfa[0] * r[0] * y[0] * (1 - ((y[0] + y[1]) / K[0])**nu[0]), alfa[1] * r[1] * y[1] * (1 - ((y[0] + y[1]) / K[1])**nu[1])
+	alfa = old_div(q0[0], (q0[0] + np.exp(-v[0] * t))), old_div(q0[1], (q0[1] + np.exp(-v[1] * t)))
+	dydt = alfa[0] * r[0] * y[0] * (1 - (old_div((y[0] + y[1]), K[0]))**nu[0]), alfa[1] * r[1] * y[1] * (1 - (old_div((y[0] + y[1]), K[1]))**nu[1])
 	return dydt
 
 
@@ -74,8 +77,8 @@ def double_baranyi_roberts_ode1(y, t, r, K, nu, q0, v):
 	--------
 	curveball.competitions.double_baranyi_roberts_ode0
 	"""
-	alfa = q0[0] / (q0[0] + np.exp(-v[0] * t)), q0[1] / (q0[1] + np.exp(-v[1] * t))
-	dydt = alfa[0] * r[0] * y[0] * (1 - (y[0] / K[0] + y[1] / K[1])**nu[0]), alfa[1] * r[1] * y[1] * (1 - (y[0] / K[0] + y[1] / K[1])**nu[1])
+	alfa = old_div(q0[0], (q0[0] + np.exp(-v[0] * t))), old_div(q0[1], (q0[1] + np.exp(-v[1] * t)))
+	dydt = alfa[0] * r[0] * y[0] * (1 - (old_div(y[0], K[0]) + old_div(y[1], K[1]))**nu[0]), alfa[1] * r[1] * y[1] * (1 - (old_div(y[0], K[0]) + old_div(y[1], K[1]))**nu[1])
 	return dydt
 
 
@@ -90,8 +93,8 @@ def double_baranyi_roberts_ode2(y, t, r, K, nu, q0, v):
 	--------
 	curveball.competitions.double_baranyi_roberts_ode0
 	"""
-	alfa = q0[0] / (q0[0] + np.exp(-v[0] * t)), q0[1] / (q0[1] + np.exp(-v[1] * t))
-	dydt = alfa[0] * r[0] * y[0] * (1 - (y[0] / K[0])**nu[0] - (y[1] / K[1])**nu[1]), alfa[1] * r[1] * y[1] * (1 - (y[0] / K[0])**nu[0] - (y[1] / K[1])**nu[1])
+	alfa = old_div(q0[0], (q0[0] + np.exp(-v[0] * t))), old_div(q0[1], (q0[1] + np.exp(-v[1] * t)))
+	dydt = alfa[0] * r[0] * y[0] * (1 - (old_div(y[0], K[0]))**nu[0] - (old_div(y[1], K[1]))**nu[1]), alfa[1] * r[1] * y[1] * (1 - (old_div(y[0], K[0]))**nu[0] - (old_div(y[1], K[1]))**nu[1])
 	return dydt
 
 
@@ -175,7 +178,7 @@ def compete(m1, m2, y0=None, hours=24, nsamples=1, lag_phase=True, ode=double_ba
 	t = np.linspace(0, hours, num_of_points)
 	if y0 is None:		
 		y0 = np.array([m1.best_values['y0'], m2.best_values['y0']])		
-		y0 = y0.mean()/2, y0.mean()/2
+		y0 = old_div(y0.mean(),2), old_div(y0.mean(),2)
 		assert y0[0] == y0[1]		
 	if nsamples > 1:
 		m1_samples = curveball.models.sample_params(m1, nsamples)
@@ -225,9 +228,10 @@ def compete(m1, m2, y0=None, hours=24, nsamples=1, lag_phase=True, ode=double_ba
 			_df['Strain'] = i
 			df = pd.concat((df, _df))
 		
-		color_dict = {i:c for i,c in enumerate(colors)} if colors else None
+		if not colors is None:
+			colors = {i:c for i,c in enumerate(colors)}
 		sns.tsplot(df, time='Time', unit='Replicate', condition='Strain', value='y', 
-						ci=ci, color=color_dict, ax=ax)
+						ci=ci, color=colors, ax=ax)
 		ax.set_xlabel('Time (hour)')
 		ax.set_ylabel('OD')
 		sns.despine()
@@ -273,7 +277,7 @@ def selection_coefs_ts(t, y, ax=None, PLOT=False):
 	----------
 	.. [12] Chevin, L-M. 2011. `On Measuring Selection in Experimental Evolution <http://dx.doi.org/10.1098/rsbl.2010.0580>`_. Biology Letters.	
 	"""
-	svals = np.gradient(np.log(y[:,0]/y[:,1]), t)
+	svals = np.gradient(np.log(old_div(y[:,0],y[:,1])), t)
 	svals[np.isinf(svals)] = svals[np.isfinite(svals)].max()
 
 	if PLOT:
@@ -345,7 +349,7 @@ def fitness_LTEE(y, ref_strain=0, assay_strain=1, t0=0, t1=-1, ci=0):
 	for i in range(y.shape[2]):
 		At0, Bt0 = y[t0,assay_strain,i], y[t0,ref_strain,i]
 		At1, Bt1 = y[t1,assay_strain,i], y[t1,ref_strain,i]
-		w[i] = (np.log(At1/At0) / np.log(Bt1/Bt0))
+		w[i] = (old_div(np.log(old_div(At1,At0)), np.log(old_div(Bt1,Bt0))))
 
 	if ci == 0:
 		return w.mean()

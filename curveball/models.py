@@ -7,6 +7,12 @@
 # Licensed under the MIT license:
 # http://www.opensource.org/licenses/MIT-license
 # Copyright (c) 2015, Yoav Ram <yoav@yoavram.com>
+from __future__ import print_function
+from __future__ import division
+from builtins import filter
+from builtins import str
+from builtins import range
+from past.utils import old_div
 import sys
 from warnings import warn
 import numpy as np
@@ -143,7 +149,7 @@ def richards_function(t, y0, r, K, nu):
     --------
     `Generalised logistic function in Wikipedia <http://en.wikipedia.org/wiki/Generalised_logistic_function>`_
     """
-    return K / ((1 - (1 - (K/y0)**nu) * np.exp(-r * nu * t))**(1./nu))
+    return old_div(K, ((1 - (1 - (old_div(K,y0))**nu) * np.exp(-r * nu * t))**(old_div(1.,nu))))
 
 
 def baranyi_roberts_function(t, y0, r, K, nu, q0, v):
@@ -191,8 +197,8 @@ def baranyi_roberts_function(t, y0, r, K, nu, q0, v):
     ----------
     .. [1] Baranyi, J., Roberts, T. A., 1994. `A dynamic approach to predicting bacterial growth in food <www.ncbi.nlm.nih.gov/pubmed/7873331>`_. Int. J. Food Microbiol.
     """
-    At = t + (1./v) * np.log((np.exp(-v * t) + q0)/(1 + q0))
-    return K / ((1 - (1 - (K/y0)**nu) * np.exp( -r * nu * At ))**(1./nu))
+    At = t + (old_div(1.,v)) * np.log(old_div((np.exp(-v * t) + q0),(1 + q0)))
+    return old_div(K, ((1 - (1 - (old_div(K,y0))**nu) * np.exp( -r * nu * At ))**(old_div(1.,nu))))
 
 
 def sample_params(model_fit, nsamples):
@@ -211,13 +217,13 @@ def sample_params(model_fit, nsamples):
     pandas.DataFrame
         data frame of samples; each row is a sample, each column is a parameter.
     """
-    names = [p.name for p in model_fit.params.values() if p.vary]
-    means = [p.value for p in model_fit.params.values() if p.vary]
+    names = [p.name for p in list(model_fit.params.values()) if p.vary]
+    means = [p.value for p in list(model_fit.params.values()) if p.vary]
     cov = model_fit.covar
     param_samples = np.random.multivariate_normal(means, cov, nsamples)
     param_samples = pd.DataFrame(param_samples, columns=names)
     idx = np.zeros(nsamples) == 0
-    for p in model_fit.params.values():
+    for p in list(model_fit.params.values()):
         if not p.vary:
             continue
         idx = idx & (param_samples[p.name] >= p.min) & (param_samples[p.name] <= p.max)
@@ -288,7 +294,7 @@ def lrtest(m0, m1, alfa=0.05):
     k1 = m1.nvarys
     chisqr1 = m1.chisqr
     assert chisqr1 > 0, chisqr1
-    Lambda = (m1.chisqr / m0.chisqr)**(n0 / 2.)
+    Lambda = (old_div(m1.chisqr, m0.chisqr))**(old_div(n0, 2.))
     D = -2 * np.log( Lambda )
     assert D > 0, D
     ddf = k1 - k0
@@ -374,7 +380,7 @@ def find_max_growth(model_fit, after_lag=True, PLOT=True):
     t1 = t[i]
     y1 = y[i]
 
-    dfdt_y = dfdt / y
+    dfdt_y = old_div(dfdt, y)
     mu = dfdt_y.max()
     i = dfdt_y.argmax()
     t2 = t[i]
@@ -413,8 +419,8 @@ def find_max_growth(model_fit, after_lag=True, PLOT=True):
         ax2.text(x=t.max()-2, y=a, s="max(dydt)")
         ax2.axhline(y=mu, color='k', ls='--', alpha=0.5)
         ax2.text(x=t.max()-2, y=mu, s="max(dydt/y)")  
-        ax2.axhline(y=r*(1-(y0/K)**nu), color='k', ls='--', alpha=0.5)
-        ax2.text(x=t.max()-2, y=r*(1-(y0/K)**nu), s="r(1-(y0/K)**nu)")        
+        ax2.axhline(y=r*(1-(old_div(y0,K))**nu), color='k', ls='--', alpha=0.5)
+        ax2.text(x=t.max()-2, y=r*(1-(old_div(y0,K))**nu), s="r(1-(y0/K)**nu)")        
         sns.despine(top=True, right=False)
         fig.tight_layout()
         ax.legend(title='OD', loc='center right', frameon=True).get_frame().set_color('w')
@@ -475,7 +481,7 @@ def find_lag(model_fit, params=None, PLOT=True):
     t1 = t[i]
     y1 = y[i]
     b = y1 - a * t1
-    lam = (y0 - b) / a
+    lam = old_div((y0 - b), a)
 
     if PLOT:
         fig,ax = plt.subplots()
@@ -487,7 +493,7 @@ def find_lag(model_fit, params=None, PLOT=True):
         else:
             nu = 1.0       
         v = r
-        q0 = 1./(np.exp(lam * v) - 1)
+        q0 = old_div(1.,(np.exp(lam * v) - 1))
 
         ax.plot(t, y, label='Fit')
         ax.plot(t, richards_function(t, y0, r, K, nu), ls='--', lw=3, label='Richards (no lag)')
@@ -565,7 +571,7 @@ def find_lag_ci(model_fit, nsamples=1000, ci=0.95, PLOT=True):
     params = copy.deepcopy(model_fit.params)
     for i in range(nsamples):
         sample = param_samples.iloc[i,:]
-        for k,v in params.items():
+        for k,v in list(params.items()):
             params[k].set(value=sample[k])
         lags[i] = find_lag(model_fit, params=params, PLOT=False)
     
@@ -635,13 +641,13 @@ def has_lag(model_fits, alfa=0.05, PRINT=False):
         nu = best_fit.params['nu']
         if nu.value == 1 and not nu.vary:
             ## m1 is BR5, m0 is L3
-            m0 = filter(lambda m: m.model.name == logistic_model.name, model_fits)[0]
+            m0 = next(filter(lambda m: m.model.name == logistic_model.name, model_fits))
         else:
             ## m1 is BR6, m0 is R4
-            m0 = filter(lambda m: m.model.name == richards_model.name, model_fits)[0]
+            m0 = next(filter(lambda m: m.model.name == richards_model.name, model_fits))
         prefer_m1, pval, D, ddf = lrtest(m0, m1, alfa=alfa)
         if PRINT:
-            print "Tested H0: %s vs. H1: %s; D=%.2g, ddf=%d, p-value=%.2g" % (m0.model.name, m1.model.name, D, ddf, pval)    
+            print("Tested H0: %s vs. H1: %s; D=%.2g, ddf=%d, p-value=%.2g" % (m0.model.name, m1.model.name, D, ddf, pval))    
         return prefer_m1
     else:
         raise ValueError("Unknown model: %s" % best_fit.model.name)
@@ -680,7 +686,7 @@ def has_nu(model_fits, alfa=0.05, PRINT=False):
         return False
     elif best_fit.model.name == richards_model.name:
         # m1 is R4, m0 is L3
-        m0 = filter(lambda m: m.model.name == logistic_model.name, model_fits)[0]
+        m0 = next(filter(lambda m: m.model.name == logistic_model.name, model_fits))
     elif best_fit.model.name == baranyi_roberts_model.name:                   
         # choose the null hypothesis model
         nu = best_fit.params['nu']
@@ -688,7 +694,7 @@ def has_nu(model_fits, alfa=0.05, PRINT=False):
             return False
         else:
             ## m1 is BR6, m0 is BR5
-            m0 = filter(lambda m: m.model.name == baranyi_roberts_model.name and m.nvarys == 5 and m.params['nu'] == 1, model_fits)[0]
+            m0 = next(filter(lambda m: m.model.name == baranyi_roberts_model.name and m.nvarys == 5 and m.params['nu'] == 1, model_fits))
     else:
         raise ValueError("Unknown model: %s" % best_fit.model.name)
     
@@ -696,7 +702,7 @@ def has_nu(model_fits, alfa=0.05, PRINT=False):
     prefer_m1, pval, D, ddf = lrtest(m0, m1, alfa=alfa)
     if PRINT:
         msg = "Tested H0: %s (nu=%.2g) vs. H1: %s (nu=%.2g); D=%.2g, ddf=%d, p-value=%.2g"  
-        print msg % (m0.model.name, m0.best_values.get('nu', 1), m1.model.name, m1.best_values.get('nu', 1), D, ddf, pval)
+        print(msg % (m0.model.name, m0.best_values.get('nu', 1), m1.model.name, m1.best_values.get('nu', 1), D, ddf, pval))
     return prefer_m1
 
 
@@ -708,25 +714,25 @@ def _make_Dfun(expr, t, args):
         partial_derivs[i] = dydv
     
     def Dfun(params, y, a, t):
-        values = [ par.value for par in params.values() if par.vary ]        
+        values = [ par.value for par in list(params.values()) if par.vary ]        
         return np.array([dydv(t, *values) for dydv in partial_derivs])
     return Dfun
 
 
 def _make_model_Dfuns():
     t, y0, r, K, nu, q0, v = sympy.symbols('t y0 r K nu q0 v')
-    logistic = K/( 1 - (1 - K/y0) * sympy.exp(-r * t) )
+    logistic = old_div(K,( 1 - (1 - old_div(K,y0)) * sympy.exp(-r * t) ))
     logistic_Dfun = _make_Dfun(logistic, t, (y0, r, K))
 
-    richards = K/( 1 - (1 - (K/y0)**nu) * sympy.exp(-r * nu * t) )**(1/nu)
+    richards = old_div(K,( 1 - (1 - (old_div(K,y0))**nu) * sympy.exp(-r * nu * t) )**(old_div(1,nu)))
     richards_Dfun = _make_Dfun(richards, t, (y0, r, K, nu)) 
 
-    A = t + 1/v * sympy.log( (sympy.exp(-v * t) + q0) / (1 + q0)  )
-    baranyi_roberts5 = K/( 1 - (1 - K/y0) * sympy.exp(-r * A) )
+    A = t + 1/v * sympy.log( old_div((sympy.exp(-v * t) + q0), (1 + q0))  )
+    baranyi_roberts5 = old_div(K,( 1 - (1 - old_div(K,y0)) * sympy.exp(-r * A) ))
     baranyi_roberts5_Dfun = _make_Dfun(baranyi_roberts5, t, (y0, r, K, q0, v))
 
-    A = t + 1/v * sympy.log( (sympy.exp(-v * t) + q0) / (1 + q0)  )
-    baranyi_roberts6 = K/( 1 - (1 - (K/y0)**nu) * sympy.exp(-r * nu * A) )**(1/nu)
+    A = t + 1/v * sympy.log( old_div((sympy.exp(-v * t) + q0), (1 + q0))  )
+    baranyi_roberts6 = old_div(K,( 1 - (1 - (old_div(K,y0))**nu) * sympy.exp(-r * nu * A) )**(old_div(1,nu)))
     baranyi_roberts6_Dfun = _make_Dfun(baranyi_roberts6, t, (y0, r, K, nu, q0, v))
     
     return logistic_Dfun, richards_Dfun, baranyi_roberts5_Dfun, baranyi_roberts6_Dfun
@@ -778,9 +784,9 @@ def benchmark(model_fits, deltaBIC=6, PRINT=False, PLOT=False):
     success = best_fit.bic + deltaBIC < linear_fit.bic
 
     if PRINT:
-        print "Model fit: %s, BIC %.2f" % (best_fit.model.name, best_fit.bic)
-        print "Benchmark: %s, BIC %.2f" % (linear_fit.model.name, linear_fit.bic)
-        print "Fit success: %s" % success
+        print("Model fit: %s, BIC %.2f" % (best_fit.model.name, best_fit.bic))
+        print("Benchmark: %s, BIC %.2f" % (linear_fit.model.name, linear_fit.bic))
+        print("Fit success: %s" % success)
     if PLOT:
         fig,ax = plt.subplots(1,1)
         ax = best_fit.plot_fit(ax=ax, init_kws={'ls':''})
@@ -821,7 +827,7 @@ def cooks_distance(df, model_fit, use_weights=True):
     `Wikipedia <https://en.wikipedia.org/wiki/Cook's_distance>`_
     """
     p = model_fit.nvarys
-    MSE = model_fit.chisqr / model_fit.ndata
+    MSE = old_div(model_fit.chisqr, model_fit.ndata)
     wells = df.Well.unique()
     D = {}
     
@@ -831,7 +837,7 @@ def cooks_distance(df, model_fit, use_weights=True):
         weights =  _calc_weights(_df) if use_weights else None
         model_fit_i = copy.deepcopy(model_fit)
         model_fit_i.fit(_df['mean'], weights=weights)
-        D[well] = model_fit_i.chisqr / (p * MSE)
+        D[well] = old_div(model_fit_i.chisqr, (p * MSE))
     return D
 
 
@@ -881,7 +887,7 @@ def find_outliers(df, model_fit, deviations=2, use_weights=True, ax=None, PLOT=F
         ax.axhline(y=dist_mean, ls='-', color='k')
         ax.axhline(y=dist_mean + deviations * dist_std, ls='--', color='k')
         ax.axhline(y=dist_mean - deviations * dist_std, ls='--', color='k')
-        ax.set_xticks(range(len(wells)))
+        ax.set_xticks(list(range(len(wells))))
         ax.set_xticklabels(wells, rotation=90)
         ax.set_xlabel('Well')
         ax.set_ylabel("Cook's distance")
@@ -954,7 +960,7 @@ def _calc_weights(df):
         warn("Warning: NaN in standard deviations, can't use weights")
         weights = None
     else:
-        weights = 1./df['std']
+        weights = old_div(1.,df['std'])
         # if any weight is nan, raise error
         idx = np.isnan(weights)
         if idx.any():
@@ -1016,7 +1022,7 @@ def guess_nu(t, N, K=None, PLOT=False, PRINT=False):
     if K is None:
         K = N.max()
     def target(nu):
-        return np.abs((1+nu)**(-1/nu) - Nmax/K)
+        return np.abs((1+nu)**(old_div(-1,nu)) - old_div(Nmax,K))
     opt_res = minimize(target, x0=1, bounds=[(0,None)])
     x = opt_res.x
     y = target(x)
@@ -1025,7 +1031,7 @@ def guess_nu(t, N, K=None, PLOT=False, PRINT=False):
     if not opt_res.success and not np.allclose(y, 0):
         warn("Minimization warning in %s: %s\nGuessed nu=%.4f with f(nu)=%.4f" % (sys._getframe().f_code.co_name, opt_res.message, x, y))
     if y1 < y:
-        print "f(1)=%.4f < f(%.4f)=%.4f, Setting nu=1" % (y1, x, y)
+        print("f(1)=%.4f < f(%.4f)=%.4f, Setting nu=1" % (y1, x, y))
         x = 1.0
     if PLOT:
         fs = plt.rcParams['figure.figsize']
@@ -1090,7 +1096,7 @@ def guess_r(t, N, nu=None, K=None):
         K = N.max()
     if nu is None:
         nu = guess_nu(t, N, K)
-    return dNdtmax / (K * nu * (1 + nu)**(-(1 + nu) / nu))
+    return old_div(dNdtmax, (K * nu * (1 + nu)**(old_div(-(1 + nu), nu))))
 
 
 def fit_model(df, ax=None, param_guess=None, param_max=None, use_weights=True, use_Dfun=False, PLOT=True, PRINT=True):
@@ -1176,7 +1182,7 @@ def fit_model(df, ax=None, param_guess=None, param_max=None, use_weights=True, u
 
     # Run Baranyi-Roberts once just to make a guess for q0 and v
     params = baranyi_roberts_model.make_params(y0=y0guess, K=Kguess, r=rguess, nu=nuguess, q0=q0guess, v=vguess)
-    for p,m in param_max.items():
+    for p,m in list(param_max.items()):
         params[p].set(max=m)
     params['y0'].set(vary=False)
     params['K'].set(vary=False)
@@ -1192,7 +1198,7 @@ def fit_model(df, ax=None, param_guess=None, param_max=None, use_weights=True, u
 
     # Baranyi-Roberts = Richards /w lag (6 params)
     params = baranyi_roberts_model.make_params(y0=y0guess, K=Kguess, r=rguess, nu=nuguess, q0=q0guess, v=vguess)
-    for p,m in param_max.items():
+    for p,m in list(param_max.items()):
         params[p].set(max=m)
     params['y0'].set(min=1e-4)
     params['K'].set(min=1e-4)
@@ -1217,7 +1223,7 @@ def fit_model(df, ax=None, param_guess=None, param_max=None, use_weights=True, u
 
     # Richards = Baranyi-Roberts /wout lag (4 params)
     params = richards_model.make_params(y0=y0guess, K=Kguess, r=rguess, nu=nuguess)
-    for p,m in param_max.items():
+    for p,m in list(param_max.items()):
         params[p].set(max=m)
     params['y0'].set(min=1e-4)
     params['K'].set(min=1e-4)
@@ -1241,10 +1247,10 @@ def fit_model(df, ax=None, param_guess=None, param_max=None, use_weights=True, u
     models.sort(key=lambda m: m.bic)
 
     if PRINT:
-        print models[0].fit_report(show_correl=False)
+        print(models[0].fit_report(show_correl=False))
     if PLOT:        
-        dy = _df.OD.max()/50.
-        dx = _df.Time.max()/25.
+        dy = old_div(_df.OD.max(),50.)
+        dx = old_div(_df.Time.max(),25.)
         fig, ax = plt.subplots(1, len(models), sharex=True, sharey=True, figsize=(16,6))
         for i,fit in enumerate(models):
             vals = fit.best_values
