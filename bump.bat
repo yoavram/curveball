@@ -1,0 +1,1 @@
+bumpversion patch curveball/version.py --commit --tag

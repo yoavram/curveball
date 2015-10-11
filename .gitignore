@@ -65,6 +65,8 @@ docs/_build/
 
 # virtualenv
 venv
+venv2
+venv3
 
 # temp
 tmp.*
