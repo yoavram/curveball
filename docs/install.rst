@@ -38,7 +38,7 @@ After installing Anaconda, open a terminal or command line, and write the follow
 
 Then install Curveball (from `PyPi <https://pypi.python.org/pypi/curveball/>`_):
 
->>> pip install curveball
+>>> pip install -i https://testpypi.python.org/pypi curveball
 
 
 .. note::
