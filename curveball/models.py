@@ -113,6 +113,9 @@ def logistic_function(t, y0, r, K):
     return richards_function(t ,y0, r, K, 1.)
 
 
+logistic_model = Model(logistic_function)
+
+
 def richards_function(t, y0, r, K, nu):
     r"""Richards growth model (or the generalised logistic model) in a generalisation of the logistic model that allows the inflection point to be anywhere along the curve.
 
@@ -150,6 +153,9 @@ def richards_function(t, y0, r, K, nu):
     `Generalised logistic function in Wikipedia <http://en.wikipedia.org/wiki/Generalised_logistic_function>`_
     """
     return old_div(K, ((1 - (1 - (old_div(K,y0))**nu) * np.exp(-r * nu * t))**(old_div(1.,nu))))
+
+
+richards_model = Model(richards_function)
 
 
 def baranyi_roberts_function(t, y0, r, K, nu, q0, v):
@@ -199,6 +205,9 @@ def baranyi_roberts_function(t, y0, r, K, nu, q0, v):
     """
     At = t + (old_div(1.,v)) * np.log(old_div((np.exp(-v * t) + q0),(1 + q0)))
     return old_div(K, ((1 - (1 - (old_div(K,y0))**nu) * np.exp( -r * nu * At ))**(old_div(1.,nu))))
+
+
+baranyi_roberts_model = Model(baranyi_roberts_function)
 
 
 def sample_params(model_fit, nsamples):
@@ -738,6 +747,17 @@ def _make_model_Dfuns():
     return logistic_Dfun, richards_Dfun, baranyi_roberts5_Dfun, baranyi_roberts6_Dfun
 
 
+_Dfuns = {}
+def _get_model_Dfun(model):
+    if len(_Dfuns) == 0:
+        logistic_Dfun, richards_Dfun, baranyi_roberts5_Dfun, baranyi_roberts6_Dfun = _make_model_Dfuns()
+        _Dfuns['logistic'] = logistic_Dfun
+        _Dfuns['richards'] = richards_Dfun
+        _Dfuns['baranyi_roberts5'] = baranyi_roberts5_Dfun
+        _Dfuns['baranyi_roberts6'] = baranyi_roberts6_Dfun
+    return _Dfuns[model]
+
+
 def benchmark(model_fits, deltaBIC=6, PRINT=False, PLOT=False):
     """Benchmark a model fit (or the best fit out of a sequence of fits).
 
@@ -779,6 +799,8 @@ def benchmark(model_fits, deltaBIC=6, PRINT=False, PLOT=False):
     weights = best_fit.weights
 
     # Linear model used as benchmark
+    linear_model = LinearModel()
+    linear_model.name = 'linear-benchmark'
     params = linear_model.guess(data=y, x=t)
     linear_fit = linear_model.fit(data=y, x=t, params=params, weights=weights)
     success = best_fit.bic + deltaBIC < linear_fit.bic
@@ -1190,7 +1212,7 @@ def fit_model(df, ax=None, param_guess=None, param_max=None, use_weights=True, u
     params['nu'].set(vary=False)
     params['q0'].set(min=1e-4, max=param_max.get('q0', 1))
     params['v'].set(min=1e-4)
-    fit_kws = {'Dfun': baranyi_roberts6_Dfun, "col_deriv":True} if use_Dfun else {}
+    fit_kws = {'Dfun': _Dfuns['baranyi_roberts6'], "col_deriv":True} if use_Dfun else {}
     result = baranyi_roberts_model.fit(data=_df.OD, t=_df.Time, params=params, weights=weights, fit_kws=fit_kws)
 
     q0guess = result.best_values['q0']
@@ -1206,7 +1228,7 @@ def fit_model(df, ax=None, param_guess=None, param_max=None, use_weights=True, u
     params['nu'].set(min=1e-4)
     params['q0'].set(min=1e-4, max=param_max.get('q0', 1))
     params['v'].set(min=1e-4)
-    fit_kws = {'Dfun': baranyi_roberts6_Dfun, "col_deriv":True} if use_Dfun else {}
+    fit_kws = {'Dfun': _Dfuns['baranyi_roberts6'], "col_deriv":True} if use_Dfun else {}
     result = baranyi_roberts_model.fit(data=_df.OD, t=_df.Time, params=params, weights=weights, fit_kws=fit_kws)
     models.append(result)
 
@@ -1217,7 +1239,7 @@ def fit_model(df, ax=None, param_guess=None, param_max=None, use_weights=True, u
     if rguess2 is None: 
         rguess2 = guess_r(_df.Time, _df.OD, nu=1.0, K=Kguess)
     params['r'].set(value=rguess2, vary=True)
-    fit_kws = {'Dfun': baranyi_roberts5_Dfun, "col_deriv":True} if use_Dfun else {}
+    fit_kws = {'Dfun': _Dfuns['baranyi_roberts5'], "col_deriv":True} if use_Dfun else {}
     result = baranyi_roberts_model.fit(data=_df.OD, t=_df.Time, params=params, weights=weights, fit_kws=fit_kws)
     models.append(result)
 
@@ -1229,7 +1251,7 @@ def fit_model(df, ax=None, param_guess=None, param_max=None, use_weights=True, u
     params['K'].set(min=1e-4)
     params['r'].set(min=1e-4)
     params['nu'].set(min=1e-4)
-    fit_kws = {'Dfun': richards_Dfun, "col_deriv":True} if use_Dfun else {}
+    fit_kws = {'Dfun': _Dfuns['richards'], "col_deriv":True} if use_Dfun else {}
     result = richards_model.fit(data=_df.OD, t=_df.Time, params=params, weights=weights, fit_kws=fit_kws)
     models.append(result)
 
@@ -1238,7 +1260,7 @@ def fit_model(df, ax=None, param_guess=None, param_max=None, use_weights=True, u
     params['y0'].set(min=1e-4)
     params['K'].set(min=1e-4)
     params['r'].set(min=1e-4)
-    fit_kws = {'Dfun': logistic_Dfun, "col_deriv":True} if use_Dfun else {}
+    fit_kws = {'Dfun': _Dfuns['logistic'], "col_deriv":True} if use_Dfun else {}
     result = logistic_model.fit(data=_df.OD, t=_df.Time, params=params, weights=weights, fit_kws=fit_kws)
     models.append(result)
 
@@ -1270,11 +1292,3 @@ def fit_model(df, ax=None, param_guess=None, param_max=None, use_weights=True, u
         fig.tight_layout()
         return models, fig, ax
     return models
-
-
-linear_model = LinearModel()
-linear_model.name = 'linear-benchmark'
-logistic_model = Model(logistic_function)
-richards_model = Model(richards_function)
-baranyi_roberts_model = Model(baranyi_roberts_function)
-logistic_Dfun, richards_Dfun, baranyi_roberts5_Dfun, baranyi_roberts6_Dfun = _make_model_Dfuns()
