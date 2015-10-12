@@ -980,7 +980,7 @@ def guess_nu(t, N, K=None, PLOT=False, PRINT=False):
 
     .. math::
 
-        K (1 + \nu)^{-\frac{1}{\nu}} = N_{max}
+        N_{max} = K (1 + \nu)^{-\frac{1}{\nu}}
 
 
     - :math:`N_{max}`: population size when the population growth rate (:math:`\frac{dN}{dt}`) is maximum

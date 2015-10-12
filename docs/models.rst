@@ -125,10 +125,26 @@ and the nesting model (from which the arrow points) is the second argument ``m1`
 Parameter guessing
 ------------------
 
-Before fitting models to the data, Curveball attempts to guess the growth parameters from the shape of the curve. 
-For example, ``y0`` and ``K`` are guessed from the minimum and maximum of the growth curve.
-Also see :py:func:`guess_r` and :py:func:`guess_nu`.
-The lag phase parameters, ``q0`` and ``v`` are guessed by fitting a Baranyi-Roberts model with fixed 
+Before fitting models to the data, Curveball attempts to guess the growth parameters from the shape of the curve. These guesses are used as initial parameters in the model fitting procedure.
+
+``y0`` and ``K`` are guessed from the minimum and maximum of the growth curve, respectively.
+
+``r`` and ``nu`` are guessed in :py:func:`guess_r` and :py:func:`guess_nu`, respectively, using formulas from [Richards1959]_:
+
+.. math::
+
+    N_{max} = K (1 + \nu)^{-\frac{1}{\nu}} \Rightarrow 
+
+    \frac{dN}{dt}_{max} = r K \nu (1 + \nu)^{-\frac{1 + \nu}{\nu}}
+
+
+- :math:`\frac{dN}{dt}_{max}`: maximum population growth rate
+- :math:`N_{max}`: population size/density when the population growth rate (:math:`\frac{dN}{dt}`) is maximum    
+- r: initial per capita growth rate 
+- K: maximum population size
+- :math:`\nu`: curvature of the logsitic term
+
+``q0`` and ``v``, the lag phase parameters, are guessed by fitting a Baranyi-Roberts model with fixed 
 ``y0``, ``r``, ``K``, and ``nu`` (based on guesses) to the data.
 
 Model selection
