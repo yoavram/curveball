@@ -642,7 +642,7 @@ class GuessTestCase(TestCase):
         filename = sys._getframe().f_code.co_name + ".png"
         fig.savefig(filename)
         self.assertTrue(check_image(filename))               
-        self.assertTrue(0 < nu < 2, 'nu={0}'.format(nu))
+        self.assertTrue(0 < nu < 3, 'nu={0}'.format(nu))
 
 
     def test_guess_nu_01(self):
