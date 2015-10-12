@@ -324,8 +324,8 @@ def read_sunrise_xlsx(filename, label=u'OD', max_time=None, plate=None):
     ----------
     filename : str
         pattern of the XLSX files to be read. Use * and ? in filename to read multiple files and parse them into a single data frame.    label : str, optional
-    label : str
-        measurment name to use for the data in the file.        
+    label : str, optional
+        measurment name to use for the data in the file, defaults to ``OD``.
     max_time : float, optional
         maximal time in hours, defaults to infinity
     plate : pandas.DataFrame, optional
@@ -337,9 +337,11 @@ def read_sunrise_xlsx(filename, label=u'OD', max_time=None, plate=None):
         Data frame containing the columns:
 
         - ``Time`` (:py:class:`float`, in hours)
+        - ``OD`` (or the value of `label`, if given)
         - ``Well`` (:py:class:`str`): the well name, usually a letter for the row and a number of the column.
         - ``Row`` (:py:class:`str`): the letter corresponding to the well row.
         - ``Col`` (:py:class:`str`): the number corresponding to the well column.
+        - ``Filename`` (:py:class:`str`): the filename from which this measurement was read.
         - ``Strain`` (:py:class:`str`): if a `plate` was given, this is the strain name corresponding to the well from the plate.
         - ``Color`` (:py:class:`str`, hex format): if a `plate` was given, this is the strain color corresponding to the well from the plate.
     """
@@ -359,10 +361,10 @@ def read_sunrise_xlsx(filename, label=u'OD', max_time=None, plate=None):
         for i in range(sh.nrows):
             row = sh.row_values(i)
             if row[0] == u'Date:':
-                date = filter(lambda x: isinstance(x, float), row[1:])[0]
+                date = next(filter(lambda x: isinstance(x, float), row[1:]))
                 date = xlrd.xldate_as_tuple(date, 0)        
             elif row[0] == u'Time:':
-                time = filter(lambda x: isinstance(x, float), row[1:])[0]
+                time = next(filter(lambda x: isinstance(x, float), row[1:]))
                 time = xlrd.xldate_as_tuple(time, 0)
             elif row[0] == u'<>':
                 columns = list(map(int, row[1:]))
@@ -380,12 +382,12 @@ def read_sunrise_xlsx(filename, label=u'OD', max_time=None, plate=None):
         df[u'Row'] = index
         df = pd.melt(df, id_vars=u'Row', var_name=u'Col', value_name=label)
         df[u'Time'] = dateandtime
-        df[u'Well'] = [x[0] + str(x[1]) for x in zip(df.Row,df.Col)]
+        df[u'Well'] = [x[0] + str(x[1]) for x in zip(df.Row, df.Col)]
         df[u'Filename'] = os.path.split(filename)[-1]
         dataframes.append(df)
     df = pd.concat(dataframes)
     min_time = df.Time.min()
-    df.Time = [old_div((t - min_time).total_seconds(),3600.) for t in df.Time]
+    df.Time = [old_div((t - min_time).total_seconds(), 3600.) for t in df.Time]
     if plate is None:
         df[u'Strain'] = 0
         df[u'Color'] = u'#000000'

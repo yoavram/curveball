@@ -15,3 +15,4 @@ include data/Tecan_210115.xlsx
 include data/Tecan_210115.csv
 include data/20130211_dh.zip
 include data/plate_9_OD.mat
+include data/Sunrise_180515_0916.xlsx
