@@ -501,13 +501,8 @@ class LRTestTestCase(TestCase):
 
 
     def test_has_nu_baranyi_roberts_nu_5(self):
-        df = randomize_data(baranyi_roberts_ode, t=np.linspace(0,32), nu=5.0)
-        
-        models,fig,ax = curveball.models.fit_model(df, PLOT=True, PRINT=False)
-        self.assertIsInstance(fig, matplotlib.figure.Figure)
-        filename = sys._getframe().f_code.co_name + ".png"
-        fig.savefig(filename)
-        self.assertTrue(check_image(filename))       
+        df = randomize_data(baranyi_roberts_ode, t=np.linspace(0,32), nu=5.0)        
+        models = curveball.models.fit_model(df, PLOT=False, PRINT=False)
         result = curveball.models.has_nu(models, PRINT=True)
         self.assertTrue(result)
 
@@ -624,6 +619,40 @@ class SamplingTestCase(TestCase):
         sample_params = curveball.models.sample_params(model_fit, 100)
         self.assertIsNotNone(sample_params)
         self.assertEquals(sample_params.shape, (100, 3))
+
+
+class GuessTestCase(TestCase):
+    _multiprocess_can_split_ = True
+
+
+    def test_guess_nu_5(self):
+        df = randomize_data(baranyi_roberts_ode, t=np.linspace(0,32), nu=5.0, reps=1)
+        nu, fig, ax = curveball.models.guess_nu(t=df.Time, N=df.OD, PLOT=True, PRINT=False)
+        self.assertIsInstance(fig, matplotlib.figure.Figure)
+        filename = sys._getframe().f_code.co_name + ".png"
+        fig.savefig(filename)
+        self.assertTrue(check_image(filename))               
+        self.assertTrue(1 < nu < 10, 'nu={0}'.format(nu))
+
+
+    def test_guess_nu_1(self):
+        df = randomize_data(baranyi_roberts_ode, t=np.linspace(0,32), nu=1.0, reps=1)
+        nu, fig, ax = curveball.models.guess_nu(t=df.Time, N=df.OD, PLOT=True, PRINT=False)
+        self.assertIsInstance(fig, matplotlib.figure.Figure)
+        filename = sys._getframe().f_code.co_name + ".png"
+        fig.savefig(filename)
+        self.assertTrue(check_image(filename))               
+        self.assertTrue(0 < nu < 2, 'nu={0}'.format(nu))
+
+
+    def test_guess_nu_01(self):
+        df = randomize_data(baranyi_roberts_ode, t=np.linspace(0,32), nu=0.1, reps=1)
+        nu, fig, ax = curveball.models.guess_nu(t=df.Time, N=df.OD, PLOT=True, PRINT=False)
+        self.assertIsInstance(fig, matplotlib.figure.Figure)
+        filename = sys._getframe().f_code.co_name + ".png"
+        fig.savefig(filename)
+        self.assertTrue(check_image(filename))               
+        self.assertTrue(0 < nu < 1, 'nu={0}'.format(nu))
 
 
 class IssuesTestCase(TestCase):

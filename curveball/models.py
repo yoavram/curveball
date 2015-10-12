@@ -1051,7 +1051,7 @@ def guess_nu(t, N, K=None, PLOT=False, PRINT=False):
         
         fig.tight_layout()        
         return x,fig,ax
-    return x
+    return x[0]
 
 
 def guess_r(t, N, nu=None, K=None):
