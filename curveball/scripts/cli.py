@@ -248,7 +248,7 @@ def _process_file(filepath, plate, blank_strain, ref_strain, max_time):
 	"""
 	results = []	
 	fn,ext = os.path.splitext(filepath)
-	echo_info("file: {0}\nhandler: {1}\n".format(filepath, ext))
+	echo_info("\tHandler: {1}\n".format(filepath, ext))
 	handler = file_extension_handlers.get(ext)
 	if  handler == None:
 		echo_info("No handler found for file {0}".format(click.format_filename(filepath)))
