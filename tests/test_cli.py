@@ -151,6 +151,8 @@ class AnalysisTestCase(TestCase):
 	def setUp(self):
 		self.files = pkg_resources.resource_listdir('data', '')
 		self.files = [fn for fn in self.files if os.path.splitext(fn)[-1] in ['.xlsx', '.mat']]
+		self.files = [fn for fn in self.files if not fn.lower().startswith('sunrise')]
+		self.files.sort()
 		self.runner = CliRunner()
 		self.ctx = self.setup_with_context_manager(self.runner.isolated_filesystem())
 		self.dirpath = os.getcwd()
@@ -162,7 +164,7 @@ class AnalysisTestCase(TestCase):
 			shutil.copy(src, '.')
 			self.assertTrue(os.path.exists(os.path.join(self.dirpath, fn)))
 			self.assertTrue(os.path.isfile(os.path.join(self.dirpath, fn)))
-		self.filepath = os.path.join(self.dirpath, self.files[0])
+		self.filepath = os.path.join(self.dirpath, self.files[1])
 		
 
 	def tearDown(self):
@@ -204,10 +206,7 @@ class AnalysisTestCase(TestCase):
 
 
 	def test_process_folder(self):
-		num_files = len(self.files)			
-		for sunrise_file in glob.glob("Sunrise*.xlsx"): # TODO remove this, see #73
-			os.remove(sunrise_file)
-			num_files -= 1
+		num_files = len(self.files)
 		result = self.runner.invoke(cli.cli, ['--no-plot', '--no-verbose', '--no-prompt', 
 			'analyse', self.dirpath, '--plate_file=G-RG-R.csv', '--ref_strain=G'])
 		self.assertEquals(result.exit_code, 0, result.output)		
