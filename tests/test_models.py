@@ -14,6 +14,7 @@ from unittest import TestCase, main
 from nose.plugins.skip import SkipTest
 import sys
 import os
+import shutil
 import curveball
 from scipy.integrate import odeint
 import numpy as np
@@ -21,10 +22,18 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from lmfit import Model
 from lmfit.model import ModelResult
-
+import matplotlib
+from PIL import Image
+import tempfile
 
 CI = os.environ.get('CI', 'false').lower() == 'true'
 RANDOM_SEED = int(os.environ.get('RANDOM_SEED', 0))
+
+
+def check_image(filename):      
+    im = Image.open(filename)
+    bands = im.split()
+    return not all(band.getextrema() == (255, 255) for band in bands)
 
 
 def logistic_ode(y, t, r, K, nu, q0, v):
@@ -96,18 +105,27 @@ class FunctionsTestCase(TestCase):
 class ModelSelectionTestCase(TestCase):
     _multiprocess_can_split_ = True
 
+
+    def setUp(self):
+        if CI:
+            self.folder = tempfile.mkdtemp()
+        else:
+            self.folder = '.'
+
+
     def tearDown(self):
         plt.close("all")
+        if CI:
+            shutil.rmtree(self.folder)
 
 
     def test_fit_model_logistic(self):
-        df = randomize_data(logistic_ode)
-        if not CI:
-            models,fig,ax = curveball.models.fit_model(df, PLOT=True, PRINT=False)
-            func_name = sys._getframe().f_code.co_name
-            fig.savefig(func_name + ".png")
-        else:
-            models = curveball.models.fit_model(df, PLOT=False, PRINT=False)
+        df = randomize_data(logistic_ode)        
+        models,fig,ax = curveball.models.fit_model(df, PLOT=True, PRINT=False)
+        self.assertIsInstance(fig, matplotlib.figure.Figure)
+        filename = sys._getframe().f_code.co_name + ".png"
+        fig.savefig(filename)
+        self.assertTrue(check_image(filename))
         self.assertIsNotNone(models)
         for mod in models:
             self.assertIsInstance(mod, ModelResult)
@@ -116,13 +134,12 @@ class ModelSelectionTestCase(TestCase):
 
 
     def test_fit_model_logistic_single_rep(self):
-        df = randomize_data(logistic_ode, reps=1)
-        if not CI:       
-            models,fig,ax = curveball.models.fit_model(df, PLOT=True, PRINT=False)
-            func_name = sys._getframe().f_code.co_name
-            fig.savefig(func_name + ".png")
-        else:
-            models = curveball.models.fit_model(df, PLOT=False, PRINT=False)        
+        df = randomize_data(logistic_ode, reps=1)    
+        models,fig,ax = curveball.models.fit_model(df, PLOT=True, PRINT=False)
+        self.assertIsInstance(fig, matplotlib.figure.Figure)
+        filename = sys._getframe().f_code.co_name + ".png"
+        fig.savefig(filename)
+        self.assertTrue(check_image(filename))
         self.assertIsNotNone(models)
         for mod in models:
             self.assertIsInstance(mod, ModelResult)
@@ -132,12 +149,11 @@ class ModelSelectionTestCase(TestCase):
 
     def test_fit_model_richards(self):
         df = randomize_data(richards_ode, t=np.linspace(0,24))
-        if not CI:
-            models,fig,ax = curveball.models.fit_model(df, PLOT=True, PRINT=False)
-            func_name = sys._getframe().f_code.co_name
-            fig.savefig(func_name + ".png")
-        else:
-            models = curveball.models.fit_model(df, PLOT=False, PRINT=False)
+        models,fig,ax = curveball.models.fit_model(df, PLOT=True, PRINT=False)
+        self.assertIsInstance(fig, matplotlib.figure.Figure)
+        filename = sys._getframe().f_code.co_name + ".png"
+        fig.savefig(filename)
+        self.assertTrue(check_image(filename))
         self.assertIsNotNone(models)
         for mod in models:
             self.assertIsInstance(mod, ModelResult)
@@ -147,12 +163,11 @@ class ModelSelectionTestCase(TestCase):
 
     def test_fit_model_logistic_lag(self):        
         df = randomize_data(baranyi_roberts_ode, t=np.linspace(0,48), nu=1.0)
-        if not CI:
-            models,fig,ax = curveball.models.fit_model(df, PLOT=True, PRINT=False)
-            func_name = sys._getframe().f_code.co_name
-            fig.savefig(func_name + ".png")
-        else:
-            models = curveball.models.fit_model(df, PLOT=False, PRINT=False)
+        models,fig,ax = curveball.models.fit_model(df, PLOT=True, PRINT=False)
+        self.assertIsInstance(fig, matplotlib.figure.Figure)
+        filename = sys._getframe().f_code.co_name + ".png"
+        fig.savefig(filename)
+        self.assertTrue(check_image(filename))    
         self.assertIsNotNone(models)
         for mod in models:
             self.assertIsInstance(mod, ModelResult)
@@ -166,12 +181,11 @@ class ModelSelectionTestCase(TestCase):
 
     def test_fit_model_baranyi_roberts(self):        
         df = randomize_data(baranyi_roberts_ode, t=np.linspace(0,24), nu=5.0)
-        if not CI:
-            models,fig,ax = curveball.models.fit_model(df, PLOT=True, PRINT=False)
-            func_name = sys._getframe().f_code.co_name
-            fig.savefig(func_name + ".png")
-        else:
-            models = curveball.models.fit_model(df, PLOT=False, PRINT=False)
+        models,fig,ax = curveball.models.fit_model(df, PLOT=True, PRINT=False)
+        self.assertIsInstance(fig, matplotlib.figure.Figure)
+        filename = sys._getframe().f_code.co_name + ".png"
+        fig.savefig(filename)
+        self.assertTrue(check_image(filename))    
         self.assertIsNotNone(models)
         for mod in models:
             self.assertIsInstance(mod, ModelResult)
@@ -182,8 +196,17 @@ class ModelSelectionTestCase(TestCase):
 class FindLagTestCase(TestCase):
     _multiprocess_can_split_ = True
 
+    def setUp(self):
+        if CI:
+            self.folder = tempfile.mkdtemp()
+        else:
+            self.folder = '.'
+
+
     def tearDown(self):
         plt.close("all")
+        if CI:
+            shutil.rmtree(self.folder)
 
 
     def test_find_lag_logistic(self):
@@ -191,12 +214,12 @@ class FindLagTestCase(TestCase):
         t = np.linspace(0,12)
         df = randomize_data(logistic_ode, t=t, y0=y0, r=r, K=K, reps=1)
         model_fit = curveball.models.logistic_model.fit(df.OD, t=df.Time, y0=y0, K=K, r=r)        
-        if not CI:
-            lam,fig,ax1,ax2 = curveball.models.find_lag(model_fit, PLOT=True)
-            func_name = sys._getframe().f_code.co_name
-            fig.savefig(func_name + ".png")
-        else:
-            lam = curveball.models.find_lag(model_fit, PLOT=False)
+        
+        lam,fig,ax1,ax2 = curveball.models.find_lag(model_fit, PLOT=True)
+        self.assertIsInstance(fig, matplotlib.figure.Figure)
+        filename = sys._getframe().f_code.co_name + ".png"
+        fig.savefig(filename)
+        self.assertTrue(check_image(filename))    
         self.assertTrue(lam < 1, "Lambda is " + str(lam))
 
 
@@ -205,14 +228,12 @@ class FindLagTestCase(TestCase):
         t = np.linspace(0,12)
         df = randomize_data(logistic_ode, t=t, y0=y0, r=r, K=K, reps=1)
         model_fit = curveball.models.logistic_model.fit(df.OD, t=df.Time, y0=y0, K=K, r=r)        
-        if not CI:
-            lam = curveball.models.find_lag(model_fit, PLOT=False)
-            lam_low,lam_high,fig,ax = curveball.models.find_lag_ci(model_fit, PLOT=True)
-            func_name = sys._getframe().f_code.co_name
-            fig.savefig(func_name + ".png")
-        else:
-            lam = curveball.models.find_lag(model_fit, PLOT=False)
-            lam_low, lam_high = curveball.models.find_lag_ci(model_fit, PLOT=False)
+        lam = curveball.models.find_lag(model_fit, PLOT=False)
+        lam_low,lam_high,fig,ax = curveball.models.find_lag_ci(model_fit, PLOT=True)
+        self.assertIsInstance(fig, matplotlib.figure.Figure)
+        filename = sys._getframe().f_code.co_name + ".png"
+        fig.savefig(filename)
+        self.assertTrue(check_image(filename))
         self.assertTrue(lam_low < lam < lam_high, "Lambda is {2}, Lambda CI is ({0},{1})".format(lam, lam_low, lam_high))
 
 
@@ -221,13 +242,12 @@ class FindLagTestCase(TestCase):
         t = np.linspace(0,12)
         for nu in [1.0, 2.0, 5.0]:
             df = randomize_data(richards_ode, t=t, y0=y0, r=r, K=K, nu=nu, reps=1)
-            model_fit = curveball.models.richards_model.fit(df.OD, t=df.Time, y0=y0, K=K, r=r, nu=nu)
-            if not CI:
-                lam,fig,ax1,ax2 = curveball.models.find_lag(model_fit, PLOT=True)
-                func_name = sys._getframe().f_code.co_name + ".nu.%.1f" % nu
-                fig.savefig(func_name + ".png")
-            else:
-                lam = curveball.models.find_lag(model_fit, PLOT=False)
+            model_fit = curveball.models.richards_model.fit(df.OD, t=df.Time, y0=y0, K=K, r=r, nu=nu)            
+            lam,fig,ax1,ax2 = curveball.models.find_lag(model_fit, PLOT=True)
+            self.assertIsInstance(fig, matplotlib.figure.Figure)
+            filename = sys._getframe().f_code.co_name + ".png"
+            fig.savefig(filename)
+            self.assertTrue(check_image(filename))   
             self.assertTrue(lam < 1, "Lambda is " + str(lam))
 
 
@@ -237,14 +257,13 @@ class FindLagTestCase(TestCase):
         for nu in [1.0, 2.0, 5.0]:
             df = randomize_data(richards_ode, t=t, y0=y0, r=r, K=K, nu=nu, reps=1)
             model_fit = curveball.models.richards_model.fit(df.OD, t=df.Time, y0=y0, K=K, r=r, nu=nu)        
-            if not CI:
-                lam = curveball.models.find_lag(model_fit, PLOT=False)
-                lam_low,lam_high,fig,ax = curveball.models.find_lag_ci(model_fit, PLOT=True)
-                func_name = sys._getframe().f_code.co_name + ".nu.%.1f" % nu
-                fig.savefig(func_name + ".png")
-            else:
-                lam = curveball.models.find_lag(model_fit, PLOT=False)
-                lam_low, lam_high = curveball.models.find_lag_ci(model_fit, PLOT=False)
+            
+            lam = curveball.models.find_lag(model_fit, PLOT=False)
+            lam_low,lam_high,fig,ax = curveball.models.find_lag_ci(model_fit, PLOT=True)
+            self.assertIsInstance(fig, matplotlib.figure.Figure)
+            filename = sys._getframe().f_code.co_name + ".png"
+            fig.savefig(filename)
+            self.assertTrue(check_image(filename))   
             self.assertTrue(lam_low < lam < lam_high, "Lambda is {2}, Lambda CI is ({0},{1})".format(lam, lam_low, lam_high))
 
 
@@ -257,12 +276,12 @@ class FindLagTestCase(TestCase):
                 q0 = old_div(1,(np.exp(_lam * v) - 1))
                 df = randomize_data(baranyi_roberts_ode, t=t, y0=y0, r=r, K=K, nu=nu, q0=q0, v=v, reps=1)
                 model_fit = curveball.models.baranyi_roberts_model.fit(df.OD, t=df.Time, y0=y0, K=K, r=r, nu=nu, q0=q0, v=v)
-                if not CI:
-                    lam,fig,ax1,ax2 = curveball.models.find_lag(model_fit, PLOT=True)
-                    func_name = sys._getframe().f_code.co_name + ".nu.%.1f.lam.%d" % (nu, lam)
-                    fig.savefig(func_name + ".png")
-                else:
-                    lam = curveball.models.find_lag(model_fit, PLOT=False)
+                
+                lam,fig,ax1,ax2 = curveball.models.find_lag(model_fit, PLOT=True)
+                self.assertIsInstance(fig, matplotlib.figure.Figure)
+                filename = sys._getframe().f_code.co_name + ".png"
+                fig.savefig(filename)
+                self.assertTrue(check_image(filename))       
                 self.assertTrue((_lam + 1) > lam > (_lam - 1), "Lambda is " + str(lam) + " but should be " + str(_lam))
 
 
@@ -275,22 +294,30 @@ class FindLagTestCase(TestCase):
                 q0 = old_div(1,(np.exp(_lam * v) - 1))
                 df = randomize_data(baranyi_roberts_ode, t=t, y0=y0, r=r, K=K, nu=nu, q0=q0, v=v, reps=1)
                 model_fit = curveball.models.baranyi_roberts_model.fit(df.OD, t=df.Time, y0=y0, K=K, r=r, nu=nu, q0=q0, v=v)
-                if not CI:
-                    lam = curveball.models.find_lag(model_fit, PLOT=False)
-                    lam_low,lam_high,fig,ax = curveball.models.find_lag_ci(model_fit, nsamples=1000, PLOT=True)
-                    func_name = sys._getframe().f_code.co_name + ".nu.%.1f.lam.%d" % (nu, lam)
-                    fig.savefig(func_name + ".png")
-                else:
-                    lam = curveball.models.find_lag(model_fit, PLOT=False)
-                    lam_low, lam_high = curveball.models.find_lag_ci(model_fit, nsamples=1000, PLOT=False)
+                
+                lam = curveball.models.find_lag(model_fit, PLOT=False)
+                lam_low,lam_high,fig,ax = curveball.models.find_lag_ci(model_fit, nsamples=1000, PLOT=True)
+                self.assertIsInstance(fig, matplotlib.figure.Figure)
+                filename = sys._getframe().f_code.co_name + ".png"
+                fig.savefig(filename)
+                self.assertTrue(check_image(filename))   
                 self.assertTrue(lam_low < lam < lam_high, "Lambda is {2}, Lambda CI is ({0},{1})".format(lam, lam_low, lam_high))
 
 
 class FindMaxGrowthTestCase(TestCase):
     _multiprocess_can_split_ = True
 
+    def setUp(self):
+        if CI:
+            self.folder = tempfile.mkdtemp()
+        else:
+            self.folder = '.'
+
+
     def tearDown(self):
         plt.close("all")
+        if CI:
+            shutil.rmtree(self.folder)
 
 
     def test_find_max_growth_logistic(self):
@@ -298,12 +325,14 @@ class FindMaxGrowthTestCase(TestCase):
         t = np.linspace(0,12)
         df = randomize_data(logistic_ode, t=t, y0=y0, r=r, K=K, reps=10)
         model_fit = curveball.models.logistic_model.fit(df.OD, t=df.Time, y0=y0, K=K, r=r)
-        if not CI:       
-            t1,y1,a,t2,y2,mu,fig,ax1,ax2 = curveball.models.find_max_growth(model_fit, PLOT=True)
-            func_name = sys._getframe().f_code.co_name
-            fig.savefig(func_name + ".png")
-        else:
-            t1,y1,a,t2,y2,mu = curveball.models.find_max_growth(model_fit, PLOT=False)
+          
+        t1,y1,a,t2,y2,mu,fig,ax1,ax2 = curveball.models.find_max_growth(model_fit, PLOT=True)
+        func_name = sys._getframe().f_code.co_name
+        fig.savefig(func_name + ".png")
+        self.assertIsInstance(fig, matplotlib.figure.Figure)
+        filename = sys._getframe().f_code.co_name + ".png"
+        fig.savefig(filename)
+        self.assertTrue(check_image(filename))   
         self.assertTrue(relative_error(old_div(K, 2), y1) < 1, "y1=%.4g, K/2=%.4g" % (y1, old_div(K, 2)))
         self.assertTrue(relative_error(K * r / 4, a) < 1, "a=%.4g, Kr/4=%.4g" % (a, K * r / 4))
         self.assertTrue(relative_error(y0, y2) < 1, "y2=%.4g, y0=%.4g" % (y2, y0))
@@ -317,12 +346,12 @@ class FindMaxGrowthTestCase(TestCase):
         t = np.linspace(0,12)
         df = randomize_data(baranyi_roberts_ode, t=t, y0=y0, r=r, K=K, nu=nu, q0=q0, v=v, reps=10)
         model_fit = curveball.models.baranyi_roberts_model.fit(df.OD, t=df.Time, y0=y0, K=K, r=r, nu=nu, q0=q0, v=v)        
-        if not CI:       
-            t1,y1,a,t2,y2,mu,fig,ax1,ax2 = curveball.models.find_max_growth(model_fit, PLOT=True)
-            func_name = sys._getframe().f_code.co_name
-            fig.savefig(func_name + ".png")
-        else:
-            t1,y1,a,t2,y2,mu = curveball.models.find_max_growth(model_fit, PLOT=False)
+             
+        t1,y1,a,t2,y2,mu,fig,ax1,ax2 = curveball.models.find_max_growth(model_fit, PLOT=True)
+        self.assertIsInstance(fig, matplotlib.figure.Figure)
+        filename = sys._getframe().f_code.co_name + ".png"
+        fig.savefig(filename)
+        self.assertTrue(check_image(filename))       
         self.assertTrue(K > y1 > old_div(K, 2), "y1=%.4g, K/2=%.4g" % (y1, old_div(K, 2)))
         self.assertTrue(K * r / 8 < a < K * r / 4, "a=%.4g, Kr/4=%.4g" % (a, K * r / 4))
         self.assertTrue(y0 < y2 < y1, "y0=%.4g, y1=%.4g, y2=%.4g," % (y0, y1, y2))
@@ -335,12 +364,12 @@ class FindMaxGrowthTestCase(TestCase):
         t = np.linspace(0,12)
         df = randomize_data(richards_ode, t=t, y0=y0, r=r, K=K, nu=nu, reps=10)
         model_fit = curveball.models.richards_model.fit(df.OD, t=df.Time, y0=y0, K=K, r=r, nu=nu)        
-        if not CI:       
-            t1,y1,a,t2,y2,mu,fig,ax1,ax2 = curveball.models.find_max_growth(model_fit, PLOT=True)
-            func_name = sys._getframe().f_code.co_name
-            fig.savefig(func_name + ".png")
-        else:
-            t1,y1,a,t2,y2,mu = curveball.models.find_max_growth(model_fit, PLOT=False)
+             
+        t1,y1,a,t2,y2,mu,fig,ax1,ax2 = curveball.models.find_max_growth(model_fit, PLOT=True)
+        self.assertIsInstance(fig, matplotlib.figure.Figure)
+        filename = sys._getframe().f_code.co_name + ".png"
+        fig.savefig(filename)
+        self.assertTrue(check_image(filename))       
         exp_y1 = K * (nu + 1)**(old_div(-1,nu))
         self.assertTrue(relative_error(exp_y1, y1) < 1, "y1=%.4g, K/(nu+1)**(1/nu)=%.4g" % (y1, exp_y1))
         exp_a = r * K * nu * (nu + 1)**(- 1 - old_div(1,nu))
@@ -352,8 +381,17 @@ class FindMaxGrowthTestCase(TestCase):
 class LRTestTestCase(TestCase):
     _multiprocess_can_split_ = True
 
+    def setUp(self):
+        if CI:
+            self.folder = tempfile.mkdtemp()
+        else:
+            self.folder = '.'
+
+
     def tearDown(self):
         plt.close("all")
+        if CI:
+            shutil.rmtree(self.folder)
 
 
     def test_lrtest(self):
@@ -380,10 +418,10 @@ class LRTestTestCase(TestCase):
 
 
     def test_has_lag_logistic(self):
-            df = randomize_data(logistic_ode)
-            models = curveball.models.fit_model(df, PLOT=False, PRINT=False)
-            lag = curveball.models.has_lag(models)
-            self.assertFalse(lag)
+        df = randomize_data(logistic_ode)
+        models = curveball.models.fit_model(df, PLOT=False, PRINT=False)
+        lag = curveball.models.has_lag(models)
+        self.assertFalse(lag)
 
 
     def test_has_lag_richards(self):
@@ -395,25 +433,24 @@ class LRTestTestCase(TestCase):
 
     def test_has_lag_logistic_lag(self):
         df = randomize_data(baranyi_roberts_ode, t=np.linspace(0,36), nu=1.0)
-        if not CI:
-            models,fig,ax = curveball.models.fit_model(df, PLOT=True, PRINT=True)
-            func_name = sys._getframe().f_code.co_name
-            fig.savefig(func_name + ".png")
-        else:
-            models = curveball.models.fit_model(df, PLOT=False, PRINT=False)
+        
+        models,fig,ax = curveball.models.fit_model(df, PLOT=True, PRINT=True)
+        self.assertIsInstance(fig, matplotlib.figure.Figure)
+        filename = sys._getframe().f_code.co_name + ".png"
+        fig.savefig(filename)
+        self.assertTrue(check_image(filename))   
         lag = curveball.models.has_lag(models)
         self.assertTrue(lag)
  
 
     def test_has_lag_baranyi_roberts(self):
         df = randomize_data(baranyi_roberts_ode, t=np.linspace(0,32))
-        if not CI:
-            models,fig,ax = curveball.models.fit_model(df, PLOT=True, PRINT=True)
-            func_name = sys._getframe().f_code.co_name
-            fig.savefig(func_name + ".png")
-        else:
-            models = curveball.models.fit_model(df, PLOT=False, PRINT=False)
-        models = curveball.models.fit_model(df, PLOT=False, PRINT=False)
+        
+        models,fig,ax = curveball.models.fit_model(df, PLOT=True, PRINT=True)
+        self.assertIsInstance(fig, matplotlib.figure.Figure)
+        filename = sys._getframe().f_code.co_name + ".png"
+        fig.savefig(filename)
+        self.assertTrue(check_image(filename))       
         lag = curveball.models.has_lag(models)
         self.assertTrue(lag)
 
@@ -441,36 +478,31 @@ class LRTestTestCase(TestCase):
 
     def test_has_nu_baranyi_roberts_nu_1(self):
         df = randomize_data(baranyi_roberts_ode, t=np.linspace(0,32), nu=1.0)
-        if not CI:
-            models,fig,ax = curveball.models.fit_model(df, PLOT=True, PRINT=False)
-            func_name = sys._getframe().f_code.co_name
-            fig.savefig(func_name + ".png")
-        else:
-            models = curveball.models.fit_model(df, PLOT=False, PRINT=False)
+        
+        models,fig,ax = curveball.models.fit_model(df, PLOT=True, PRINT=False)
+        self.assertIsInstance(fig, matplotlib.figure.Figure)
+        filename = sys._getframe().f_code.co_name + ".png"
+        fig.savefig(filename)
+        self.assertTrue(check_image(filename))       
         result = curveball.models.has_nu(models, PRINT=True)
         self.assertFalse(result)
 
 
     def test_has_nu_baranyi_roberts_nu_01(self):
         df = randomize_data(baranyi_roberts_ode, t=np.linspace(0,120), nu=0.1)
-        if not CI:
-            models,fig,ax = curveball.models.fit_model(df, PLOT=True, PRINT=False)
-            func_name = sys._getframe().f_code.co_name
-            fig.savefig(func_name + ".png")
-        else:
-            models = curveball.models.fit_model(df, PLOT=False, PRINT=False)
+        
+        models,fig,ax = curveball.models.fit_model(df, PLOT=True, PRINT=False)
+        self.assertIsInstance(fig, matplotlib.figure.Figure)
+        filename = sys._getframe().f_code.co_name + ".png"
+        fig.savefig(filename)
+        self.assertTrue(check_image(filename))       
         result = curveball.models.has_nu(models, PRINT=True)
         self.assertTrue(result)
 
 
     def test_has_nu_baranyi_roberts_nu_5(self):
-        df = randomize_data(baranyi_roberts_ode, t=np.linspace(0,32), nu=5.0)
-        if not CI:
-            models,fig,ax = curveball.models.fit_model(df, PLOT=True, PRINT=False)
-            func_name = sys._getframe().f_code.co_name
-            fig.savefig(func_name + ".png")
-        else:
-            models = curveball.models.fit_model(df, PLOT=False, PRINT=False)
+        df = randomize_data(baranyi_roberts_ode, t=np.linspace(0,32), nu=5.0)        
+        models = curveball.models.fit_model(df, PLOT=False, PRINT=False)
         result = curveball.models.has_nu(models, PRINT=True)
         self.assertTrue(result)
 
@@ -478,8 +510,17 @@ class LRTestTestCase(TestCase):
 class BenchmarkTestCase(TestCase):
     _multiprocess_can_split_ = True
 
+    def setUp(self):
+        if CI:
+            self.folder = tempfile.mkdtemp()
+        else:
+            self.folder = '.'
+
+
     def tearDown(self):
         plt.close("all")
+        if CI:
+            shutil.rmtree(self.folder)
 
 
     def test_benchmark_success(self):
@@ -490,12 +531,12 @@ class BenchmarkTestCase(TestCase):
         df = randomize_data(baranyi_roberts_ode, t=t, r=r, y0=y0, K=K, nu=nu, q0=q0, v=v, reps=1)
         params = curveball.models.baranyi_roberts_model.make_params(r=0.1, y0=df.OD.min(), K=df.OD.max(), nu=1.0, q0=1.0, v=1.0)
         model_fit = curveball.models.baranyi_roberts_model.fit(data=df.OD, t=df.Time, params=params)
-        if not CI:
-            success,fig,ax = curveball.models.benchmark(model_fit, PLOT=True)
-            func_name = sys._getframe().f_code.co_name
-            fig.savefig(func_name + ".png")                
-        else:
-            success = curveball.models.benchmark(model_fit, PLOT=False)
+        
+        success,fig,ax = curveball.models.benchmark(model_fit, PLOT=True)
+        self.assertIsInstance(fig, matplotlib.figure.Figure)
+        filename = sys._getframe().f_code.co_name + ".png"
+        fig.savefig(filename)
+        self.assertTrue(check_image(filename))   
         self.assertEquals(success, True)
         
 
@@ -507,12 +548,12 @@ class BenchmarkTestCase(TestCase):
         df = randomize_data(baranyi_roberts_ode, t=t, r=r, y0=y0, K=K, nu=nu, q0=q0, v=v, reps=1)
         params = curveball.models.logistic_model.make_params(r=0.1, y0=df.OD.min(), K=df.OD.max())
         model_fit = curveball.models.logistic_model.fit(data=df.OD, t=df.Time, params=params)
-        if not CI:
-            success,fig,ax = curveball.models.benchmark(model_fit, PLOT=True)
-            func_name = sys._getframe().f_code.co_name
-            fig.savefig(func_name + ".png")                
-        else:
-            success = curveball.models.benchmark(model_fit, PLOT=False)     
+        
+        success,fig,ax = curveball.models.benchmark(model_fit, PLOT=True)
+        self.assertIsInstance(fig, matplotlib.figure.Figure)
+        filename = sys._getframe().f_code.co_name + ".png"
+        fig.savefig(filename)
+        self.assertTrue(check_image(filename))   
         self.assertEquals(success, True)
         
 
@@ -524,10 +565,16 @@ class OutliersTestCase(TestCase):
         self.df = pd.read_csv(self.filename)
         self.df = self.df[self.df.Strain == 'R']
         self.model_fit = curveball.models.fit_model(self.df, PLOT=False, PRINT=False)[0]
+        if CI:
+            self.folder = tempfile.mkdtemp()
+        else:
+            self.folder = '.'
 
 
     def tearDown(self):
-        plt.close("all")        
+        plt.close("all")
+        if CI:
+            shutil.rmtree(self.folder)
 
 
     def test_cooks_distance(self):
@@ -538,23 +585,22 @@ class OutliersTestCase(TestCase):
 
 
     def test_find_outliers(self):
-        if not CI:
-            outliers,fig,ax = curveball.models.find_outliers(self.df, self.model_fit, PLOT=True)
-            func_name = sys._getframe().f_code.co_name
-            fig.savefig(func_name + ".png")
-        else:
-            outliers = curveball.models.find_outliers(self.df, self.model_fit, PLOT=False)
+        
+        outliers,fig,ax = curveball.models.find_outliers(self.df, self.model_fit, PLOT=True)
+        self.assertIsInstance(fig, matplotlib.figure.Figure)
+        filename = sys._getframe().f_code.co_name + ".png"
+        fig.savefig(filename)
+        self.assertTrue(check_image(filename))       
         self.assertTrue(pd.Series(outliers).isin(self.df.Well).all())
         self.assertTrue(len(outliers) < len(self.df.Well.unique()))
 
 
-    def test_find_all_outliers(self):
-        if not CI:
-            outliers,fig,ax = curveball.models.find_all_outliers(self.df, self.model_fit, PLOT=True)
-            func_name = sys._getframe().f_code.co_name
-            fig.savefig(func_name + ".png")
-        else:
-            outliers = curveball.models.find_all_outliers(self.df, self.model_fit, PLOT=False)
+    def test_find_all_outliers(self):        
+        outliers,fig,ax = curveball.models.find_all_outliers(self.df, self.model_fit, PLOT=True)
+        self.assertIsInstance(fig, matplotlib.figure.Figure)
+        filename = sys._getframe().f_code.co_name + ".png"
+        fig.savefig(filename)
+        self.assertTrue(check_image(filename))       
         self.assertIsNotNone(outliers)
         self.assertTrue(len(outliers) > 0)
         for v in outliers: self.assertTrue(len(v) > 0)
@@ -573,6 +619,40 @@ class SamplingTestCase(TestCase):
         sample_params = curveball.models.sample_params(model_fit, 100)
         self.assertIsNotNone(sample_params)
         self.assertEquals(sample_params.shape, (100, 3))
+
+
+class GuessTestCase(TestCase):
+    _multiprocess_can_split_ = True
+
+
+    def test_guess_nu_5(self):
+        df = randomize_data(baranyi_roberts_ode, t=np.linspace(0,32), nu=5.0, reps=1)
+        nu, fig, ax = curveball.models.guess_nu(t=df.Time, N=df.OD, PLOT=True, PRINT=False)
+        self.assertIsInstance(fig, matplotlib.figure.Figure)
+        filename = sys._getframe().f_code.co_name + ".png"
+        fig.savefig(filename)
+        self.assertTrue(check_image(filename))               
+        self.assertTrue(1 < nu < 10, 'nu={0}'.format(nu))
+
+
+    def test_guess_nu_1(self):
+        df = randomize_data(baranyi_roberts_ode, t=np.linspace(0,32), nu=1.0, reps=1)
+        nu, fig, ax = curveball.models.guess_nu(t=df.Time, N=df.OD, PLOT=True, PRINT=False)
+        self.assertIsInstance(fig, matplotlib.figure.Figure)
+        filename = sys._getframe().f_code.co_name + ".png"
+        fig.savefig(filename)
+        self.assertTrue(check_image(filename))               
+        self.assertTrue(0 < nu < 3, 'nu={0}'.format(nu))
+
+
+    def test_guess_nu_01(self):
+        df = randomize_data(baranyi_roberts_ode, t=np.linspace(0,32), nu=0.1, reps=1)
+        nu, fig, ax = curveball.models.guess_nu(t=df.Time, N=df.OD, PLOT=True, PRINT=False)
+        self.assertIsInstance(fig, matplotlib.figure.Figure)
+        filename = sys._getframe().f_code.co_name + ".png"
+        fig.savefig(filename)
+        self.assertTrue(check_image(filename))               
+        self.assertTrue(0 < nu < 1, 'nu={0}'.format(nu))
 
 
 class IssuesTestCase(TestCase):
@@ -598,12 +678,12 @@ class IssuesTestCase(TestCase):
         '''`Issue 22 <https://github.com/yoavram/curveball/issues/22>`_.
         '''
         df = randomize_data(baranyi_roberts_ode, t=np.linspace(0,48), nu=5.0)
-        if not CI:
-            models,fig,ax = curveball.models.fit_model(df, PLOT=True, PRINT=False)
-            func_name = sys._getframe().f_code.co_name
-            fig.savefig(func_name + ".png")
-        else:
-            models = curveball.models.fit_model(df, PLOT=False, PRINT=False)
+        
+        models,fig,ax = curveball.models.fit_model(df, PLOT=True, PRINT=False)
+        self.assertIsInstance(fig, matplotlib.figure.Figure)
+        filename = sys._getframe().f_code.co_name + ".png"
+        fig.savefig(filename)
+        self.assertTrue(check_image(filename))       
         self.assertTrue('nu' in models[0].best_values)
         nu = models[0].best_values['nu']
         self.assertTrue(1.0 < nu < 10.0, nu)

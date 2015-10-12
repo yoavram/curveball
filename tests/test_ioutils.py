@@ -77,5 +77,41 @@ class XMLTestCase(TestCase):
         self.assertEquals(df.columns.tolist() , ['OD', 'Well', 'Row', 'Col', 'Time', 'Filename', 'Strain', 'Color'])    
 
 
+class SunriseTestCase(TestCase):
+    def setUp(self):
+        self.filename = pkg_resources.resource_filename("data", "Sunrise_180515_0916.xlsx")
+        self.plate = pd.read_csv(pkg_resources.resource_filename("plate_templates", "G-RG-R.csv"))
+
+
+    def test_read_sunrise_xlsx(self):
+        df = curveball.ioutils.read_sunrise_xlsx(self.filename)
+        self.assertIsNotNone(df)
+        self.assertIsInstance(df, pd.DataFrame)
+        self.assertEquals(df.shape, (96, 8))
+        self.assertEquals(sorted(df.columns.tolist()) , sorted([u'Time', u'Well', u'OD', u'Row', u'Col', 'Strain', 'Color', 'Filename']))
+
+
+    def test_read_sunrise_xlsx_plate(self):
+        df = curveball.ioutils.read_sunrise_xlsx(self.filename, plate=self.plate)
+        self.assertIsNotNone(df)
+        self.assertIsInstance(df, pd.DataFrame)
+        self.assertEquals(df.shape, (96, 8))
+        self.assertEquals(sorted(df.columns.tolist()) , sorted([u'Time', u'Well', u'OD', u'Row', u'Col', 'Strain', 'Color', 'Filename']))
+
+
+class MatTestCase(TestCase):
+    def setUp(self):
+        self.filename = pkg_resources.resource_filename("data", "plate_9_OD.mat")
+        self.plate = pd.read_csv(pkg_resources.resource_filename("plate_templates", "checkerboard.csv"))
+
+
+    def test_read_tecan_mat(self):
+        df = curveball.ioutils.read_tecan_mat(self.filename, plate=self.plate)
+        self.assertIsNotNone(df)
+        self.assertIsInstance(df, pd.DataFrame)
+        self.assertEquals(df.shape, (2496, 8))
+        self.assertEquals(df.columns.tolist() , [u'Cycle Nr.', u'Time', u'Well', u'OD', u'Row', u'Col', 'Strain', 'Color'])
+
+
 if __name__ == '__main__':
     main()

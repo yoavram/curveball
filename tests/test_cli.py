@@ -151,6 +151,8 @@ class AnalysisTestCase(TestCase):
 	def setUp(self):
 		self.files = pkg_resources.resource_listdir('data', '')
 		self.files = [fn for fn in self.files if os.path.splitext(fn)[-1] in ['.xlsx', '.mat']]
+		self.files = [fn for fn in self.files if not fn.lower().startswith('sunrise')]
+		self.files.sort()
 		self.runner = CliRunner()
 		self.ctx = self.setup_with_context_manager(self.runner.isolated_filesystem())
 		self.dirpath = os.getcwd()
@@ -162,7 +164,7 @@ class AnalysisTestCase(TestCase):
 			shutil.copy(src, '.')
 			self.assertTrue(os.path.exists(os.path.join(self.dirpath, fn)))
 			self.assertTrue(os.path.isfile(os.path.join(self.dirpath, fn)))
-		self.filepath = os.path.join(self.dirpath, self.files[0])
+		self.filepath = os.path.join(self.dirpath, self.files[1])
 		
 
 	def tearDown(self):
@@ -193,6 +195,7 @@ class AnalysisTestCase(TestCase):
 			data = f.read()
 		self.assertTrue(is_csv(data))
 
+
 	# FIXME - fails on CI, succeeds on local
 	# def test_create_plots(self):
 	# 	result = self.runner.invoke(cli.cli, ['--plot', '--verbose', '--no-prompt', 'analyse', self.filepath, '--plate_file=G-RG-R.csv', '--ref_strain=G'])
@@ -203,11 +206,12 @@ class AnalysisTestCase(TestCase):
 
 
 	def test_process_folder(self):
-		result = self.runner.invoke(cli.cli, ['--no-plot', '--verbose', '--no-prompt', 
+		num_files = len(self.files)
+		result = self.runner.invoke(cli.cli, ['--no-plot', '--no-verbose', '--no-prompt', 
 			'analyse', self.dirpath, '--plate_file=G-RG-R.csv', '--ref_strain=G'])
 		self.assertEquals(result.exit_code, 0, result.output)		
 		lines = [line for line in result.output.splitlines() if len(line) > 0] 
-		num_lines = len(self.files) * 3 + 1
+		num_lines =  num_files * 3 + 1
 		data = os.linesep.join(lines[-num_lines:])
 		self.assertTrue(is_csv(data), result.output)
 		
