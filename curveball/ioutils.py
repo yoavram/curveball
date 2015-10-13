@@ -97,12 +97,23 @@ def read_tecan_xlsx(filename, label=u'OD', sheet=None, max_time=None, plate=None
                 if row[0].startswith(u'Date'):
                     if isinstance(row[1], string_types):
                         date = ''.join(row[1:])
-                        next_row = sh.row_values(i+1)                
-                        time = ''.join(next_row[1:])
+                        next_row = sh.row_values(i + 1)
+                        if next_row[0].startswith(u'Time'):
+                            time = ''.join(next_row[1:])
+                        else:
+                            warn(u"Warning: time row missing (sheet '{0}', row{1}), found row starting with {2}".format(sh.name, i, row[0]))
                         dateandtime = dateutil.parser.parse("%s %s" % (date, time))
+                    elif isinstance(row[1], float):
+                        date_tuple = xlrd.xldate_as_tuple(row[1], wb.datemode)
+                        next_row = sh.row_values(i + 1)
+                        if next_row[0].startswith(u'Time'):
+                            time = tuple(map(int, next_row[1].split(':')))[:3]
+                            date_tuple = date_tuple[:3] + time
+                        else:
+                            warn(u"Warning: time row missing (sheet '{0}', row{1}), found row starting with {2}".format(sh.name, i, row[0]))
+                        dateandtime = datetime.datetime(*date_tuple)
                     else:
-                        warn(u"Warning: date row contained non-string: {0} {1}".format(row[1], type(row[1])))
-
+                        warn(u"Warning: date row (sheet '{2}', row {3}) could not be parsed: {0} {1}".format(row[1], type(row[1]), sh.name, i))
                 if row[0] == lbl:
                     break
                 ## FOR row ENDS
@@ -140,7 +151,7 @@ def read_tecan_xlsx(filename, label=u'OD', sheet=None, max_time=None, plate=None
             df = pd.concat(sheet_dataframes)
 
         min_time = df.Time.min()
-        df.Time = [old_div((t - min_time).total_seconds(),3600.) for t in df.Time]
+        df.Time = [old_div((t - min_time).total_seconds(), 3600.) for t in df.Time]
         if not max_time is None:
             df = df[df.Time <= max_time]
         df.sort([u'Row', u'Col', u'Time'], inplace=True)
@@ -152,9 +163,9 @@ def read_tecan_xlsx(filename, label=u'OD', sheet=None, max_time=None, plate=None
         df = label_dataframes[0][1]
     else: # multiple dataframes, merge together
         # FIXME last label isn't used as a suffix, not sure why
-        lbl,df = label_dataframes[0]
+        lbl, df = label_dataframes[0]
         lbl = '_' + lbl
-        for lbli,dfi in label_dataframes[1:]:
+        for lbli, dfi in label_dataframes[1:]:
             lbli = '_' + lbli
             df = pd.merge(df, dfi, on=(u'Cycle Nr.', u'Well', u'Row', u'Col'), suffixes=(lbl,lbli))
     if plate is None:
