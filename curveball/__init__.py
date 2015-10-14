@@ -10,8 +10,9 @@
 
 from __future__ import absolute_import
 from .version import __version__  # NOQA
-from .version import __license__  
 from . import ioutils
 from . import plots
 from . import models
 from . import competitions
+
+__license__ = u'MIT'

@@ -9,26 +9,16 @@
 # Copyright (c) 2015, Yoav Ram <yoav@yoavram.com>
 
 from setuptools import setup, find_packages
-from curveball import __version__
 import os
 
-tests_require = [
-    'mock',
-    'nose',
-    'coverage',
-    'yanc',
-    'tox',
-    'ipdb',
-    'coveralls',
-    'sphinx',
-]
-
 if os.path.exists('README.rst'):
-    f = open('README.rst')
+    with open('README.rst') as f:
+        README = f.read()
 else:
-    f = open('README.md')
-README = f.read()
-f.close()
+    with open('README.md') as f:
+        README = f.read()
+
+__version__ = u'0.1.8'  # NOQA
 
 setup(
     name='curveball',
@@ -60,10 +50,30 @@ setup(
     install_requires=[
         # add your dependencies here
         # remember to use 'package-name>=x.y.z,<x.y+1.0' notation (this way you get bugfixes)
-        'Click',
+        # click, numpy, scipy, pyparsing, pytz, six, python-dateutil, matplotlib, pandas, statsmodels, lxml, seaborn, sympy, xlrd, future, lmfit
+        'future',
+        'click',
+        'python-dateutil',
+        'lxml',
+        'xlrd',
+        'numpy',
+        'scipy',
+        'matplotlib',
+        'pandas',
+        'seaborn',
+        'statsmodels',
+        'sympy',
+        'lmfit>=0.9.0',
     ],
     extras_require={
-        'tests': tests_require,
+        'tests': [
+            'nose',
+            'coverage',
+            'pillow'
+        ],
+        'docs': [
+            'sphinx>=1.3.0'
+        ]
     },
     entry_points={
         'console_scripts': [
