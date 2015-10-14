@@ -9,8 +9,12 @@
 # Copyright (c) 2015, Yoav Ram <yoav@yoavram.com>
 
 from __future__ import absolute_import
-from .version import __version__  # NOQA
-from .version import __license__  
+
+__license__ = u'MIT'
+from ._version import get_versions
+__version__ = get_versions()['version']
+del get_versions
+
 from . import ioutils
 from . import plots
 from . import models
