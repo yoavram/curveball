@@ -10,19 +10,15 @@
 
 from setuptools import setup, find_packages
 import os
+import versioneer
 
-if os.path.exists('README.rst'):
-    with open('README.rst') as f:
-        README = f.read()
-else:
-    with open('README.md') as f:
-        README = f.read()
-
-__version__ = u'0.1.8'  # NOQA
+with open('README.md') as f:
+    README = f.read()
 
 setup(
     name='curveball',
-    version=__version__,
+    version=versioneer.get_version(),
+    cmdclass=versioneer.get_cmdclass(),
     description='Predicting competition results from growth curves',
     long_description=README,
     keywords='microbiology biomath evolution',
