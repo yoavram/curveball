@@ -30,7 +30,7 @@ install:
 
 # Run test
 script:  
-  - nosetests tests --with-coverage --cover-package=curveball --cover-inclusive --cover-html --cover-html-dir=coverage_report
+  - nosetests tests --with-coverage --cover-package=curveball
 
 # Code coverage
 after_success:
