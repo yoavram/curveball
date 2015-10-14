@@ -5,6 +5,11 @@
 
 Curveball: Predicting competition results from growth curves
 ============================================================
+
+|Latest Version| |Supported Python versions| |PyPI| |Build Status|
+|Docs| |codecov.io| |Join the chat at
+https://gitter.im/yoavram/curveball|
+
 **Author**: `Yoav Ram <http://www.yoavram.com>`_
 
 Curveball is an open source software for analysis and 
@@ -70,7 +75,9 @@ Resources:
 * Source code: `GitHub  <https://github.com/yoavram/curveball>`_
 * Comments or questions: `Gitter <https://gitter.im/yoavram/curveball>`_, `Twitter <https://twitter.com/yoavram>`_, `Email <mailto:yoav@yoavram.com>`_
 * Bugs & feature requests: `GitHub Issues <https://github.com/yoavram/curveball/issues>`_
-* `Change log <https://github.com/yoavram/curveball/tree/master>`_
+* Buildbot: `Travis-CI <https://magnum.travis-ci.com/yoavram/curveball>`_
+* Code coverage: `Codecov <http://codecov.io/github/yoavram/curveball>`_
+* `Change log <https://github.com/yoavram/curveball/tree/master/CHANGELOG.md>`_
 * `Contributing <https://github.com/yoavram/curveball/blob/master/CONTRIBUTING.md>`_
 
 .. note::
@@ -78,5 +85,20 @@ Resources:
    Curveball source code and examples are licensed under the terms of the `MIT license <http://opensource.org/licenses/MIT>`_.
    
    Curveball documentation, examples, and other materials are licensed under the terms of the `Attribution 4.0 International (CC BY 4.0) license <https://creativecommons.org/licenses/by/4.0/>`_.
+
+.. |Latest Version| image:: https://img.shields.io/pypi/v/curveball.svg
+   :target: https://pypi.python.org/pypi/curveball/
+.. |Supported Python versions| image:: https://img.shields.io/pypi/pyversions/curveball.svg
+   :target: https://pypi.python.org/pypi/curveball/
+.. |PyPI| image:: https://img.shields.io/pypi/l/curveball.svg
+   :target: https://github.com/yoavram/curveball/blob/master/LICENCE.txt
+.. |Build Status| image:: https://magnum.travis-ci.com/yoavram/curveball.svg?token=jdWtkbZwtnsj5TaFxVKJ&branch=travis
+   :target: https://magnum.travis-ci.com/yoavram/curveball
+.. |Docs| image:: https://img.shields.io/badge/docs-latest-yellow.svg
+   :target: https://curveball.divshot.io
+.. |codecov.io| image:: http://codecov.io/github/yoavram/curveball/coverage.svg?branch=master&token=PV0HysT5gx
+   :target: http://codecov.io/github/yoavram/curveball?branch=master
+.. |Join the chat at https://gitter.im/yoavram/curveball| image:: https://badges.gitter.im/Join%20Chat.svg
+   :target: https://gitter.im/yoavram/curveball?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge
 
 Logo `designed by Freepik <http://www.freepik.com/free-vector/ball-of-wool_762106.htm>`_.
