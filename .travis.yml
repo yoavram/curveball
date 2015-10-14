@@ -25,11 +25,8 @@ before_install:
 
 # Install packages
 install:
-  - conda install --yes python=$TRAVIS_PYTHON_VERSION requests pip atlas numpy scipy matplotlib nose dateutil pandas statsmodels coverage lxml seaborn sympy xlrd pillow
-  - pip install sphinx
-  - pip install lmfit===0.9.0
-  - pip install future
-  - python setup.py install
+  - conda install --yes python=$TRAVIS_PYTHON_VERSION requests pip atlas numpy scipy matplotlib dateutil pandas statsmodels lxml seaborn sympy xlrd
+  - pip install .[docs,tests]
 
 # Run test
 script:  
