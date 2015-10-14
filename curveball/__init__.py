@@ -20,7 +20,7 @@ from . import plots
 from . import models
 from . import competitions
 
-__citation_bibtex__ = """@article{
+__citation_bibtex__ = u"""@article{
 Ram2015,
 author = {Ram, Yoav and Dellus-Gur, Eynat and Obolski, Uri and Bibi, Maayan and Berman, Judith and Hadany, Lilach},
 doi = {10.1101/022640},						
