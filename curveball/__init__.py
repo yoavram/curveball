@@ -19,3 +19,17 @@ from . import ioutils
 from . import plots
 from . import models
 from . import competitions
+
+__citation_bibtex__ = u"""@article{
+Ram2015,
+author = {Ram, Yoav and Dellus-Gur, Eynat and Obolski, Uri and Bibi, Maayan and Berman, Judith and Hadany, Lilach},
+doi = {10.1101/022640},						
+journal = {bioRxiv},
+keywords = {experimental,fitness,mathematical model,selection coefficient},
+month = jul,
+title = {{Predicting competition results from growth curves}},
+url = {http://biorxiv.org/lookup/doi/10.1101/022640},
+year = {2015}
+}"""
+__citation__ = u'Ram, Yoav, Eynat Dellus-Gur, Uri Obolski, Maayan Bibi, Judith Berman, and Lilach Hadany. 2015. "Predicting Competition Results from Growth Curves." bioRxiv (July 23). doi:10.1101/022640.'
+
