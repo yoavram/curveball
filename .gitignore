@@ -28,6 +28,7 @@ var/
 *.egg-info/
 .installed.cfg
 *.egg
+conda-build/
 
 # Installer logs
 pip-log.txt
@@ -77,8 +78,7 @@ notebooks/*.png
 notebooks/Untitled*.ipynb
 
 # secret
-.wercker.token
-.github.token
+.*.token
 
 # divshot
 .divshot-cache
