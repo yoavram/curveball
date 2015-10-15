@@ -10,7 +10,7 @@ on the different operating systems.
 Dependencies
 ------------
 
--  Python 2.7.x (2.6.x might work, 3.x to be supported soon)
+-  Python 3.4 and 2.7
 -  numpy
 -  scipy
 -  pandas
@@ -22,36 +22,34 @@ Dependencies
 -  xlrd
 -  lxml
 -  click
+-  future
+-  dateutil
+        
 
 Users
-------------
+-----
 
-The recommended way to install the dependencies is to download and
-install `Anaconda <https://www.continuum.io/downloads>`_, available for
-Windows, OS X, and Linux.
+The recommended way to install the dependencies is to download and install 
+`Anaconda <https://www.continuum.io/downloads>`_ (Python 3.4 or 2.7),
+available for free on Windows, OS X, and Linux.
 
 After installing Anaconda, open a terminal or command line, and write the following commands to install the dependencies:
 
->>> conda update conda --yes
->>> conda install --yes requests pip numpy scipy matplotlib dateutil pandas statsmodels lxml seaborn sympy xlrd
->>> pip install lmfit
+>>> conda update --yes conda pip
+>>> conda install -c yoavram --yes requests numpy scipy matplotlib dateutil pandas statsmodels lxml seaborn sympy xlrd lmfit
 
-Then install Curveball (from `PyPi <https://pypi.python.org/pypi/curveball/>`_):
+Then install the latest release of Curveball (from `TestPyPi <https://testpypi.python.org/pypi/curveball/>`_):
 
->>> pip install -i https://testpypi.python.org/pypi curveball
+>>> pip install --extra-index-url https://testpypi.python.org/pypi curveball
 
 
-.. note::
+.. tip::
 
-	Another way to install Curveball is directly from `GitHub <https://github.com/yoavram/curveball>`_:
+	To open a command line (or terminal) in:
 
-	>>> pip install git+https://github.com/yoavram/curveball.git
-
-	or with a zip-file of Curveball, by running:
-
-	>>> pip install <zip-file>
-
-	replacing ``<zip-file>`` with the path to the zip-file.
+	- **Windows**: click the *Start* button, type :command:`cmd.exe` and click *Enter*.
+	- **Linux**: click *Ctrl-T*.
+  	- **OS X**: search for :command:`terminal` in *Spotlight*.
 
 
 Verify installation
@@ -65,55 +63,57 @@ curveball, version x.x.x
 where ``x.x.x`` will be replaced by the current version number (|release|).
 
 
-.. note::
-
-	To open a command line (or terminal) in:
-
-	- **Windows**: click the *Start* button, type :command:`cmd.exe` and click *Enter*.
-	- **Linux**: click *Ctrl-T*.
-  	- **OS X**: search for :command:`terminal` in *Spotlight*.
-
-
 Updating
 ^^^^^^^^
 
-To update the depndencies installed with :command:`conda`, run:
+To update Curveball:
+
+>>> pip install --upgrade --extra-index-url https://testpypi.python.org/pypi curveball
+
+To update depndencies installed with :command:`conda`, run:
 
 >>> conda update <package-name>
 
 replacing ``<package-name>`` with the name of the package you wish to update.
 
-To update the packages installed with :command:`pip`:
+To update dependencies installed with :command:`pip`:
 
 >>> pip install --upgrade <package-name>
 
-To update Curveball:
-
->>> pip install --upgrade curveball
 
 Dependencies versions
 ^^^^^^^^^^^^^^^^^^^^^
 
-The versions of the dependencies used to develop Curveball are documented in the `conda environment
-file <https://github.com/yoavram/curveball/blob/master/environment.yml>`_.
+The versions of the dependencies used to develop Curveball are documented in the `conda environment file <https://github.com/yoavram/curveball/blob/master/environment.yml>`_.
 However, this file includes packages that are not required for *running* Curveball.
 Some packages are required to test Curveball and build the documents: for example, `nose`, `coverage`, and `sphinx`.
 
-Note on :command:`conda` and :command:`pip`
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-The same installation can be achieved using :command:`pip` instead of :command:`pip`, 
-but on Windows and sometimes Linux and OS X, too, it is easier to use conda. 
-Therefore, a :file:`requirements.txt` file is not provided.
-
 Developers
---------------
+----------
 
-Follow the `.travis.yml <https://github.com/yoavram/curveball/blob/master/.travis.yml>`_
-file for a description of how to install Curveball and all the dependencies 
-(including those required to test and build the docs) and how to run the tests using :command:`nosetests`.
+Follow the `.travis.yml <https://github.com/yoavram/curveball/blob/master/.travis.yml>`_ file 
+for a description of how to install Curveball and all the dependencies
+(including those required to test and build the docs), how to run the tests using :command:`nosetests`, 
+and how to build and deploy the package and the docs. 
+Replace ``$TRAVIS_PYTHON_VERSION`` with the Python version you want (probably ``3.4`` or ``2.7``).
 
-Replace ``$TRAVIS_PYTHON_VERSION`` with the Python version you want (probably ``2.7.10``).
+.. note::
+
+	Another way to install Curveball is directly from `GitHub <https://github.com/yoavram/curveball>`_:
+
+	>>> pip install git+https://github.com/yoavram/curveball.git
+
+	or with a zip-file of Curveball, by running:
+
+	>>> pip install <zip-file>
+
+	replacing ``<zip-file>`` with the path to the zip-file.
+
+	The dependencies can be installed using :command:`pip` instead of :command:`conda`,
+	in which case there is no need to install Anaconda but rather just a regular `Python <https://python.org/downloads>`_ distribution,
+	and there is no need to explicitly install the dependencies because :command:`pip` will do that on its own.
+	**But** on Windows and sometimes Linux and OS X, too, it is easier to install the scientific dependencies (`numpy` *et al.*) with :command:`conda`. 
+
 
 Contributing
 ^^^^^^^^^^^^
