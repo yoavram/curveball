@@ -20,25 +20,31 @@ before_install:
   - chmod +x miniconda.sh
   - ./miniconda.sh -b
   - export PATH=/home/travis/miniconda/bin:$PATH
-  - conda update --yes conda
+  - conda update --yes -q conda
+  - conda config --add channels yoavram
+  - conda config --set always_yes true
+  - conda config --set anaconda_upload no
   - pip install codecov
 
 # Install packages
 install:
-  - conda install --yes python=$TRAVIS_PYTHON_VERSION requests pip atlas numpy scipy matplotlib dateutil pandas statsmodels lxml seaborn sympy xlrd
-  - pip install .[docs,tests]
+  - conda install -q python=$TRAVIS_PYTHON_VERSION pip requests conda-build jinja2 anaconda-client atlas numpy scipy matplotlib dateutil pandas statsmodels lxml seaborn sympy xlrd lmfit coverage nose pillow sphinx
+  - conda build conda-recipe
+  - conda install --use-local curveball
 
 # Run test
 script:  
   - nosetests tests --with-coverage --cover-package=curveball
 
-# Code coverage
 after_success:
+# Code coverage
   - codecov --token=$CODECOV_TOKEN
+# Deploy to Anaconda.org (conditions inside script)
+  - chmod +x ./deploy_anaconda.sh
 
-# Build docs
 before_deploy:
-  - cd docs 
+# Build docs
+  - cd docs
   - make html
   - cd ..
 
@@ -54,13 +60,22 @@ deploy:
     skip_cleanup: true
 
 # Deploy package to PyPi
-  - provider: pypi
-    user: yoavram
-    password:
-      secure: tnLc3jwANjMK+IAWEhdD2vpIzcRm5TdrK/xykh4uIovCumKTNlEUK9LrsahMxgVOkmnC4ci2phIPz1udZkHq+ICzZ8C6IlaYvhAbrKbU5FxrSbmxBdu8tilxXIMn1pmzG4yqrgdl1GQ4X/IRqYhX71O2bEUpHXlXztTLC/WSKA7onmIHFn1oCmAGq32wo2KzSRPDgkkZfDyVZshB2mTluNdXsBuImvokEU3ubNunTF7y4jSrzAwbEHgcRHyTzGDJXlnhcrWz/a+0Lttt2HmlsQpJX6GltCDnX/V8us23wj38P5e2u0D0dJ7ND3k99GY2NCkUxGXp4prikdrGdJLWdZQJ2p3Io6z9KhSQsirQPmLAry/MBbZHIvS1q8Bq4jqdCukdtXbVfkAgWOtvqsV+C5x0FtCIx0+1PTgKgvwcQwqCtGMuIhDsu65/niGGaETNxQ6/Dab1mgtT634BdPjKed4daA1evM5cQBnGt/eh62SnW5CQBpykN6w9xj4TtywTTvv8TIyr9h7geaxIT5IHWBfTWzh5IYRpj3ic41gykv8SFidpjZcxyAABOjtXtABhGVBSd8OENJEyM5y4KQhpj/Q/CdZYBoDNEf/u1UBKwhJkU1xXjWNrlqhvBZgSwqTcY4sLMdDM37FNtDEjhXtFvfb2NfBsW0IOlzwXTasdhjU=
+  # - provider: pypi
+  #   user: yoavram
+  #   password:
+  #     secure: tnLc3jwANjMK+IAWEhdD2vpIzcRm5TdrK/xykh4uIovCumKTNlEUK9LrsahMxgVOkmnC4ci2phIPz1udZkHq+ICzZ8C6IlaYvhAbrKbU5FxrSbmxBdu8tilxXIMn1pmzG4yqrgdl1GQ4X/IRqYhX71O2bEUpHXlXztTLC/WSKA7onmIHFn1oCmAGq32wo2KzSRPDgkkZfDyVZshB2mTluNdXsBuImvokEU3ubNunTF7y4jSrzAwbEHgcRHyTzGDJXlnhcrWz/a+0Lttt2HmlsQpJX6GltCDnX/V8us23wj38P5e2u0D0dJ7ND3k99GY2NCkUxGXp4prikdrGdJLWdZQJ2p3Io6z9KhSQsirQPmLAry/MBbZHIvS1q8Bq4jqdCukdtXbVfkAgWOtvqsV+C5x0FtCIx0+1PTgKgvwcQwqCtGMuIhDsu65/niGGaETNxQ6/Dab1mgtT634BdPjKed4daA1evM5cQBnGt/eh62SnW5CQBpykN6w9xj4TtywTTvv8TIyr9h7geaxIT5IHWBfTWzh5IYRpj3ic41gykv8SFidpjZcxyAABOjtXtABhGVBSd8OENJEyM5y4KQhpj/Q/CdZYBoDNEf/u1UBKwhJkU1xXjWNrlqhvBZgSwqTcY4sLMdDM37FNtDEjhXtFvfb2NfBsW0IOlzwXTasdhjU=
+  #   on:
+  #     tags: true
+  #     repo: yoavram/curveball
+  #     branch: master
+  #   server: https://testpypi.python.org/pypi
+  #   skip_cleanup: true
+
+ # Deploy to Anaconda.org
+  - provider: script
+    script: ./deploy_anaconda.sh
     on:
       tags: true
       repo: yoavram/curveball
       branch: master
-    server: https://testpypi.python.org/pypi
     skip_cleanup: true
