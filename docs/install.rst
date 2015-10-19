@@ -24,7 +24,14 @@ Dependencies
 -  click
 -  future
 -  dateutil
-        
+       
+
+.. hint::
+
+	The minimal debian (**Ubuntu**, etc.) dependencies for Anaconda are:
+
+	>>> apt-get install libsm6 libxrender1 libfontconfig1
+
 
 Users
 -----

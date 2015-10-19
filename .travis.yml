@@ -33,7 +33,8 @@ install:
   - conda install --use-local curveball
 
 # Run test
-script:  
+script:
+  - curveball --version
   - nosetests tests --with-coverage --cover-package=curveball
 
 after_success:
