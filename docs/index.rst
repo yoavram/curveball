@@ -6,9 +6,8 @@
 Curveball: Predicting competition results from growth curves
 ============================================================
 
-|Latest Version| |Supported Python versions| |PyPI| |Build Status|
-|Docs| |codecov.io| |Join the chat at
-https://gitter.im/yoavram/curveball|
+|Anaconda| |Install| |Supported Python versions| |License| 
+|Build Status| |Docs| |codecov.io| |Join the chat at https://gitter.im/yoavram/curveball|
 
 **Author**: `Yoav Ram <http://www.yoavram.com>`_
 
@@ -35,9 +34,6 @@ that can directly work with collections of growth curve measurements (e.g., 96-w
 **No programmings skills** are required for using the CLI; 
 basic familiarity with the **Python programming language** is recommended for using the API.
 
-Proceed to the :doc:`Installation instructions <install>` and then to the :doc:`tutorial`.
-
-
 .. note::
    
    This documentation provides technical details on using Curveball.
@@ -46,6 +42,17 @@ Proceed to the :doc:`Installation instructions <install>` and then to the :doc:`
    .. pull-quote::
 
       Ram et al. 2015. `Predicting competition results from growth curves <https://dx.doi.org/10.1101/022640>`_. *bioRxiv*. doi:10.1101/022640.
+
+
+Quickstart
+----------
+
+Install `Anaconda <https://www.continuum.io/downloads>`_, then run:
+
+>>> conda install -c https://conda.anaconda.org/t/yo-766bbd1c-8edd-4b45-abea-85cf58129278/yoavram curveball 
+>>> curveball --help
+
+For more detailed instructions, Proceed to the :doc:`Installation instructions <install>` and then to the :doc:`tutorial`.
 
 
 Contents:
@@ -71,7 +78,7 @@ API
 Resources:
 ----------
 
-* Documentation: `Read the docs <http://curveball.rtfd.org/>`_
+* `Documentation <https://curveball.divshot.io>`_
 * Source code: `GitHub  <https://github.com/yoavram/curveball>`_
 * Comments or questions: `Gitter <https://gitter.im/yoavram/curveball>`_, `Twitter <https://twitter.com/yoavram>`_, `Email <mailto:yoav@yoavram.com>`_
 * Bugs & feature requests: `GitHub Issues <https://github.com/yoavram/curveball/issues>`_
@@ -86,11 +93,13 @@ Resources:
    
    Curveball documentation, examples, and other materials are licensed under the terms of the `Attribution 4.0 International (CC BY 4.0) license <https://creativecommons.org/licenses/by/4.0/>`_.
 
-.. |Latest Version| image:: https://img.shields.io/pypi/v/curveball.svg
-   :target: https://pypi.python.org/pypi/curveball/
+.. |Anaconda| image:: https://anaconda.org/yoavram/curveball/badges/version.svg   
+   :target: https://anaconda.org/yoavram/curveball
+.. |Install| image:: https://anaconda.org/yoavram/curveball/badges/installer/conda.svg   
+   :target: https://anaconda.org/yoavram/curveball
 .. |Supported Python versions| image:: https://img.shields.io/pypi/pyversions/curveball.svg
-   :target: https://pypi.python.org/pypi/curveball/
-.. |PyPI| image:: https://img.shields.io/pypi/l/curveball.svg
+   :target: https://anaconda.org/yoavram/curveball
+.. |License| image:: https://anaconda.org/yoavram/curveball/badges/license.svg
    :target: https://github.com/yoavram/curveball/blob/master/LICENCE.txt
 .. |Build Status| image:: https://magnum.travis-ci.com/yoavram/curveball.svg?token=jdWtkbZwtnsj5TaFxVKJ&branch=travis
    :target: https://magnum.travis-ci.com/yoavram/curveball
