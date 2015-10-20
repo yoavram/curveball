@@ -21,6 +21,7 @@ import curveball
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #sys.path.insert(0, os.path.abspath('.'))
+sys.path.insert(0, os.path.abspath('_ext'))
 
 # -- General configuration ------------------------------------------------
 
@@ -37,6 +38,7 @@ extensions = [
     'sphinx.ext.mathjax',
     'sphinx.ext.viewcode',
     'sphinx.ext.napoleon', # http://sphinx-doc.org/ext/napoleon.html
+    'edit_on_github', # https://gist.github.com/MantasVaitkunas/7c16de233812adcb7028#file-edit_on_github-py-L38-L43
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -385,3 +387,7 @@ intersphinx_mapping = {
 
 # Napoleon settings
 napoleon_numpy_docstring = True
+
+# Edit on GitHub - https://gist.github.com/MantasVaitkunas/7c16de233812adcb7028#file-edit_on_github-py-L38-L43
+edit_on_github_project = 'yoavram/curveball'
+edit_on_github_branch = 'master'
