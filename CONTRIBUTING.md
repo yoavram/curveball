@@ -177,6 +177,7 @@ Call `git log` to see all the commit logs and edit `CHANGELOG.md`.
 
 This is done by tagging a commit with a new version number which must conform to PEP440 (v#.#.#).
 No change in the code itself is required as everything is handled by [versioneer](https://github.com/warner/python-versioneer).
+**NOTE**: make sure the last commit didn't have `[skip ci]` in the message!.
 
 ```
 git tag v#.#.#
