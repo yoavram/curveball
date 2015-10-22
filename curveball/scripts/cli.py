@@ -310,6 +310,9 @@ def _process_file(filepath, plate, blank_strain, ref_strain, max_time):
 			res['strain'] = strain
 			res['model'] = fit.model.name
 			res['RSS'] = fit.chisqr
+			res['RMSD'] = np.sqrt(res['RSS'] / fit.ndata)
+			res['NRMSD'] = res['RMSD'] / (strain_df.OD.max() - strain_df.OD.min())
+			res['CV(RMSD)'] = res['RMSD'] / (strain_df.OD.mean())
 			res['bic'] = fit.bic
 			res['aic'] = fit.aic
 			res['benchmark'] = curveball.models.benchmark(fit_results)
