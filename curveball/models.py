@@ -1183,7 +1183,8 @@ def fit_model(df, ax=None, param_guess=None, param_max=None, use_weights=True, u
     # Run Baranyi-Roberts once just to make a guess for q0 and v
     params = baranyi_roberts_model.make_params(y0=y0guess, K=Kguess, r=rguess, nu=nuguess, q0=q0guess, v=vguess)
     for p,m in list(param_max.items()):
-        params[p].set(max=m)
+        if p in params:
+            params[p].set(max=m)
     params['y0'].set(vary=False)
     params['K'].set(vary=False)
     params['r'].set(vary=False)
@@ -1199,7 +1200,8 @@ def fit_model(df, ax=None, param_guess=None, param_max=None, use_weights=True, u
     # Baranyi-Roberts = Richards /w lag (6 params)
     params = baranyi_roberts_model.make_params(y0=y0guess, K=Kguess, r=rguess, nu=nuguess, q0=q0guess, v=vguess)
     for p,m in list(param_max.items()):
-        params[p].set(max=m)
+        if p in params:
+            params[p].set(max=m)
     params['y0'].set(min=1e-4)
     params['K'].set(min=1e-4)
     params['r'].set(min=1e-4)
@@ -1224,7 +1226,8 @@ def fit_model(df, ax=None, param_guess=None, param_max=None, use_weights=True, u
     # Richards = Baranyi-Roberts /wout lag (4 params)
     params = richards_model.make_params(y0=y0guess, K=Kguess, r=rguess, nu=nuguess)
     for p,m in list(param_max.items()):
-        params[p].set(max=m)
+        if p in params:
+            params[p].set(max=m)
     params['y0'].set(min=1e-4)
     params['K'].set(min=1e-4)
     params['r'].set(min=1e-4)
@@ -1235,6 +1238,9 @@ def fit_model(df, ax=None, param_guess=None, param_max=None, use_weights=True, u
 
     # Logistic = Richards /w nu=1 (3 params)
     params = logistic_model.make_params(y0=y0guess, K=Kguess, r=rguess2)
+    for p,m in list(param_max.items()):
+        if p in params:
+            params[p].set(max=m)    
     params['y0'].set(min=1e-4)
     params['K'].set(min=1e-4)
     params['r'].set(min=1e-4)
