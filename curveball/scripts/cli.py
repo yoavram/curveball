@@ -149,6 +149,9 @@ def cli(verbose, plot, prompt, where):
 		click.secho('=' * 40, fg='cyan')
 		click.secho('Curveball %s' % curveball.__version__, fg='cyan')
 		click.secho('=' * 40, fg='cyan')
+	else:
+		import warnings
+		warnings.simplefilter(action = "ignore", category = FutureWarning)
 
 
 @click.option('--plate_folder', default='plate_templates', help='plate templates default folder', type=click.Path())
