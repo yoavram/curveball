@@ -161,11 +161,17 @@ The release process includes several stages:
 
 - review changes
 - test locally or using continuous integration
+- adding the changes to the change log
 - declaring a new version
 - building and deploying the package to a pacakge index
 - building and deploying the documentation
 
 A more elaborate scheme can be found [here](https://khmer.readthedocs.org/en/v1.1/release.html).
+
+#### Adding changes to the change log
+
+Before delcaring a new verison you should describe the changes made since the last version.
+Call `git log` to see all the commit logs and edit `CHANGELOG.md`.
 
 #### Declaring a new version
 
