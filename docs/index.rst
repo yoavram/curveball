@@ -69,11 +69,13 @@ Contents:
    competitions
    cli
 
+
 API
 ---
 
 * :ref:`genindex`
 * :ref:`modindex`
+
 
 Resources:
 ----------
@@ -86,6 +88,20 @@ Resources:
 * Code coverage: `Codecov <http://codecov.io/github/yoavram/curveball>`_
 * `Change log <https://github.com/yoavram/curveball/tree/master/CHANGELOG.md>`_
 * `Contributing <https://github.com/yoavram/curveball/blob/master/CONTRIBUTING.md>`_
+
+
+Contributing
+------------
+
+Please do! We encourage contributions, both to the documentation - 
+from new sections and examples to typo fixes and rephrasing - 
+and to the source code - 
+from new file format parser to new growth and competition models.
+
+Please see the `guidelines for contributing <https://github.com/yoavram/curveball/blob/master/CONTRIBUTING.md>`_
+for instructions and best practices and feel free to contact me via 
+`Email <mailto:yoav@yoavram.com>`_, `Twitter <https://twitter.com/yoavram>`_, and `Gitter <https://gitter.im/yoavram/curveball>`_
+
 
 .. note::
    

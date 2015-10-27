@@ -74,19 +74,35 @@ To update Curveball:
 
 
 Dependencies versions
-^^^^^^^^^^^^^^^^^^^^^
+---------------------
 
 The versions of the dependencies used to develop Curveball are documented in the `conda environment file <https://github.com/yoavram/curveball/blob/master/environment.yml>`_.
 
 
-Contributing
-^^^^^^^^^^^^
+Installing on Linux servers and clusters
+----------------------------------------
 
-Please do! We encourage contributions, both to the documentation - 
-from new sections and examples to typo fixes and rephrasing - 
-and to the source code - 
-from new file format parser to new growth and competition models.
+The following method **does not** require :command:`sudo` permissions and is suitable for installing Curveball on remote Linux machines using the terminal.
+We install a minimal Anaconda distribution (a.k.a *miniconda*) and then install Curveball and its dependencies.
 
-Please see the `guidelines for contributing <https://github.com/yoavram/curveball/blob/master/CONTRIBUTING.md>`_
-for instructions and best practices and feel free to contact me via 
-`Email <mailto:yoav@yoavram.com>`_, `Twitter <https://twitter.com/yoavram>`_, and `Gitter <https://gitter.im/yoavram/curveball>`_
+>>> wget http://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh
+>>> chmod +x miniconda.sh
+>>> ./miniconda.sh -b
+>>> export PATH=$HOME/miniconda3/bin:$PATH
+>>> conda update conda --yes
+>>> conda config --add channels https://conda.anaconda.org/t/yo-766bbd1c-8edd-4b45-abea-85cf58129278/yoavram
+>>> conda install curveball --yes
+>>> curveball --where
+$HOME/miniconda3/lib/python3.4/site-packages/curveball
+
+where the ``$HOME`` will be replaced by the path to your home folder (and possibly with a different Python version specifier if you chose to install Python 2.7).
+
+.. tip::
+
+	- If you prefer Python 2.7 over 3.4, change ``Miniconda3`` to ``Miniconda`` in the 1st command and ``miniconda3`` to ``miniconda`` in the 4th line.
+	- On some machines you will need to replace ``export PATH=...`` with ``setenv PATH ...``, depending on your shell.
+	- You might want to add the 4th command to your :file:`.profile` or :file:`.bashrc` file so that you will always use the installed Python distribution instead of any other pre-installed Python. Otherwise, you will need to run this command on every new session.
+	- If you're not sure that you are using the Python installation that has Curveball, type ``which python``, it should give you ``$HOME/miniconda3/bin/python``.
+	- If you use Curveball in a Python script on the remote Linux machine and get a runtime error about an ``Invalid DISPLAY variable``, then add these lines the top of your script (this will change :py:mod:`matplotlib`'s default plotting backend):
+	>>> import matplotlib
+	>>> matplotlib.use("Agg")
