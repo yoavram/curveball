@@ -10,6 +10,7 @@
 from __future__ import division
 from builtins import range
 from past.utils import old_div
+import warnings
 import curveball
 import numpy as np
 import matplotlib.pyplot as plt
@@ -183,8 +184,10 @@ def compete(m1, m2, y0=None, hours=24, nsamples=1, lag_phase=True, ode=double_ba
 	if nsamples > 1:
 		m1_samples = curveball.models.sample_params(m1, nsamples)
 		m2_samples = curveball.models.sample_params(m2, nsamples)
-		# TODO 
-		nsamples = min(len(m1_samples), len(m2_samples))
+		min_nsamples = min(len(m1_samples), len(m2_samples))
+		if nsamples > min_nsamples:
+			warnings.warn("{0} resamples lost".format(nsamples - min_nsamples))
+			nsamples = min_nsamples
 	else:
 		nsamples = 1
 		m1_samples = pd.DataFrame([m1.best_values])
