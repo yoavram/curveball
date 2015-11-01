@@ -201,7 +201,7 @@ def baranyi_roberts_function(t, y0, r, K, nu, q0, v):
     return old_div(K, ((1 - (1 - (old_div(K,y0))**nu) * np.exp( -r * nu * At ))**(old_div(1.,nu))))
 
 
-def sample_params(model_fit, nsamples):
+def sample_params(model_fit, nsamples, params=None, covar=None):
     """Random sample of parameter values from a truncated multivariate normal distribution defined by the 
     covariance matrix of the a model fitting result.
 
@@ -211,19 +211,34 @@ def sample_params(model_fit, nsamples):
         the model fit that defines the sampled distribution
     nsamples : int
         number of samples to make
+    params: dict, optional
+        a dictionary of model parameter values; if given, overrides values from `model_fit`
+    covar: numpy.ndarray, optional
+        an array containing the parameters covariance matrix; if given, overrides values from `model_fit`
+    
 
     Returns
     -------
     pandas.DataFrame
         data frame of samples; each row is a sample, each column is a parameter.
-    """
-    names = [p.name for p in list(model_fit.params.values()) if p.vary]
-    means = [p.value for p in list(model_fit.params.values()) if p.vary]
-    cov = model_fit.covar
-    param_samples = np.random.multivariate_normal(means, cov, nsamples)
+    """        
+    if params is None:
+        params = model_fit.params
+    else:
+        _params = copy.copy(model_fit.params)
+        for pname, pvalue in params.items():
+            _params[pname].value = pvalue
+        params = _params
+    if covar is None:
+        covar = model_fit.covar
+
+    names = [p.name for p in list(params.values()) if p.vary]
+    means = [p.value for p in list(params.values()) if p.vary]
+    
+    param_samples = np.random.multivariate_normal(means, covar, nsamples)
     param_samples = pd.DataFrame(param_samples, columns=names)
     idx = np.zeros(nsamples) == 0
-    for p in list(model_fit.params.values()):
+    for p in list(params.values()):
         if not p.vary:
             continue
         idx = idx & (param_samples[p.name] >= p.min) & (param_samples[p.name] <= p.max)

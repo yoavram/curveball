@@ -11,12 +11,13 @@ from __future__ import division
 from builtins import range
 from past.utils import old_div
 import warnings
-import curveball
+import copy
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.integrate import odeint
 import pandas as pd
 import lmfit
+import curveball
 import seaborn as sns
 sns.set_style("ticks")
 
@@ -103,7 +104,7 @@ def double_baranyi_roberts_ode2(y, t, r, K, nu, q0, v):
 	return dydt
 
 
-def compete(m1, m2, y0=None, hours=24, nsamples=1, lag_phase=True, ode=double_baranyi_roberts_ode1, num_of_points=100, ci=95, colors=None, ax=None, PLOT=False):
+def compete(m1, m2, y0=None, hours=24, nsamples=1, lag_phase=True, ode=double_baranyi_roberts_ode1, params1=None, params2=None, num_of_points=100, ci=95, colors=None, ax=None, PLOT=False):
 	"""Simulate competitions between two strains using growth parameters estimated
 	by fitting growth models to growth curves data.
 
@@ -132,6 +133,8 @@ def compete(m1, m2, y0=None, hours=24, nsamples=1, lag_phase=True, ode=double_ba
 		if :py:const:`True`, use lag phase as given by `m1` and `m2`. Otherwise, override the lag phase parameters to prevent a lag phase. Defaults to :py:const:`True`.
 	ode : func, optional
 		an ordinary differential systems system defined by a function that accepts ``y``, ``t``, and additional arguments, and returns the derivate of ``y`` with respect to ``t``. Defaults to :py:func:`.double_baranyi_roberts_ode0`.
+	params1, params2 : dict, optional
+		dictionaries of model parameter values; if given, overrides values from `m1` and `m2`.
 	num_of_points : int, optional
 		number of time points to use, defaults to 100.
 	ci : float, optional
@@ -182,20 +185,34 @@ def compete(m1, m2, y0=None, hours=24, nsamples=1, lag_phase=True, ode=double_ba
 
 	t = np.linspace(0, hours, num_of_points)
 	if y0 is None:		
-		y0 = np.array([m1.best_values['y0'], m2.best_values['y0']])		
-		y0 = old_div(y0.mean(),2), old_div(y0.mean(),2)
+		y0 = np.array([m1.best_values['y0'], m2.best_values['y0']])
+		if params1: y0[0] = params1.get('y0', y0[0])
+		if params2: y0[1] = params2.get('y0', y0[1])
+		y0 = y0.mean()/2.0, y0.mean()/2.0
 		assert y0[0] == y0[1]		
 	if nsamples > 1:
-		m1_samples = curveball.models.sample_params(m1, nsamples)
-		m2_samples = curveball.models.sample_params(m2, nsamples)
+		m1_samples = curveball.models.sample_params(m1, nsamples, params=params1)
+		m2_samples = curveball.models.sample_params(m2, nsamples, params=params2)
 		min_nsamples = min(len(m1_samples), len(m2_samples))
 		if nsamples > min_nsamples:
 			warnings.warn("{0} resamples lost".format(nsamples - min_nsamples))
 			nsamples = min_nsamples
 	else:
 		nsamples = 1
-		m1_samples = pd.DataFrame([m1.best_values])
-		m2_samples = pd.DataFrame([m2.best_values])
+		if params1:
+			_params = copy.copy(m1.best_values)
+			_params.update(params1)
+			params1 = _params
+		else:
+			params1 = m1.best_values
+		if params2:
+			_params = copy.copy(m2.best_values)
+			_params.update(params2)
+			params2 = _params
+		else:
+			params2 = m2.best_values
+		m1_samples = pd.DataFrame([params1])
+		m2_samples = pd.DataFrame([params2])
 		assert len(m1_samples) == len(m2_samples)
 
 	y = np.zeros((num_of_points, 2, nsamples))

@@ -621,6 +621,26 @@ class SamplingTestCase(TestCase):
         self.assertEquals(sample_params.shape, (100, 3))
 
 
+    def test_sample_params_with_params(self):
+        df = randomize_data(logistic_ode)
+        params = curveball.models.logistic_model.make_params(r=0.1, y0=df.OD.min(), K=df.OD.max())
+        model_fit = curveball.models.logistic_model.fit(data=df.OD, t=df.Time, params=params)
+        sample_params = curveball.models.sample_params(model_fit, 100, params={'K': 1.0})
+        self.assertIsNotNone(sample_params)
+        self.assertEquals(sample_params.shape, (100, 3))
+
+    def test_sample_params_with_params(self):
+        df = randomize_data(logistic_ode)
+        params = curveball.models.logistic_model.make_params(r=0.1, y0=df.OD.min(), K=df.OD.max())
+        model_fit = curveball.models.logistic_model.fit(data=df.OD, t=df.Time, params=params)
+        covar = model_fit.covar
+        for i in range(covar.shape[0]):
+            covar[i,i] = 1
+        sample_params = curveball.models.sample_params(model_fit, 100, covar=covar)
+        self.assertIsNotNone(sample_params)
+        self.assertEquals(sample_params.shape, (100, 3))
+
+
 class GuessTestCase(TestCase):
     _multiprocess_can_split_ = True
 
