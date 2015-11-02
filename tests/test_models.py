@@ -133,6 +133,34 @@ class ModelSelectionTestCase(TestCase):
         self.assertEquals(models[0].nvarys, 3)
 
 
+    def test_fit_model_logistic_with_param_max(self):
+        df = randomize_data(logistic_ode)        
+        models,fig,ax = curveball.models.fit_model(df, PLOT=True, PRINT=False, param_max={'K': 2.0})
+        self.assertIsInstance(fig, matplotlib.figure.Figure)
+        filename = sys._getframe().f_code.co_name + ".png"
+        fig.savefig(filename)
+        self.assertTrue(check_image(filename))
+        self.assertIsNotNone(models)
+        for mod in models:
+            self.assertIsInstance(mod, ModelResult)
+        self.assertEquals(models[0].model, curveball.models.logistic_model)
+        self.assertEquals(models[0].nvarys, 3)
+
+
+    def test_fit_model_logistic_with_param_min(self):
+        df = randomize_data(logistic_ode)        
+        models,fig,ax = curveball.models.fit_model(df, PLOT=True, PRINT=False, param_min={'K': 0.5})
+        self.assertIsInstance(fig, matplotlib.figure.Figure)
+        filename = sys._getframe().f_code.co_name + ".png"
+        fig.savefig(filename)
+        self.assertTrue(check_image(filename))
+        self.assertIsNotNone(models)
+        for mod in models:
+            self.assertIsInstance(mod, ModelResult)
+        self.assertEquals(models[0].model, curveball.models.logistic_model)
+        self.assertEquals(models[0].nvarys, 3)
+
+
     def test_fit_model_logistic_single_rep(self):
         df = randomize_data(logistic_ode, reps=1)    
         models,fig,ax = curveball.models.fit_model(df, PLOT=True, PRINT=False)
