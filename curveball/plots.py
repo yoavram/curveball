@@ -193,7 +193,7 @@ def plot_plate(df, edge_color='#888888', output_filename=None):
 	"""
 	plate = df.pivot('Row', 'Col', 'Color').as_matrix()
 	height, width = plate.shape
-	fig = plt.figure(figsize=(old_div((width + 2), 3.), old_div((height + 2), 3.)))
+	fig = plt.figure(figsize=((width + 2.0) / 3.0, (height + 2.0) / 3.0))
 	ax = fig.add_axes((0.05, 0.05, 0.9, 0.9),
 	                            aspect='equal', frameon=False,
 	                            xlim=(-0.05, width + 0.05),
@@ -247,3 +247,41 @@ def plot_params_distribution(param_samples, alpha=None):
 	g.map_lower(sns.kdeplot, cmap="Blues_d", legend=False)
 	g.map_diag(plt.hist)
 	return g
+
+
+def plot_residuals(model_fit, color='k'):
+	"""Plot of the residuals of a model fit.
+
+	The function will plot the residuals - the difference between data and model - for a given model fit.
+	The left panel shows the residuals over time; the right panel shows the histogram of the residuals with a fitted distribution curve.
+
+	Parameters
+	----------
+	df : lmfit.model.ModelResult
+		the result of a model fitting procedure.
+	color : str, optional
+		color string for the plot, defaults to `k` for black.
+
+	Returns
+	-------
+	fig : matplotlib.figure.Figure
+		figure object
+	ax : numpy.ndarray
+		array of axis objects.
+	"""
+	w, h= plt.rcParams['figure.figsize']
+	fig,ax = plt.subplots(1, 2, figsize=(w * 2, h))
+
+	model_fit.plot_residuals(ax=ax[0], data_kws={'color': color}, fit_kws={'color': color})
+	ax[0].set_xlabel('Time (hr)')
+	ax[0].set_ylabel('Residuals')
+	ax[0].legend().set_visible(False)
+	ax[0].set_title('')
+
+	sns.distplot(model_fit.residual, ax=ax[1], color=color)
+	ax[1].set_xlabel('Residuals')
+	ax[1].set_ylabel('Frequency')
+
+	fig.tight_layout()
+	sns.despine()	
+	return fig, ax
