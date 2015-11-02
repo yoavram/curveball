@@ -1114,7 +1114,7 @@ def guess_r(t, N, nu=None, K=None):
     return old_div(dNdtmax, (K * nu * (1 + nu)**(old_div(-(1 + nu), nu))))
 
 
-def fit_model(df, ax=None, param_guess=None, param_min=None, param_max=None, use_weights=True, use_Dfun=False, PLOT=True, PRINT=True):
+def fit_model(df, ax=None, param_guess=None, param_min=None, param_max=None, param_fix=None, use_weights=True, use_Dfun=False, PLOT=True, PRINT=True):
     r"""Fit and select a growth model to growth curve data.
 
     This function fits several growth models to growth curve data (``OD`` as a function of ``Time``).
@@ -1131,6 +1131,8 @@ def fit_model(df, ax=None, param_guess=None, param_min=None, param_max=None, use
         a dictionary of parameter minimum bounds to use (key: :py:class:`str` of param name; value: :py:class:`float` of param min bound).
     param_max : dict, optional
         a dictionary of parameter maximum bounds to use (key: :py:class:`str` of param name; value: :py:class:`float` of param max bound).
+    param_fix : list, optional
+        a list of names (:py:class:`str`) of parameters to fix rather then vary, while fitting the models.
     use_weights : bool, optional
         should the function use standard deviation across replicates as weights for the fitting procedure, defaults to :py:const:`True`. 
     use_Dfun : bool, optional
@@ -1184,6 +1186,8 @@ def fit_model(df, ax=None, param_guess=None, param_min=None, param_max=None, use
         param_max = {}
     if param_min is None:
         param_min = {}
+    if param_fix is None:
+        param_fix = []
     Kguess  = param_guess.get('K', _df.OD.max())
     y0guess = param_guess.get('y0', max(_df.OD.min(),1e-6))
     assert y0guess > 0, y0guess
@@ -1218,10 +1222,8 @@ def fit_model(df, ax=None, param_guess=None, param_min=None, param_max=None, use
     result = baranyi_roberts_model.fit(data=_df.OD, t=_df.Time, params=params, weights=weights, fit_kws=fit_kws)
     params = result.params    
     # Now the actual fitting
-    params['y0'].set(vary=True)
-    params['K'].set(vary=True)
-    params['r'].set(vary=True)
-    params['nu'].set(vary=True)
+    for p in params.keys():
+        params[p].set(vary=p not in param_fix)
     result = baranyi_roberts_model.fit(data=_df.OD, t=_df.Time, params=params, weights=weights, fit_kws=fit_kws)
     models.append(result)
 
@@ -1241,9 +1243,8 @@ def fit_model(df, ax=None, param_guess=None, param_min=None, param_max=None, use
     result = baranyi_roberts_model.fit(data=_df.OD, t=_df.Time, params=params, weights=weights, fit_kws=fit_kws)
     params = result.params    
     # Now the actual fitting
-    params['y0'].set(vary=True)
-    params['K'].set(vary=True)
-    params['r'].set(vary=True)
+    for p in params.keys():
+        params[p].set(vary=p not in param_fix)
     result = baranyi_roberts_model.fit(data=_df.OD, t=_df.Time, params=params, weights=weights, fit_kws=fit_kws)
     models.append(result)
 
@@ -1264,9 +1265,8 @@ def fit_model(df, ax=None, param_guess=None, param_min=None, param_max=None, use
     result = baranyi_roberts_model.fit(data=_df.OD, t=_df.Time, params=params, weights=weights, fit_kws=fit_kws)
     params = result.params    
     # Now the actual fitting
-    params['y0'].set(vary=True)
-    params['K'].set(vary=True)
-    params['r'].set(vary=True)
+    for p in params.keys():
+        params[p].set(vary=p not in param_fix)
     result = baranyi_roberts_model.fit(data=_df.OD, t=_df.Time, params=params, weights=weights, fit_kws=fit_kws)
     models.append(result)
 
@@ -1276,7 +1276,9 @@ def fit_model(df, ax=None, param_guess=None, param_min=None, param_max=None, use
         if p in params:
             params[p].set(max=m)
     for p in params.keys():
-        params[p].set(min=param_min.get(p, 1e-4))  
+        params[p].set(min=param_min.get(p, 1e-4))
+    for p in params.keys():
+        params[p].set(vary=p not in param_fix)
     fit_kws = {'Dfun': richards_Dfun, "col_deriv":True} if use_Dfun else {}
     result = richards_model.fit(data=_df.OD, t=_df.Time, params=params, weights=weights, fit_kws=fit_kws)
     models.append(result)
@@ -1288,6 +1290,8 @@ def fit_model(df, ax=None, param_guess=None, param_min=None, param_max=None, use
             params[p].set(max=m)    
     for p in params.keys():
         params[p].set(min=param_min.get(p, 1e-4))
+    for p in params.keys():
+        params[p].set(vary=p not in param_fix)
     fit_kws = {'Dfun': logistic_Dfun, "col_deriv":True} if use_Dfun else {}
     result = logistic_model.fit(data=_df.OD, t=_df.Time, params=params, weights=weights, fit_kws=fit_kws)
     models.append(result)

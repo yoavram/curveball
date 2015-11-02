@@ -220,6 +220,14 @@ class AnalysisTestCase(TestCase):
 		self.assertTrue(is_csv(data))
 
 
+	def test_process_file_with_param_fix(self):
+		result = self.runner.invoke(cli.cli, ['--no-plot', '--no-verbose', '--no-prompt', 'analyse', self.filepath, '--param_fix', 'K', '--plate_file=G-RG-R.csv', '--ref_strain=G'])
+		self.assertEquals(result.exit_code, 0, result.output)		
+		lines = [line for line in result.output.splitlines() if len(line) > 0] 
+		data = os.linesep.join(lines[-4:]) # only last 4 lines
+		self.assertTrue(is_csv(data))
+
+
 	def test_process_file_without_weights(self):
 		result = self.runner.invoke(cli.cli, ['--no-plot', '--no-verbose', '--no-prompt', 'analyse', self.filepath, '--no-weights', '--plate_file=G-RG-R.csv', '--ref_strain=G'])
 		self.assertEquals(result.exit_code, 0, result.output)		
