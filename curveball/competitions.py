@@ -20,6 +20,10 @@ import lmfit
 import seaborn as sns
 sns.set_style("ticks")
 
+def _alfa(t, q0, v):
+	if np.isinf(v):
+		return 1.0
+	return q0 / (q0 + np.exp(-v * t))
 
 def double_baranyi_roberts_ode0(y, t, r, K, nu, q0, v):
 	r"""A two species Baranyi-Roberts model [1]_. The function calculates the population growth rate at given time points.
@@ -62,7 +66,7 @@ def double_baranyi_roberts_ode0(y, t, r, K, nu, q0, v):
 	----------
 	.. [1] Baranyi, J., Roberts, T. A., 1994. `A dynamic approach to predicting bacterial growth in food <www.ncbi.nlm.nih.gov/pubmed/7873331>`_. Int. J. Food Microbiol.
 	"""
-	alfa = old_div(q0[0], (q0[0] + np.exp(-v[0] * t))), old_div(q0[1], (q0[1] + np.exp(-v[1] * t)))
+	alfa = _alfa(t, q0[0], v[0]), _alfa(t, q0[1], v[1])
 	dydt = alfa[0] * r[0] * y[0] * (1 - (old_div((y[0] + y[1]), K[0]))**nu[0]), alfa[1] * r[1] * y[1] * (1 - (old_div((y[0] + y[1]), K[1]))**nu[1])
 	return dydt
 
@@ -78,7 +82,7 @@ def double_baranyi_roberts_ode1(y, t, r, K, nu, q0, v):
 	--------
 	curveball.competitions.double_baranyi_roberts_ode0
 	"""
-	alfa = old_div(q0[0], (q0[0] + np.exp(-v[0] * t))), old_div(q0[1], (q0[1] + np.exp(-v[1] * t)))
+	alfa = _alfa(t, q0[0], v[0]), _alfa(t, q0[1], v[1])
 	dydt = alfa[0] * r[0] * y[0] * (1 - (old_div(y[0], K[0]) + old_div(y[1], K[1]))**nu[0]), alfa[1] * r[1] * y[1] * (1 - (old_div(y[0], K[0]) + old_div(y[1], K[1]))**nu[1])
 	return dydt
 
@@ -94,7 +98,7 @@ def double_baranyi_roberts_ode2(y, t, r, K, nu, q0, v):
 	--------
 	curveball.competitions.double_baranyi_roberts_ode0
 	"""
-	alfa = old_div(q0[0], (q0[0] + np.exp(-v[0] * t))), old_div(q0[1], (q0[1] + np.exp(-v[1] * t)))
+	alfa = _alfa(t, q0[0], v[0]), _alfa(t, q0[1], v[1])
 	dydt = alfa[0] * r[0] * y[0] * (1 - (old_div(y[0], K[0]))**nu[0] - (old_div(y[1], K[1]))**nu[1]), alfa[1] * r[1] * y[1] * (1 - (old_div(y[0], K[0]))**nu[0] - (old_div(y[1], K[1]))**nu[1])
 	return dydt
 
@@ -200,12 +204,13 @@ def compete(m1, m2, y0=None, hours=24, nsamples=1, lag_phase=True, ode=double_ba
 	for i in range(nsamples):
 		r = m1_samples.iloc[i]['r'], m2_samples.iloc[i]['r']
 		K = m1_samples.iloc[i]['K'], m2_samples.iloc[i]['K']
-		nu = m1_samples.iloc[i].get('nu', 1.0), m2_samples.iloc[i].get('nu', 1.0)
-		q0 = 1.0,1.0
-		v = 1e6,1e6
+		nu = m1_samples.iloc[i].get('nu', 1.0), m2_samples.iloc[i].get('nu', 1.0)		
 		if lag_phase:
 			q0 = m1_samples.iloc[i].get('q0', 1.0), m2_samples.iloc[i].get('q0', 1.0)
-			v = m1_samples.iloc[i].get('v', 1e6), m2_samples.iloc[i].get('v', 1e6)
+			v = m1_samples.iloc[i].get('v', np.inf), m2_samples.iloc[i].get('v', np.inf)
+		else:
+			q0 = 1.0, 1.0
+			v = np.inf, np.inf
 		args = (r, K, nu, q0, v)
 		
 		y[:,:,i] = odeint(ode, y0, t, args=args)
