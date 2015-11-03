@@ -1245,6 +1245,7 @@ def fit_model(df, ax=None, param_guess=None, param_min=None, param_max=None, par
     # Now the actual fitting
     for p in params.keys():
         params[p].set(vary=p not in param_fix)
+    params['nu'].set(vary=False)
     result = baranyi_roberts_model.fit(data=_df.OD, t=_df.Time, params=params, weights=weights, fit_kws=fit_kws)
     models.append(result)
 
@@ -1267,6 +1268,8 @@ def fit_model(df, ax=None, param_guess=None, param_min=None, param_max=None, par
     # Now the actual fitting
     for p in params.keys():
         params[p].set(vary=p not in param_fix)
+    params['nu'].set(vary=False)
+    params['v'].set(expr='r')
     result = baranyi_roberts_model.fit(data=_df.OD, t=_df.Time, params=params, weights=weights, fit_kws=fit_kws)
     models.append(result)
 
