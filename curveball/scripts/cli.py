@@ -48,6 +48,10 @@ def to_dict(ctx, param, value):
     return dict(value)
 
 
+def to_list(ctx, param, value):
+    return list(value)
+
+
 def get_filename(filepath):
 	"""Get a file name out of a file path.
 
@@ -199,10 +203,12 @@ def plate(plate_folder, plate_file, output_file, list, show):
 @click.option('--ref_strain', default='1',  help='reference strain for competitions')
 @click.option('--max_time', default=np.inf, help='omit data after max_time hours')
 @click.option('--guess', type=(str, float), multiple=True, callback=to_dict, help='set the initial guess for a parameter')
+@click.option('--param_min', type=(str, float), multiple=True, callback=to_dict, help='set the minimum allowed value for a parameter')
 @click.option('--param_max', type=(str, float), multiple=True, callback=to_dict, help='set the maximum allowed value for a parameter')
+@click.option('--param_fix', type=str, multiple=True, callback=to_list, help='fix a parameter to it\'s initial guess')
 @click.option('--weights/--no-weights', default=True, help="use weights for the fitting procedure")
 @cli.command()
-def analyse(path, output_file, plate_folder, plate_file, blank_strain, ref_strain, max_time, guess, param_max, weights):
+def analyse(path, output_file, plate_folder, plate_file, blank_strain, ref_strain, max_time, guess, param_min, param_max, param_fix, weights):
 	"""Analyse growth curves data using Curveball.
 
 	To get help for the parameters, run:
@@ -240,7 +246,7 @@ def analyse(path, output_file, plate_folder, plate_file, blank_strain, ref_strai
 	
 	with click.progressbar(files, label='Processing files:', item_show_func=get_filename, color='green') as bar:
 		for filepath in bar:
-			file_results = _process_file(filepath, plate, blank_strain, ref_strain, max_time, guess, param_max, weights)
+			file_results = _process_file(filepath, plate, blank_strain, ref_strain, max_time, guess, param_min, param_max, param_fix, weights)
 			results.extend(file_results)
 	
 	output_table = pd.DataFrame(results)
@@ -249,7 +255,7 @@ def analyse(path, output_file, plate_folder, plate_file, blank_strain, ref_strai
 		click.secho("Wrote output to %s" % output_file.name, fg='green')
 
 
-def _process_file(filepath, plate, blank_strain, ref_strain, max_time, guess, param_max, weights):
+def _process_file(filepath, plate, blank_strain, ref_strain, max_time, guess, param_min, param_max, param_fix, weights):
 	"""Analyses a single growth curves file.
 
 	See also
@@ -304,7 +310,7 @@ def _process_file(filepath, plate, blank_strain, ref_strain, max_time, guess, pa
 	with click.progressbar(strains, label='Fitting strain growth curves', item_show_func=lambda s: s, color='green') as bar:
 		for strain in bar:
 			strain_df = df[df.Strain == strain]
-			_ = curveball.models.fit_model(strain_df, param_guess=guess, param_max=param_max, use_weights=weights, PLOT=PLOT, PRINT=VERBOSE)
+			_ = curveball.models.fit_model(strain_df, param_guess=guess, param_min=param_min, param_max=param_max, param_fix=param_fix, use_weights=weights, PLOT=PLOT, PRINT=VERBOSE)
 			if PLOT:
 				fit_results,fig,ax = _
 				strain_plot_fn = fn + ('_strain_%s.png' % strain)

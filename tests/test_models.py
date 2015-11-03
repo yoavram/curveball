@@ -133,6 +133,49 @@ class ModelSelectionTestCase(TestCase):
         self.assertEquals(models[0].nvarys, 3)
 
 
+    def test_fit_model_logistic_with_param_max(self):
+        df = randomize_data(logistic_ode)        
+        models,fig,ax = curveball.models.fit_model(df, PLOT=True, PRINT=False, param_max={'K': 2.0})
+        self.assertIsInstance(fig, matplotlib.figure.Figure)
+        filename = sys._getframe().f_code.co_name + ".png"
+        fig.savefig(filename)
+        self.assertTrue(check_image(filename))
+        self.assertIsNotNone(models)
+        for mod in models:
+            self.assertIsInstance(mod, ModelResult)
+        self.assertEquals(models[0].model, curveball.models.logistic_model)
+        self.assertEquals(models[0].nvarys, 3)
+
+
+    def test_fit_model_logistic_with_param_fix(self):
+        df = randomize_data(logistic_ode)        
+        models,fig,ax = curveball.models.fit_model(df, PLOT=True, PRINT=False, param_guess={'K': 1}, param_fix=['K'])
+        self.assertIsInstance(fig, matplotlib.figure.Figure)
+        filename = sys._getframe().f_code.co_name + ".png"
+        fig.savefig(filename)
+        self.assertTrue(check_image(filename))
+        self.assertIsNotNone(models)
+        for mod in models:
+            self.assertIsInstance(mod, ModelResult)
+        self.assertEquals(models[0].model, curveball.models.logistic_model)
+        self.assertEquals(models[0].nvarys, 2) # one less parameter as we fixed K!
+        self.assertEquals(models[0].best_values['K'], 1)
+
+
+    def test_fit_model_logistic_with_param_min(self):
+        df = randomize_data(logistic_ode)        
+        models,fig,ax = curveball.models.fit_model(df, PLOT=True, PRINT=False, param_min={'K': 0.5})
+        self.assertIsInstance(fig, matplotlib.figure.Figure)
+        filename = sys._getframe().f_code.co_name + ".png"
+        fig.savefig(filename)
+        self.assertTrue(check_image(filename))
+        self.assertIsNotNone(models)
+        for mod in models:
+            self.assertIsInstance(mod, ModelResult)
+        self.assertEquals(models[0].model, curveball.models.logistic_model)
+        self.assertEquals(models[0].nvarys, 3)
+
+
     def test_fit_model_logistic_single_rep(self):
         df = randomize_data(logistic_ode, reps=1)    
         models,fig,ax = curveball.models.fit_model(df, PLOT=True, PRINT=False)
@@ -617,6 +660,26 @@ class SamplingTestCase(TestCase):
         params = curveball.models.logistic_model.make_params(r=0.1, y0=df.OD.min(), K=df.OD.max())
         model_fit = curveball.models.logistic_model.fit(data=df.OD, t=df.Time, params=params)
         sample_params = curveball.models.sample_params(model_fit, 100)
+        self.assertIsNotNone(sample_params)
+        self.assertEquals(sample_params.shape, (100, 3))
+
+
+    def test_sample_params_with_params(self):
+        df = randomize_data(logistic_ode)
+        params = curveball.models.logistic_model.make_params(r=0.1, y0=df.OD.min(), K=df.OD.max())
+        model_fit = curveball.models.logistic_model.fit(data=df.OD, t=df.Time, params=params)
+        sample_params = curveball.models.sample_params(model_fit, 100, params={'K': 1.0})
+        self.assertIsNotNone(sample_params)
+        self.assertEquals(sample_params.shape, (100, 3))
+
+    def test_sample_params_with_params(self):
+        df = randomize_data(logistic_ode)
+        params = curveball.models.logistic_model.make_params(r=0.1, y0=df.OD.min(), K=df.OD.max())
+        model_fit = curveball.models.logistic_model.fit(data=df.OD, t=df.Time, params=params)
+        covar = model_fit.covar
+        for i in range(covar.shape[0]):
+            covar[i,i] = 1
+        sample_params = curveball.models.sample_params(model_fit, 100, covar=covar)
         self.assertIsNotNone(sample_params)
         self.assertEquals(sample_params.shape, (100, 3))
 

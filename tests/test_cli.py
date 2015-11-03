@@ -172,8 +172,8 @@ class AnalysisTestCase(TestCase):
 
 
 	def test_process_file(self):
-		result = self.runner.invoke(cli.cli, ['--no-plot', '--no-verbose', '--no-prompt', 'analyse', self.filepath, '--plate_file=G-RG-R.csv', '--ref_strain=G'])
-		self.assertEquals(result.exit_code, 0, result.output)		
+		result = self.runner.invoke(cli.cli, ['--no-plot', '--verbose', '--no-prompt', 'analyse', self.filepath, '--plate_file=G-RG-R.csv', '--ref_strain=G'])
+		self.assertEquals(result.exit_code, 0, "Code: {}\n{}".format(result.exit_code, result.output))
 		lines = [line for line in result.output.splitlines() if len(line) > 0] 
 		data = os.linesep.join(lines[-4:]) # only last 4 lines
 		self.assertTrue(is_csv(data))
@@ -181,40 +181,56 @@ class AnalysisTestCase(TestCase):
 
 	def test_process_file2(self):
 		filepath = os.path.join(self.dirpath, self.files[1])
-		result = self.runner.invoke(cli.cli, ['--no-plot', '--no-verbose', '--no-prompt', 'analyse', filepath, '--plate_file=G-RG-R.csv', '--ref_strain=G'])
-		self.assertEquals(result.exit_code, 0, result.output)		
+		result = self.runner.invoke(cli.cli, ['--no-plot', '--verbose', '--no-prompt', 'analyse', filepath, '--plate_file=G-RG-R.csv', '--ref_strain=G'])
+		self.assertEquals(result.exit_code, 0, "Code: {}\n{}".format(result.exit_code, result.output))
 		lines = [line for line in result.output.splitlines() if len(line) > 0] 
 		data = os.linesep.join(lines[-4:]) # only last 4 lines
 		self.assertTrue(is_csv(data))
 
 
 	def test_process_file_to_file(self):
-		result = self.runner.invoke(cli.cli, ['--no-plot', '--no-verbose', '--no-prompt', 'analyse', self.filepath, '--plate_file=G-RG-R.csv', '--ref_strain=G', '--output_file=summary.csv'])
-		self.assertEquals(result.exit_code, 0, result.output)		
+		result = self.runner.invoke(cli.cli, ['--no-plot', '--verbose', '--no-prompt', 'analyse', self.filepath, '--plate_file=G-RG-R.csv', '--ref_strain=G', '--output_file=summary.csv'])
+		self.assertEquals(result.exit_code, 0, "Code: {}\n{}".format(result.exit_code, result.output))
 		with open('summary.csv', 'r') as f:
 			data = f.read()
 		self.assertTrue(is_csv(data))
 
 
 	def test_process_file_with_guess(self):
-		result = self.runner.invoke(cli.cli, ['--no-plot', '--no-verbose', '--no-prompt', 'analyse', self.filepath, '--guess', 'K', '0.7', '--guess', 'nu', '2.0', '--plate_file=G-RG-R.csv', '--ref_strain=G'])
-		self.assertEquals(result.exit_code, 0, result.output)		
+		result = self.runner.invoke(cli.cli, ['--no-plot', '--verbose', '--no-prompt', 'analyse', self.filepath, '--guess', 'K', '0.7', '--guess', 'nu', '2.0', '--plate_file=G-RG-R.csv', '--ref_strain=G'])
+		self.assertEquals(result.exit_code, 0, "Code: {}\n{}".format(result.exit_code, result.output))
 		lines = [line for line in result.output.splitlines() if len(line) > 0] 
 		data = os.linesep.join(lines[-4:]) # only last 4 lines
 		self.assertTrue(is_csv(data))
 
 
 	def test_process_file_with_param_max(self):
-		result = self.runner.invoke(cli.cli, ['--no-plot', '--no-verbose', '--no-prompt', 'analyse', self.filepath, '--param_max', 'K', '0.7', '--param_max', 'nu', '2.0', '--param_max', 'v', '100', '--plate_file=G-RG-R.csv', '--ref_strain=G'])
-		self.assertEquals(result.exit_code, 0, result.output)		
+		result = self.runner.invoke(cli.cli, ['--no-plot', '--verbose', '--no-prompt', 'analyse', self.filepath, '--param_max', 'K', '0.7', '--param_max', 'nu', '2.0', '--param_max', 'v', '100', '--plate_file=G-RG-R.csv', '--ref_strain=G'])
+		self.assertEquals(result.exit_code, 0, "Code: {}\n{}".format(result.exit_code, result.output))
+		lines = [line for line in result.output.splitlines() if len(line) > 0] 
+		data = os.linesep.join(lines[-4:]) # only last 4 lines
+		self.assertTrue(is_csv(data))
+
+
+	def test_process_file_with_param_min(self):
+		result = self.runner.invoke(cli.cli, ['--no-plot', '--verbose', '--no-prompt', 'analyse', self.filepath, '--param_min', 'K', '0.2', '--param_min', 'nu', '0.1', '--param_min', 'v', '0.1', '--plate_file=G-RG-R.csv', '--ref_strain=G'])
+		self.assertEquals(result.exit_code, 0, "Code: {}\n{}".format(result.exit_code, result.output))
+		lines = [line for line in result.output.splitlines() if len(line) > 0] 
+		data = os.linesep.join(lines[-4:]) # only last 4 lines
+		self.assertTrue(is_csv(data))
+
+
+	def test_process_file_with_param_fix(self):
+		result = self.runner.invoke(cli.cli, ['--no-plot', '--verbose', '--no-prompt', 'analyse', self.filepath, '--param_fix', 'K', '--plate_file=G-RG-R.csv', '--ref_strain=G'])
+		#self.assertEquals(result.exit_code, 0, "Code: {}\n{}".format(result.exit_code, result.output))
 		lines = [line for line in result.output.splitlines() if len(line) > 0] 
 		data = os.linesep.join(lines[-4:]) # only last 4 lines
 		self.assertTrue(is_csv(data))
 
 
 	def test_process_file_without_weights(self):
-		result = self.runner.invoke(cli.cli, ['--no-plot', '--no-verbose', '--no-prompt', 'analyse', self.filepath, '--no-weights', '--plate_file=G-RG-R.csv', '--ref_strain=G'])
-		self.assertEquals(result.exit_code, 0, result.output)		
+		result = self.runner.invoke(cli.cli, ['--no-plot', '--verbose', '--no-prompt', 'analyse', self.filepath, '--no-weights', '--plate_file=G-RG-R.csv', '--ref_strain=G'])
+		self.assertEquals(result.exit_code, 0, "Code: {}\n{}".format(result.exit_code, result.output))
 		lines = [line for line in result.output.splitlines() if len(line) > 0] 
 		data = os.linesep.join(lines[-4:]) # only last 4 lines
 		self.assertTrue(is_csv(data))
@@ -231,9 +247,9 @@ class AnalysisTestCase(TestCase):
 
 	def test_process_folder(self):
 		num_files = len(self.files)
-		result = self.runner.invoke(cli.cli, ['--no-plot', '--no-verbose', '--no-prompt', 
+		result = self.runner.invoke(cli.cli, ['--no-plot', '--verbose', '--no-prompt', 
 			'analyse', self.dirpath, '--plate_file=G-RG-R.csv', '--ref_strain=G'])
-		self.assertEquals(result.exit_code, 0, result.output)		
+		self.assertEquals(result.exit_code, 0, "Code: {}\n{}".format(result.exit_code, result.output))
 		lines = [line for line in result.output.splitlines() if len(line) > 0] 
 		num_lines =  num_files * 3 + 1
 		data = os.linesep.join(lines[-num_lines:])

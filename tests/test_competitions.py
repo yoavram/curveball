@@ -55,6 +55,18 @@ class CompetitionTestCase(TestCase):
 		self.assertTrue(y[-1,1] > y[0,1])
 
 
+	def test_compete_with_params(self):
+		K1 = self.m1.best_values['K']
+		r2 = self.m2.best_values['r']
+		t, y = curveball.competitions.compete(self.m1, self.m2, params1={'K': 1.0}, params2={'r': 0.01}, PLOT=False)
+		self.assertEquals(t.shape[0], y.shape[0])
+		self.assertEquals(y.shape[1], 2)
+		self.assertTrue(y[-1,0] > y[0,0])
+		self.assertTrue(y[-1,1] > y[0,1])
+		self.assertEquals(self.m1.best_values['K'], K1)
+		self.assertEquals(self.m2.best_values['r'], r2)
+
+
 	def test_compete_plot(self):
 		t, y, fig, ax = curveball.competitions.compete(self.m1, self.m2, colors=['r','b'], PLOT=True)
 		self.assertEquals(t.shape[0], y.shape[0])
