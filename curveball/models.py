@@ -20,185 +20,14 @@ import matplotlib.pyplot as plt
 import collections
 from scipy.stats import chisqprob
 from scipy.misc import derivative
-from scipy.optimize import minimize
 import pandas as pd
 import copy
 from lmfit import Model
 from lmfit.models import LinearModel
-#from lowess import lowess
-from statsmodels.nonparametric.smoothers_lowess import lowess
+from curveball.baranyi_roberts_model import BaranyiRobertsModel
 import sympy
 import seaborn as sns
 sns.set_style("ticks")
-
-
-def poly_smooth(x, y):
-    """Polynomial smoothing function.
-
-    Parameters
-    ----------
-    x : numpy.ndarray
-        array of floats for the independent variable
-    y : numpy.ndarray
-        array of floats for the dependent variable
-
-    Returns
-    -------
-    numpy.ndarray
-        array of floats for the smoothed dependent variable
-    """
-    p = np.poly1d(np.polyfit(x, y, 3))
-    return p(x)
-
-
-def lowess_smooth(x, y, PLOT=False):
-    """Lowess smoothing function.
-
-    Parameters
-    ----------
-    x : numpy.ndarray
-        array of floats for the independent variable
-    y : numpy.ndarray
-        array of floats for the dependent variable
-
-    Returns
-    -------
-    numpy.ndarray
-        array of floats for the smoothed dependent variable
-    """
-    yhat = lowess(y, x, 0.1, return_sorted=False)
-    if PLOT:
-        fig, ax = plt.subplots(1, 1)
-        ax.plot(x, yhat, 'k--')
-        ax.plot(x, y, 'ko')
-    return yhat
-
-
-smooth = lowess_smooth
-
-
-def logistic_function(t, y0, r, K):
-    r"""The logistic growth model is the standard growth model in ecology.
-
-    .. math::
-        \frac{dy}{dt} = r y \Big(1 - \frac{y}{K}\Big) \Rightarrow
-        y(t) = \frac{K}{1 - \Big(1 - \frac{K}{y_0} \Big)e^{-r t}}
-
-
-    - **:math:`y_0`**: initial population size
-    - **r**: initial per capita growth rate 
-    - **K**: maximum population size
-    
-
-    Parameters
-    ----------
-    t : numpy.ndarray
-        array of floats for time, usually in hours (:math:`t>0`)
-    y0 : float
-        initial population size (:math:`y_0>0`)
-    r : float
-        initial per capita growth rate
-    K : float
-        maximum population size (:math:`K>0`)
-
-    Returns
-    -------
-    numpy.ndarray
-        population size per time point in ``t``.
-
-    See also
-    --------
-    `Logistic function at Wikipedia <https://en.wikipedia.org/wiki/Logistic_function#In_ecology:_modeling_population_growth>`_
-    """
-    return richards_function(t ,y0, r, K, 1.)
-
-
-def richards_function(t, y0, r, K, nu):
-    r"""Richards growth model (or the generalised logistic model) in a generalisation of the logistic model that allows the inflection point to be anywhere along the curve.
-
-    .. math::
-
-        \frac{dy}{dt} = r y \Big( 1 - \Big(\frac{y}{K}\Big)^{\nu} \Big) \Rightarrow
-
-        y(t) = \frac{K}{\Big[1 - \Big(1 - \Big(\frac{K}{y_0}\Big)^{\nu}\Big) e^{-r \nu t}\Big]^{1/\nu}}
-
-    - :math:`y_0`: initial population size
-    - r: initial per capita growth rate
-    - K: maximum population size    
-    - :math:`\nu`: curvature of the logsitic term
-
-    Parameters
-    ----------
-    t : numpy.ndarray
-        array of floats for time, usually in hours (:math:`t>0`)
-    y0 : float
-        initial population size (:math:`y_0>0`)
-    r : float
-        initial per capita growth rate
-    K : float
-        maximum population size (:math:`K>0`)
-    nu : float
-        curvature of the logsitic term (:math:`\nu>0`)
-
-    Returns
-    -------
-    numpy.ndarray
-        population size per time point in `t`.
-
-    See also
-    --------
-    `Generalised logistic function in Wikipedia <http://en.wikipedia.org/wiki/Generalised_logistic_function>`_
-    """
-    return old_div(K, ((1 - (1 - (old_div(K,y0))**nu) * np.exp(-r * nu * t))**(old_div(1.,nu))))
-
-
-def baranyi_roberts_function(t, y0, r, K, nu, q0, v):
-    r"""The Baranyi-Roberts growth model is an extension of the Richards model that adds a lag phase [1]_.
-
-    .. math::
-
-        \frac{dy}{dt} = r \alpha(t) y \Big( 1 - \Big(\frac{y}{K}\Big)^{\nu} \Big) \Rightarrow
-
-        y(t) = \frac{K}{\Big[1 - \Big(1 - \Big(\frac{K}{y_0}\Big)^{\nu}\Big) e^{-r \nu A(t)}\Big]^{1/\nu}}
-
-        A(t) = \int_0^t{\alpha(s)ds} = \int_0^t{\frac{q_0}{q_0 + e^{-v s}} ds} = t + \frac{1}{v} \log{\Big( \frac{e^{-v t} + q0}{1 + q0} \Big)}
-
-
-    - :math:`y_0`: initial population size
-    - r: initial per capita growth rate
-    - K: maximum population size
-    - :math:`\nu`: curvature of the logsitic term
-    - :math:`q_0`: initial adjustment to current environment
-    - v: adjustment rate
-
-    Parameters
-    ----------
-    t : numpy.ndarray
-        array of floats for time, usually in hours (:math:`t>0`)
-    y0 : float
-        initial population size (:math:`y_0>0`)
-    r : float
-        initial per capita growth rate
-    K : float
-        maximum population size (:math:`K>0`)
-    nu : float
-        curvature of the logsitic term (:math:`\nu>0`)
-    q0 : float
-        initial adjustment to current environment (:math:`0<q_0<1`)
-    v : float
-        adjustment rate (:math:`v>0`)
-
-    Returns
-    -------
-    numpy.ndarray
-        population size per time point in `t`.
-
-    References
-    ----------
-    .. [1] Baranyi, J., Roberts, T. A., 1994. `A dynamic approach to predicting bacterial growth in food <www.ncbi.nlm.nih.gov/pubmed/7873331>`_. Int. J. Food Microbiol.
-    """
-    At = t + (old_div(1.,v)) * np.log(old_div((np.exp(-v * t) + q0),(1 + q0)))
-    return old_div(K, ((1 - (1 - (old_div(K,y0))**nu) * np.exp( -r * nu * At ))**(old_div(1.,nu))))
 
 
 def sample_params(model_fit, nsamples, params=None, covar=None):
@@ -496,7 +325,7 @@ def find_lag(model_fit, params=None, PLOT=True):
     t1 = t[i]
     y1 = y[i]
     b = y1 - a * t1
-    lam = old_div((y0 - b), a)
+    lam = (y0 - b) / a
 
     if PLOT:
         fig,ax = plt.subplots()
@@ -647,25 +476,23 @@ def has_lag(model_fits, alfa=0.05, PRINT=False):
         raised if the fittest of the :py:class:`lmfit.model.ModelResult` objects in `model_fits` is of an unknown model.
     """
     best_fit = model_fits[0]
-    if best_fit.model.name in (richards_model.name, logistic_model.name):
+    if np.isposinf(best_fit.best_values['q0']) or np.isposinf(best_fit.best_values['v']):
         # no lag in these models
-        return False
-    elif best_fit.model.name == baranyi_roberts_model.name:           
-        m1 = best_fit
-        # choose the null hypothesis model
-        nu = best_fit.params['nu']
-        if nu.value == 1 and not nu.vary:
-            ## m1 is BR5, m0 is L3
-            m0 = next(filter(lambda m: m.model.name == logistic_model.name, model_fits))
-        else:
-            ## m1 is BR6, m0 is R4
-            m0 = next(filter(lambda m: m.model.name == richards_model.name, model_fits))
-        prefer_m1, pval, D, ddf = lrtest(m0, m1, alfa=alfa)
-        if PRINT:
-            print("Tested H0: %s vs. H1: %s; D=%.2g, ddf=%d, p-value=%.2g" % (m0.model.name, m1.model.name, D, ddf, pval))    
-        return prefer_m1
+        return False    
+    m1 = best_fit
+    # choose the null hypothesis model
+    nu = best_fit.params['nu']
+    v =  best_fit.params['v']
+    if nu.value == 1 and not nu.vary:        
+        # m1 is BR4 or BR5, m0 is Logistic
+        n0 = [m for m in model_fits if m.nvarys == 3]        
     else:
-        raise ValueError("Unknown model: %s" % best_fit.model.name)
+        ## m1 is BR6, m0 is Richards
+        m0 = [m for m in model_fits if m.nvarys == 4 and np.isposinf(m.best_values['v'])]        
+    prefer_m1, pval, D, ddf = lrtest(m0, m1, alfa=alfa)
+    if PRINT:
+        print("Tested H0: %s vs. H1: %s; D=%.2g, ddf=%d, p-value=%.2g" % (m0.model.name, m1.model.name, D, ddf, pval))    
+    return prefer_m1
 
 
 def has_nu(model_fits, alfa=0.05, PRINT=False):
@@ -696,23 +523,16 @@ def has_nu(model_fits, alfa=0.05, PRINT=False):
         raised if the fittest of the :py:class:`lmfit.model.ModelResult` objects in `model_fits` is of an unknown model.
     """
     best_fit = model_fits[0]
-    if best_fit.model.name == logistic_model.name:
-        # no lag in these models
+    if best_fit.best_values['nu'] == 1.0:
         return False
-    elif best_fit.model.name == richards_model.name:
-        # m1 is R4, m0 is L3
-        m0 = next(filter(lambda m: m.model.name == logistic_model.name, model_fits))
-    elif best_fit.model.name == baranyi_roberts_model.name:                   
-        # choose the null hypothesis model
-        nu = best_fit.params['nu']
-        if nu.value == 1 and not nu.vary:            
-            return False
-        else:
-            ## m1 is BR6, m0 is BR5
-            m0 = next(filter(lambda m: m.model.name == baranyi_roberts_model.name and m.nvarys == 5 and m.params['nu'] == 1, model_fits))
+    elif best_fit.nvarys == 4:
+        # m1 is Richards, m0 is Logistic        
+        m0 = [m for m in model_fits if m.nvarys == 3][0]
+    elif best_fit.nvarys == 6:
+        # m1 is BR6, m0 is BR5
+        m0 = [m for m in model_fits if m.nvarys == 5 and m.best_values['nu'] == 1.0][0]        
     else:
-        raise ValueError("Unknown model: %s" % best_fit.model.name)
-    
+        raise ValueError("Unknown model: %s" % best_fit.model.name)    
     m1 = best_fit
     prefer_m1, pval, D, ddf = lrtest(m0, m1, alfa=alfa)
     if PRINT:
@@ -721,36 +541,18 @@ def has_nu(model_fits, alfa=0.05, PRINT=False):
     return prefer_m1
 
 
-def _make_Dfun(expr, t, args):
+def make_Dfun(model, params):
+    expr, t, args = model.get_sympy_expr(params)    
     partial_derivs = [None]*len(args)
-    for i,v in enumerate(args):
-        dydv = expr.diff(v)
-        dydv = sympy.lambdify(args=(t,) + args, expr=dydv, modules="numpy")
-        partial_derivs[i] = dydv
+    for i,x in enumerate(args):
+        dydx = expr.diff(x)
+        dydx = sympy.lambdify(args=(t,) + args, expr=dydx, modules="numpy")
+        partial_derivs[i] = dydx
     
     def Dfun(params, y, a, t):
         values = [ par.value for par in list(params.values()) if par.vary ]        
         return np.array([dydv(t, *values) for dydv in partial_derivs])
     return Dfun
-
-
-def _make_model_Dfuns():
-    t, y0, r, K, nu, q0, v = sympy.symbols('t y0 r K nu q0 v')
-    logistic = old_div(K,( 1 - (1 - old_div(K,y0)) * sympy.exp(-r * t) ))
-    logistic_Dfun = _make_Dfun(logistic, t, (y0, r, K))
-
-    richards = old_div(K,( 1 - (1 - (old_div(K,y0))**nu) * sympy.exp(-r * nu * t) )**(old_div(1,nu)))
-    richards_Dfun = _make_Dfun(richards, t, (y0, r, K, nu)) 
-
-    A = t + 1/v * sympy.log( old_div((sympy.exp(-v * t) + q0), (1 + q0))  )
-    baranyi_roberts5 = old_div(K,( 1 - (1 - old_div(K,y0)) * sympy.exp(-r * A) ))
-    baranyi_roberts5_Dfun = _make_Dfun(baranyi_roberts5, t, (y0, r, K, q0, v))
-
-    A = t + 1/v * sympy.log( old_div((sympy.exp(-v * t) + q0), (1 + q0))  )
-    baranyi_roberts6 = old_div(K,( 1 - (1 - (old_div(K,y0))**nu) * sympy.exp(-r * nu * A) )**(old_div(1,nu)))
-    baranyi_roberts6_Dfun = _make_Dfun(baranyi_roberts6, t, (y0, r, K, nu, q0, v))
-    
-    return logistic_Dfun, richards_Dfun, baranyi_roberts5_Dfun, baranyi_roberts6_Dfun
 
 
 def benchmark(model_fits, deltaBIC=6, PRINT=False, PLOT=False):
@@ -794,6 +596,8 @@ def benchmark(model_fits, deltaBIC=6, PRINT=False, PLOT=False):
     weights = best_fit.weights
 
     # Linear model used as benchmark
+    linear_model = LinearModel()
+    linear_model.name = 'linear-benchmark'
     params = linear_model.guess(data=y, x=t)
     linear_fit = linear_model.fit(data=y, x=t, params=params, weights=weights)
     success = best_fit.bic + deltaBIC < linear_fit.bic
@@ -988,133 +792,11 @@ def _calc_weights(df):
     return weights
 
 
-def guess_nu(t, N, K=None, PLOT=False, PRINT=False):
-    r"""Guesses the value of :math:`\nu` from the shape of the growth curve.
-
-    Following [4]_:
-
-    .. math::
-
-        N_{max} = K (1 + \nu)^{-\frac{1}{\nu}}
+def nvarys(params):
+    return len([p for p in params.values() if p.vary])
 
 
-    - :math:`N_{max}`: population size when the population growth rate (:math:`\frac{dN}{dt}`) is maximum
-    - r: initial per capita growth rate 
-    - K: maximum population size
-    - :math:`\nu`: curvature of the logsitic term
-
-    Parameters
-    ----------
-    t : numpy.ndarray
-        time
-    N : numpy:ndarray
-        `N[i]` is the population size at time `t[i]`
-    K : float, optional
-        a guess of `K`, the maximum population size. If not given, it is guessed.
-    PLOT : bool, optional
-        if :py:const:`True`, the function will plot the calculations.
-    PRINT : bool, optional
-        if :py:const:`True`, the function will print intermediate results of the calculations.
-
-    Returns
-    -------
-    x : float
-        the guess of :math:`\nu`.
-    fig : matplotlib.figure.Figure
-        if the argument `PLOT` was :py:const:`True`, the generated figure.
-    ax : matplotlib.axes.Axes
-        if the argument `PLOT` was :py:const:`True`, the generated axis.
-
-    References
-    ----------
-    .. [4] Richards, F. J. 1959. `A Flexible Growth Function for Empirical Use <http://dx.doi.org/10.1093/jxb/10.2.290>`_. Journal of Experimental Botany
-    """
-    N_smooth = smooth(t, N)
-    dNdt = np.gradient(N_smooth, t[1]-t[0])   
-    dNdt_smooth = smooth(t, dNdt)
-    i = dNdt_smooth.argmax()
-    Nmax = N[i]    
-    if K is None:
-        K = N.max()
-    def target(nu):
-        return np.abs((1+nu)**(old_div(-1,nu)) - old_div(Nmax,K))
-    opt_res = minimize(target, x0=1, bounds=[(0,None)])
-    x = opt_res.x
-    y = target(x)
-    y1 = target(1.0)
-    
-    if not opt_res.success and not np.allclose(y, 0):
-        warn("Minimization warning in %s: %s\nGuessed nu=%.4f with f(nu)=%.4f" % (sys._getframe().f_code.co_name, opt_res.message, x, y))
-    if y1 < y:
-        print("f(1)=%.4f < f(%.4f)=%.4f, Setting nu=1" % (y1, x, y))
-        x = 1.0
-    if PLOT:
-        fs = plt.rcParams['figure.figsize']
-        fig, ax = plt.subplots(1, 2, figsize=(fs[0] * 2, fs[1]))
-        ax1,ax2 = ax
-        ax1.plot(t, dNdt, 'ok')
-        ax1.plot(t, dNdt_smooth, '--k')
-        ax1.axvline(t[i], color='k', ls='--')
-        ax1.axhline(dNdt[i], color='k', ls='--')
-        ax1.set_xlabel('Time')
-        ax1.set_ylabel('dN/dt')
-        
-        ax2.plot(np.logspace(-3,3), target(np.logspace(-3, 3)), 'k-')
-        ax2.set_xlabel(r'$\nu$')
-        ax2.set_ylabel('Target function')
-        ax2.set_xscale('log')
-        
-        fig.tight_layout()        
-        return x,fig,ax
-    return x[0]
-
-
-def guess_r(t, N, nu=None, K=None):
-    r"""Guesses the value of *r* from the shape of the growth curve.
-
-    Following [5]_:
-
-    .. math::
-
-        \frac{dN}{dt}_{max} = r K \nu (1 + \nu)^{-\frac{1 + \nu}{\nu}}
-
-
-    - :math:`\frac{dN}{dt}_{max}`: maximum population growth rate
-    - r: initial per capita growth rate 
-    - K: maximum population size
-    - :math:`\nu`: curvature of the logsitic term
-
-    Parameters
-    ----------
-    t : numpy.ndarray
-        time
-    N : numpy:ndarray
-        `N[i]` is the population size at time `t[i]`
-    nu : float, optional
-        a guess of `nu`, the maximum population size. If not given, it is guessed.
-    K : float, optional
-        a guess of `K`, the curvature of the logsitic term. If not given, it is guessed.
-
-    Returns
-    -------
-    float
-        the guess of *r*.
-
-    References
-    ----------
-    .. [5] Richards, F. J. 1959. `A Flexible Growth Function for Empirical Use <http://dx.doi.org/10.1093/jxb/10.2.290>`_. Journal of Experimental Botany
-    """
-    dNdt = np.gradient(N, t[1]-t[0])
-    smoothed = smooth(t, dNdt)
-    dNdtmax = smoothed.max()    
-    if K is None:
-        K = N.max()
-    if nu is None:
-        nu = guess_nu(t, N, K)
-    return old_div(dNdtmax, (K * nu * (1 + nu)**(old_div(-(1 + nu), nu))))
-
-
-def fit_model(df, ax=None, param_guess=None, param_min=None, param_max=None, param_fix=None, use_weights=True, use_Dfun=False, PLOT=True, PRINT=True):
+def fit_model(df, ax=None, param_guess=None, param_min=None, param_max=None, param_fix=None, use_weights=True, use_Dfun=True, PLOT=True, PRINT=True):
     r"""Fit and select a growth model to growth curve data.
 
     This function fits several growth models to growth curve data (``OD`` as a function of ``Time``).
@@ -1174,141 +856,77 @@ def fit_model(df, ax=None, param_guess=None, param_min=None, param_max=None, par
         raise ValueError("No rows in input df")
     
     _df = df.groupby('Time')['OD'].agg([np.mean, np.std]).reset_index().rename(columns={'mean':'OD'})
-
+    OD = _df.OD.as_matrix()
+    time = _df.Time.as_matrix()
     weights =  _calc_weights(_df) if use_weights else None
-
-    models = []
-
-    # TODO: make MyModel, inherit from Model, use Model.guess
-    if param_guess is None:
-        param_guess = {}
-    if param_max is None:
-        param_max = {}
-    if param_min is None:
-        param_min = {}
-    if param_fix is None:
-        param_fix = []
-    Kguess  = param_guess.get('K', _df.OD.max())
-    y0guess = param_guess.get('y0', max(_df.OD.min(),1e-6))
-    assert y0guess > 0, y0guess
-    assert Kguess > y0guess, (Kguess, y0guess)
-    nuguess = param_guess.get('nu')
-    if nuguess is None: 
-        nuguess = guess_nu(_df.Time, _df.OD, K=Kguess)
-    assert nuguess > 0, nuguess
-    rguess  = param_guess.get('r')
-    if rguess is None: 
-        rguess = guess_r(_df.Time, _df.OD, nu=nuguess, K=Kguess)
-    assert rguess > 0, rguess
-    rguess_nu1  = param_guess.get('r')
-    if rguess_nu1 is None: 
-        rguess_nu1 = guess_r(_df.Time, _df.OD, nu=1.0, K=Kguess)
-    q0guess = param_guess.get('q0', 1.0)
-    vguess = param_guess.get('v', 1.0)
-
+    results = []
+    
     # Baranyi-Roberts = Richards /w lag (6 params)
-    # Run once to make a guess for q0 and v
-    params = baranyi_roberts_model.make_params(y0=y0guess, K=Kguess, r=rguess, nu=nuguess, q0=q0guess, v=vguess)
-    for p,m in param_max.items():
-        if p in params:
-            params[p].set(max=m)
-    for p in params.keys():
-        params[p].set(min=param_min.get(p, 1e-4))
-    params['y0'].set(vary=False)
-    params['K'].set(vary=False)
-    params['r'].set(vary=False)
-    params['nu'].set(vary=False)
-    fit_kws = {'Dfun': baranyi_roberts6_Dfun, "col_deriv":True} if use_Dfun else {}
-    result = baranyi_roberts_model.fit(data=_df.OD, t=_df.Time, params=params, weights=weights, fit_kws=fit_kws)
-    params = result.params    
-    # Now the actual fitting
-    for p in params.keys():
-        params[p].set(vary=p not in param_fix)
-    result = baranyi_roberts_model.fit(data=_df.OD, t=_df.Time, params=params, weights=weights, fit_kws=fit_kws)
-    models.append(result)
+    br6_model = BaranyiRobertsModel()
+    br6_params = br6_model.guess(data=OD, t=time)
+    assert nvarys(br6_params) == 6
+    fit_kws = {'Dfun': make_Dfun(br6_model, br6_params), "col_deriv":True} if use_Dfun else {}
+    br6_result = br6_model.fit(data=OD, t=time, params=br6_params, weights=weights, fit_kws=fit_kws)
+    assert br6_result.nvarys == 6
+    results.append(br6_result)
 
     # Baranyi-Roberts /w nu=1 = Logistic /w lag (5 params) 
-    # Run once to make a guess for q0 and v
-    params = baranyi_roberts_model.make_params(y0=y0guess, K=Kguess, r=rguess_nu1, nu=1.0, q0=q0guess, v=vguess)
-    for p,m in param_max.items():
-        if p in params:
-            params[p].set(max=m)
-    for p in params.keys():
-        params[p].set(min=param_min.get(p, 1e-4))
-    params['y0'].set(vary=False)
-    params['K'].set(vary=False)
-    params['r'].set(vary=False)
-    params['nu'].set(vary=False)
-    fit_kws = {'Dfun': baranyi_roberts5_Dfun, "col_deriv":True} if use_Dfun else {}
-    result = baranyi_roberts_model.fit(data=_df.OD, t=_df.Time, params=params, weights=weights, fit_kws=fit_kws)
-    params = result.params    
-    # Now the actual fitting
-    for p in params.keys():
-        params[p].set(vary=p not in param_fix)
-    params['nu'].set(vary=False)
-    result = baranyi_roberts_model.fit(data=_df.OD, t=_df.Time, params=params, weights=weights, fit_kws=fit_kws)
-    models.append(result)
+    br5_model = BaranyiRobertsModel()
+    br5_params = br5_model.guess(data=OD, t=time, param_guess={'nu':1}, param_fix=['nu'])
+    assert nvarys(br5_params) == 5
+    assert br5_params['nu'].value == 1
+    fit_kws = {'Dfun': make_Dfun(br5_model, br5_params), "col_deriv":True} if use_Dfun else {}
+    br5_result = br5_model.fit(data=OD, t=time, params=br5_params, weights=weights)
+    assert br5_result.nvarys == 5
+    assert br5_result.best_values['nu'] == 1
+    results.append(br5_result)
 
     # Baranyi-Roberts /w nu=1, v=r = Logistic /w lag (4 params)  (see Baty & Delignette-Muller, 2004)
-    # Run once to make a guess for q0 and v
-    params = baranyi_roberts_model.make_params(y0=y0guess, K=Kguess, r=rguess_nu1, nu=1.0, q0=q0guess, v=rguess_nu1)
-    for p,m in param_max.items():
-        if p in params:
-            params[p].set(max=m)
-    for p in params.keys():
-        params[p].set(min=param_min.get(p, 1e-4))
-    params['y0'].set(vary=False)
-    params['K'].set(vary=False)
-    params['r'].set(vary=False)
-    params['nu'].set(vary=False)
-    params['v'].set(expr='r')
-    fit_kws = None #{'Dfun': baranyi_roberts5_Dfun, "col_deriv":True} if use_Dfun else {}
-    result = baranyi_roberts_model.fit(data=_df.OD, t=_df.Time, params=params, weights=weights, fit_kws=fit_kws)
-    params = result.params    
-    # Now the actual fitting
-    for p in params.keys():
-        params[p].set(vary=p not in param_fix)
-    params['nu'].set(vary=False)
-    params['v'].set(expr='r')
-    result = baranyi_roberts_model.fit(data=_df.OD, t=_df.Time, params=params, weights=weights, fit_kws=fit_kws)
-    models.append(result)
+    br4_model = BaranyiRobertsModel()
+    br4_params = br4_model.guess(data=OD, t=time, param_guess={'nu':1}, param_fix=['nu', 'v'])
+    assert nvarys(br4_params) == 4
+    assert br4_params['nu'].value == 1
+    assert br4_params['v'].value == br4_params['r'].value
+    fit_kws = {'Dfun': make_Dfun(br4_model, br4_params), "col_deriv":True} if use_Dfun else {}
+    br4_result = br4_model.fit(data=OD, t=time, params=br4_params, weights=weights, fit_kws=fit_kws)
+    assert br4_result.nvarys == 4
+    assert br4_result.best_values['v'] == br4_result.best_values['r']
+    results.append(br4_result)
 
     # Richards = Baranyi-Roberts /wout lag (4 params)
-    params = richards_model.make_params(y0=y0guess, K=Kguess, r=rguess, nu=nuguess)
-    for p,m in param_max.items():
-        if p in params:
-            params[p].set(max=m)
-    for p in params.keys():
-        params[p].set(min=param_min.get(p, 1e-4))
-    for p in params.keys():
-        params[p].set(vary=p not in param_fix)
-    fit_kws = {'Dfun': richards_Dfun, "col_deriv":True} if use_Dfun else {}
-    result = richards_model.fit(data=_df.OD, t=_df.Time, params=params, weights=weights, fit_kws=fit_kws)
-    models.append(result)
+    richards_model = BaranyiRobertsModel()
+    richards_params = richards_model.guess(data=OD, t=time, param_guess={'v':np.inf}, param_fix=['q0', 'v'])
+    assert nvarys(richards_params) == 4
+    assert richards_params['v'].value == np.inf
+    fit_kws = {'Dfun': make_Dfun(richards_model, richards_params), "col_deriv":True} if use_Dfun else {}
+    richards_result = richards_model.fit(data=OD, t=time, params=richards_params, weights=weights, fit_kws=fit_kws)
+    assert richards_result.nvarys == 4
+    assert richards_result.best_values['v'] == np.inf
+    results.append(richards_result)
 
-    # Logistic = Richards /w nu=1 (3 params)
-    params = logistic_model.make_params(y0=y0guess, K=Kguess, r=rguess_nu1)
-    for p,m in param_max.items():
-        if p in params:
-            params[p].set(max=m)    
-    for p in params.keys():
-        params[p].set(min=param_min.get(p, 1e-4))
-    for p in params.keys():
-        params[p].set(vary=p not in param_fix)
-    fit_kws = {'Dfun': logistic_Dfun, "col_deriv":True} if use_Dfun else {}
-    result = logistic_model.fit(data=_df.OD, t=_df.Time, params=params, weights=weights, fit_kws=fit_kws)
-    models.append(result)
+    # Logistic = Richards /w nu = 1 (3 params)
+    logistic_model = BaranyiRobertsModel()
+    logistic_params = logistic_model.guess(data=OD, t=time, param_guess={'nu':1, 'v':np.inf}, param_fix=['nu', 'v', 'q0'])
+    assert nvarys(logistic_params) == 3
+    assert logistic_params['nu'].value == 1
+    assert logistic_params['v'].value == np.inf
+    fit_kws = {'Dfun': make_Dfun(logistic_model, logistic_params), "col_deriv":True} if use_Dfun else {}
+    logistic_result = logistic_model.fit(data=OD, t=time, params=logistic_params, weights=weights, fit_kws=fit_kws)
+    assert logistic_result.nvarys == 3
+    assert logistic_result.best_values['nu'] == 1
+    assert logistic_result.best_values['v'] == np.inf
+    results.append(logistic_result)
 
     # sort by increasing bic
-    models.sort(key=lambda m: m.bic)
+    results.sort(key=lambda m: m.bic)
 
     if PRINT:
-        print(models[0].fit_report(show_correl=False))
+        print(results[0].fit_report(show_correl=False))
     if PLOT:        
-        dy = old_div(_df.OD.max(), 50.0)
-        dx = old_div(_df.Time.max(), 25.0)
-        fig, ax = plt.subplots(1, len(models), sharex=True, sharey=True, figsize=(16,6))
-        for i,fit in enumerate(models):
+        dy = _df.OD.max() / 50.0
+        dx = _df.Time.max() / 25.0
+        fig, ax = plt.subplots(1, len(results), sharex=True, sharey=True, figsize=(16,6))
+        for i,fit in enumerate(results):
             vals = fit.best_values
             fit.plot_fit(ax=ax[i], datafmt='.', fit_kws={'lw':4})
             ax[i].axhline(y=vals.get('y0', 0), color='k', ls='--')
@@ -1324,13 +942,23 @@ def fit_model(df, ax=None, param_guess=None, param_min=None, param_max=None, par
         ax[0].set_ylabel('OD')
         sns.despine()
         fig.tight_layout()
-        return models, fig, ax
-    return models
+        return results, fig, ax
+    return results
 
 
-linear_model = LinearModel()
-linear_model.name = 'linear-benchmark'
-logistic_model = Model(logistic_function)
-richards_model = Model(richards_function)
-baranyi_roberts_model = Model(baranyi_roberts_function)
-#logistic_Dfun, richards_Dfun, baranyi_roberts5_Dfun, baranyi_roberts6_Dfun = _make_model_Dfuns()
+if __name__ == '__main__':
+    # simulate 30 growth curves
+    from curveball.baranyi_roberts_model import baranyi_roberts_function
+    rng = np.random.RandomState(0)
+    t = np.linspace(0, 12)
+    reps = 30
+    noise = 0.02
+    y = baranyi_roberts_function(t=t, y0=0.12, K=0.56, r=0.8, nu=1.8, q0=0.2, v=0.8)
+    y.resize((len(t),))
+    y = y.repeat(reps).reshape((len(t), reps)) + rng.normal(0, noise, (len(t), reps))
+    y[y < 0] = 0
+    df = pd.DataFrame({'OD': y.flatten(), 'Time': t.repeat(reps)})
+
+    # fit models to growth curves
+    results, fig, ax = fit_model(df, use_Dfun=True, PLOT=True, PRINT=True)
+    plt.show()    
