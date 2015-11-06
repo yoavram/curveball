@@ -24,7 +24,7 @@ import pandas as pd
 import copy
 from lmfit import Model
 from lmfit.models import LinearModel
-from curveball.baranyi_roberts_model import BaranyiRobertsModel
+from curveball.baranyi_roberts_model import baranyi_roberts_function, BaranyiRobertsModel
 import sympy
 import seaborn as sns
 sns.set_style("ticks")
@@ -60,14 +60,18 @@ def sample_params(model_fit, nsamples, params=None, covar=None):
         params = _params
     if covar is None:
         covar = model_fit.covar
-
-    names = [p.name for p in list(params.values()) if p.vary]
-    means = [p.value for p in list(params.values()) if p.vary]
-    
+    if covar.ndim != 2:
+        warn("Covariance matrix doesn't have 2 dimensions: \n{}".format(covar))
+    w, h = covar.shape
+    if w != h:
+        warn("Covariance matrix is not square: \n{}".format(covar))
+    names = [p.name for p in params.values() if p.vary]
+    means = [p.value for p in params.values() if p.vary]
+        
     param_samples = np.random.multivariate_normal(means, covar, nsamples)
     param_samples = pd.DataFrame(param_samples, columns=names)
     idx = np.zeros(nsamples) == 0
-    for p in list(params.values()):
+    for p in params.values():
         if not p.vary:
             continue
         idx = idx & (param_samples[p.name] >= p.min) & (param_samples[p.name] <= p.max)
@@ -148,7 +152,7 @@ def lrtest(m0, m1, alfa=0.05):
     return prefer_m1, pval, D, ddf
 
 
-def find_max_growth(model_fit, after_lag=True, PLOT=True):
+def find_max_growth(model_fit, after_lag=True):
     r"""Estimates the maximum population growth rate from the model fit.
 
     The function calculates the maximum population growth rate :math:`a=\max{\frac{dy}{dt}}` 
@@ -185,8 +189,6 @@ def find_max_growth(model_fit, after_lag=True, PLOT=True):
         the result of a model fitting procedure
     after_lag : bool
         if true, only explore the time after the lag phase. Otherwise start at time zero. Defaults to :py:const:`True`.
-    PLOT : bool, optional
-        if true, the function will plot a figure that illustrates the calculation. Defaults to is :py:const:`False`; defaults to :py:const:`False`.
 
     Returns
     -------
@@ -202,12 +204,6 @@ def find_max_growth(model_fit, after_lag=True, PLOT=True):
         the population size or density (OD) for which the maximum per capita growth rate is achieved.
     mu : float
         the the maximum per capita growth rate.
-    fig : matplotlib.figure.Figure
-        if the argument `PLOT` was :py:const:`True`, the generated figure.
-    ax : matplotlib.axes.Axes
-        if the argument `PLOT` was :py:const:`True`, the left y-axis representing growth.
-    ax2 : matplotlib.axes.Axes 
-        if the argument `PLOT` was :py:const:`True`, the right y-axis representing growth rate.
     """
     y0 = model_fit.params['y0'].value
     K  = model_fit.params['K'].value
@@ -230,50 +226,10 @@ def find_max_growth(model_fit, after_lag=True, PLOT=True):
     t2 = t[i]
     y2 = y[i]
     
-    if PLOT:
-        fig,ax = plt.subplots()
-        ax2 = ax.twinx()        
-        
-        r = model_fit.params['r'].value
-        if 'nu' in model_fit.params:
-            nu = model_fit.params['nu'].value
-        else:
-            nu = 1.0               
-
-        ax.plot(t, y, label='Fit')
-        ax2.plot(t, dfdt, label='Fit derivative')
-        ax2.plot(t, dfdt_y, label='Fit growth per capita')
-        ax.set_xlabel('Time')
-        ax.set_ylabel('OD')
-        ax2.set_ylabel('dOD/dTime')
-        ax.set_ylim(0, y.max() * 1.1)
-        ax.axhline(y=y1, color='k', ls='--', alpha=0.5)
-        ax.text(x=-0.1, y=y1, s="y|max(dydt)")
-        ax.axhline(y=y2, color='k', ls='--', alpha=0.5)
-        ax.text(x=-0.1, y=y1, s="y|max(dydt/y)")
-        ax.axvline(x=t1, color='k', ls='--', alpha=0.5)
-        ax.text(x=t1, y=0.01, s="t|max(dydt)")
-        ax.axvline(x=t2, color='k', ls='--', alpha=0.5)
-        ax.text(x=t1, y=0.01, s="t|max(dydt/y)")
-        ax.axhline(y=y0, color='k', ls='--', alpha=0.5)
-        ax.text(x=0.1, y=y0, s="y0")
-        ax.axhline(y=K, color='k', ls='--', alpha=0.5)
-        ax.text(x=-0.1, y=K, s="K")
-        ax2.axhline(y=a, color='k', ls='--', alpha=0.5)
-        ax2.text(x=t.max()-2, y=a, s="max(dydt)")
-        ax2.axhline(y=mu, color='k', ls='--', alpha=0.5)
-        ax2.text(x=t.max()-2, y=mu, s="max(dydt/y)")  
-        ax2.axhline(y=r*(1-(old_div(y0,K))**nu), color='k', ls='--', alpha=0.5)
-        ax2.text(x=t.max()-2, y=r*(1-(old_div(y0,K))**nu), s="r(1-(y0/K)**nu)")        
-        sns.despine(top=True, right=False)
-        fig.tight_layout()
-        ax.legend(title='OD', loc='center right', frameon=True).get_frame().set_color('w')
-        ax2.legend(title='dODdTime', loc='lower right', frameon=True).get_frame().set_color('w')
-        return t1,y1,a,t2,y2,mu,fig,ax,ax2
     return t1,y1,a,t2,y2,mu
 
 
-def find_lag(model_fit, params=None, PLOT=True):
+def find_lag(model_fit, params=None):
     """Estimates the lag duration from the model fit.
 
     The function calculates the tangent line to the model curve at the point of maximum derivative (the inflection point). 
@@ -286,19 +242,11 @@ def find_lag(model_fit, params=None, PLOT=True):
         the result of a model fitting procedure
     params : lmfit.parameter.Parameters, optional
         if provided, these parameters will override `model_fit`'s parameters
-    PLOT : bool, optional
-        if true, the function will plot a figure that illustrates the calculation, defaults to is :py:const:`False`.
 
     Returns
     -------
     lam : float
-        the lag phase duration in the units of the `model_fit` ``Time`` variable (usually hours).
-    fig : matplotlib.figure.Figure
-        if the argument `PLOT` was :py:const:`True`, the generated figure.
-    ax : matplotlib.axes.Axes
-        if the argument `PLOT` was :py:const:`True`, the left y-axis representing growth
-    ax2 : matplotlib.axes.Axes 
-        if the argument `PLOT` was :py:const:`True`, the right y-axis representing growth rate.
+        the lag phase duration in the units of the `model_fit` ``Time`` variable (usually hours).    
 
     References
     ----------
@@ -315,10 +263,16 @@ def find_lag(model_fit, params=None, PLOT=True):
     y0 = params['y0'].value
     K  = params['K'].value
 
-    t = np.linspace(0, 24)
+    t = model_fit.userkws['t']
+    t = np.linspace(t.min(), t.max())
     f = lambda t: model_fit.model.eval(t=t, params=params)
-    y = f(t)
+    y = f(t)    
     dfdt = derivative(f, t)
+    idx = y > K/np.exp(1)
+    assert idx.sum() > 0
+    t = t[idx]
+    y = y[idx]
+    dfdt = dfdt[idx]
 
     a = dfdt.max()
     i = dfdt.argmax()
@@ -326,53 +280,10 @@ def find_lag(model_fit, params=None, PLOT=True):
     y1 = y[i]
     b = y1 - a * t1
     lam = (y0 - b) / a
-
-    if PLOT:
-        fig,ax = plt.subplots()
-        ax2 = ax.twinx()        
-        
-        r = params['r'].value
-        if 'nu' in params:
-            nu = params['nu'].value
-        else:
-            nu = 1.0       
-        v = r
-        q0 = old_div(1.,(np.exp(lam * v) - 1))
-
-        ax.plot(t, y, label='Fit')
-        ax.plot(t, richards_function(t, y0, r, K, nu), ls='--', lw=3, label='Richards (no lag)')
-        ax.plot(t, baranyi_roberts_function(t, y0, r, K, nu, q0, v) ,  ls='--', lw=3, label='Baranyi Roberts')        
-        ax.plot(t, a * t + b , ls='--', lw=3, label='Tangent')
-
-        ax2.plot(t, dfdt, label='Fit derivative')
-        ax2.plot(t, derivative(lambda t: richards_function(t, y0, r, K, nu), t) ,  ls='--', lw=3, label='Richards derivative')
-        ax2.plot(t, derivative(lambda t: baranyi_roberts_function(t, y0, r, K, nu, q0, v), t) ,  ls='--', lw=3, label='Baranyi Roberts derivative')        
-
-        ax.set_xlabel('Time')
-        ax.set_ylabel('OD')
-        ax2.set_ylabel('dOD/dTime')
-        ax.set_ylim(0,1.1)
-        ax.axhline(y=y1, color='k', ls='--', alpha=0.5)
-        ax.text(x=-0.1, y=y1, s="y|max(dydt)")
-        ax.axvline(x=t1, color='k', ls='--', alpha=0.5)
-        ax.text(x=t1, y=0.01, s="t|max(dydt)")
-        ax.axhline(y=y0, color='k', ls='--', alpha=0.5)
-        ax.text(x=0.1, y=y0, s="y0")
-        ax.axhline(y=K, color='k', ls='--', alpha=0.5)
-        ax.text(x=-0.1, y=K, s="K")
-        ax2.axhline(y=a, color='k', ls='--', alpha=0.5)
-        ax2.text(x=t.max()-2, y=a, s="max(dydt)")
-        ax.axvline(x=lam, color='k', ls='--', alpha=0.5)
-        ax.text(x=lam, y=0.01, s=r'$\lambda=$%.2g' % lam)
-        sns.despine(top=True, right=False)
-        fig.tight_layout()
-        ax.legend(title='OD', loc='center right', frameon=True).get_frame().set_color('w')
-        ax2.legend(title='dODdTime', loc='lower right', frameon=True).get_frame().set_color('w')
-        return lam,fig,ax,ax2
     return lam
 
 
-def find_lag_ci(model_fit, nsamples=1000, ci=0.95, PLOT=True):
+def find_lag_ci(model_fit, nsamples=1000, ci=0.95):
     """Estimates a confidence interval for the lag duration from the model fit.
 
     The function uses *parameteric bootstrap*:
@@ -389,17 +300,11 @@ def find_lag_ci(model_fit, nsamples=1000, ci=0.95, PLOT=True):
         number of samples, defaults to 1000
     ci : float, optional
         the fraction of lag durations that should be within the calculated limits. 0 < `ci` <, defaults to 0.95.
-    PLOT : bool, optional
-        if true, the function will plot a histogram of the sampled lag durations, defaults to :py:const:`False`.
-
+    
     Returns
     -------
-    lam : float
-        the lag phase duration in the units of the `model_fit` ``Time`` variable (usually hours).
-    fig : matplotlib.figure.Figure
-        if the argument `PLOT` was :py:const:`True`, the generated figure.
-    ax : matplotlib.axes.Axes
-        if the argument `PLOT` was :py:const:`True`, the generated axes.
+    low, high : float
+        the lower and higher boundries of the confidence interval of the lag phase duration in the units of the `model_fit` ``Time`` variable (usually hours).
 
     See also
     --------
@@ -407,17 +312,18 @@ def find_lag_ci(model_fit, nsamples=1000, ci=0.95, PLOT=True):
     :py:func:`has_lag`,
     :py:func:`sample_params`
     """
-    lam = find_lag(model_fit, PLOT=False)
+    lam = find_lag(model_fit)
     if not 0 <= ci <= 1:
         raise ValueError("ci must be between 0 and 1")
     lags = np.zeros(nsamples)
     param_samples = sample_params(model_fit, nsamples)
     params = copy.deepcopy(model_fit.params)
-    for i in range(nsamples):
+    for i in range(param_samples.shape[0]):
         sample = param_samples.iloc[i,:]
-        for k,v in list(params.items()):
-            params[k].set(value=sample[k])
-        lags[i] = find_lag(model_fit, params=params, PLOT=False)
+        for k,v in params.items():
+            if v.vary:
+                params[k].set(value=sample[k])
+        lags[i] = find_lag(model_fit, params=params)
     
     margin = (1.0 - ci) * 50.0
     idx = np.isfinite(lags) & (lags >= 0)
@@ -427,19 +333,7 @@ def find_lag_ci(model_fit, nsamples=1000, ci=0.95, PLOT=True):
     low = np.percentile(lags, margin)
     high = np.percentile(lags, ci * 100.0 + margin)
     assert high > low, lags.tolist()
-
-    if PLOT:
-        fig,ax = plt.subplots(1,1)
-        sns.distplot(lags, ax=ax)
-        ax.axvline(x=low, ls='--', color='k')
-        ax.axvline(x=lam, color='k')
-        ax.axvline(x=high, ls='--', color='k')
-        ax.set_xlabel('Lag duration')
-        ax.set_ylabel('Frequency')
-        sns.despine(top=True, right=False)
-        fig.tight_layout()
-        return low,high,fig,ax
-    return low,high
+    return low, high
 
 
 
@@ -547,11 +441,10 @@ def make_Dfun(model, params):
     for i,x in enumerate(args):
         dydx = expr.diff(x)
         dydx = sympy.lambdify(args=(t,) + args, expr=dydx, modules="numpy")
-        partial_derivs[i] = dydx
-    
+        partial_derivs[i] = dydx    
     def Dfun(params, y, a, t):
-        values = [ par.value for par in list(params.values()) if par.vary ]        
-        return np.array([dydv(t, *values) for dydv in partial_derivs])
+        values = [ par.value for par in params.values() if par.vary ]        
+        return np.array([dydx(t, *values) for dydx in partial_derivs])
     return Dfun
 
 
@@ -813,8 +706,8 @@ def fit_model(df, ax=None, param_guess=None, param_min=None, param_max=None, par
         a dictionary of parameter minimum bounds to use (key: :py:class:`str` of param name; value: :py:class:`float` of param min bound).
     param_max : dict, optional
         a dictionary of parameter maximum bounds to use (key: :py:class:`str` of param name; value: :py:class:`float` of param max bound).
-    param_fix : list, optional
-        a list of names (:py:class:`str`) of parameters to fix rather then vary, while fitting the models.
+    param_fix : set, optional
+        a set of names (:py:class:`str`) of parameters to fix rather then vary, while fitting the models.
     use_weights : bool, optional
         should the function use standard deviation across replicates as weights for the fitting procedure, defaults to :py:const:`True`. 
     use_Dfun : bool, optional
@@ -855,6 +748,11 @@ def fit_model(df, ax=None, param_guess=None, param_min=None, param_max=None, par
     if df.shape[0] == 0:
         raise ValueError("No rows in input df")
     
+    if param_guess is None:
+        param_guess = dict()
+    if param_fix is None:
+        param_fix = set()
+
     _df = df.groupby('Time')['OD'].agg([np.mean, np.std]).reset_index().rename(columns={'mean':'OD'})
     OD = _df.OD.as_matrix()
     time = _df.Time.as_matrix()
@@ -863,58 +761,61 @@ def fit_model(df, ax=None, param_guess=None, param_min=None, param_max=None, par
     
     # Baranyi-Roberts = Richards /w lag (6 params)
     br6_model = BaranyiRobertsModel()
-    br6_params = br6_model.guess(data=OD, t=time)
-    assert nvarys(br6_params) == 6
+    br6_params = br6_model.guess(data=OD, t=time, param_guess=param_guess, param_min=param_min, param_max=param_max, param_fix=param_fix)    
     fit_kws = {'Dfun': make_Dfun(br6_model, br6_params), "col_deriv":True} if use_Dfun else {}
-    br6_result = br6_model.fit(data=OD, t=time, params=br6_params, weights=weights, fit_kws=fit_kws)
-    assert br6_result.nvarys == 6
+    br6_result = br6_model.fit(data=OD, t=time, params=br6_params, weights=weights, fit_kws=fit_kws)    
     results.append(br6_result)
 
     # Baranyi-Roberts /w nu=1 = Logistic /w lag (5 params) 
     br5_model = BaranyiRobertsModel()
-    br5_params = br5_model.guess(data=OD, t=time, param_guess={'nu':1}, param_fix=['nu'])
-    assert nvarys(br5_params) == 5
+    _param_guess = param_guess.copy()
+    _param_guess['nu'] = 1
+    br5_params = br5_model.guess(data=OD, t=time, param_guess=_param_guess, param_min=param_min, param_max=param_max, param_fix=param_fix.union({'nu'}))
     assert br5_params['nu'].value == 1
     fit_kws = {'Dfun': make_Dfun(br5_model, br5_params), "col_deriv":True} if use_Dfun else {}
     br5_result = br5_model.fit(data=OD, t=time, params=br5_params, weights=weights)
-    assert br5_result.nvarys == 5
     assert br5_result.best_values['nu'] == 1
     results.append(br5_result)
 
     # Baranyi-Roberts /w nu=1, v=r = Logistic /w lag (4 params)  (see Baty & Delignette-Muller, 2004)
     br4_model = BaranyiRobertsModel()
-    br4_params = br4_model.guess(data=OD, t=time, param_guess={'nu':1}, param_fix=['nu', 'v'])
-    assert nvarys(br4_params) == 4
+    _param_guess = param_guess.copy()
+    _param_guess['nu'] = 1
+    br4_params = br4_model.guess(data=OD, t=time, param_guess=_param_guess, param_min=param_min, param_max=param_max, param_fix=param_fix.union({'nu', 'v'}))
     assert br4_params['nu'].value == 1
     assert br4_params['v'].value == br4_params['r'].value
     fit_kws = {'Dfun': make_Dfun(br4_model, br4_params), "col_deriv":True} if use_Dfun else {}
     br4_result = br4_model.fit(data=OD, t=time, params=br4_params, weights=weights, fit_kws=fit_kws)
-    assert br4_result.nvarys == 4
     assert br4_result.best_values['v'] == br4_result.best_values['r']
     results.append(br4_result)
 
     # Richards = Baranyi-Roberts /wout lag (4 params)
     richards_model = BaranyiRobertsModel()
-    richards_params = richards_model.guess(data=OD, t=time, param_guess={'v':np.inf}, param_fix=['q0', 'v'])
-    assert nvarys(richards_params) == 4
-    assert richards_params['v'].value == np.inf
+    _param_guess = param_guess.copy()
+    _param_guess['v'] = np.inf
+    richards_params = richards_model.guess(data=OD, t=time, param_guess=_param_guess, param_min=param_min, param_max=param_max, param_fix=param_fix.union({'q0', 'v'}))
+    assert np.isposinf(richards_params['v'].value)
+    assert np.isposinf(richards_params['q0'].value)
     fit_kws = {'Dfun': make_Dfun(richards_model, richards_params), "col_deriv":True} if use_Dfun else {}
     richards_result = richards_model.fit(data=OD, t=time, params=richards_params, weights=weights, fit_kws=fit_kws)
-    assert richards_result.nvarys == 4
-    assert richards_result.best_values['v'] == np.inf
+    assert np.isposinf(richards_result.best_values['v'])
+    assert np.isposinf(richards_result.best_values['q0'])
     results.append(richards_result)
 
     # Logistic = Richards /w nu = 1 (3 params)
     logistic_model = BaranyiRobertsModel()
-    logistic_params = logistic_model.guess(data=OD, t=time, param_guess={'nu':1, 'v':np.inf}, param_fix=['nu', 'v', 'q0'])
-    assert nvarys(logistic_params) == 3
+    _param_guess = param_guess.copy()
+    _param_guess['nu'] = 1
+    _param_guess['v'] = np.inf
+    logistic_params = logistic_model.guess(data=OD, t=time, param_guess=_param_guess, param_min=param_min, param_max=param_max, param_fix=param_fix.union({'nu', 'q0', 'v'}))
     assert logistic_params['nu'].value == 1
-    assert logistic_params['v'].value == np.inf
+    assert np.isposinf(logistic_params['v'].value)
+    assert np.isposinf(logistic_params['q0'].value)
     fit_kws = {'Dfun': make_Dfun(logistic_model, logistic_params), "col_deriv":True} if use_Dfun else {}
     logistic_result = logistic_model.fit(data=OD, t=time, params=logistic_params, weights=weights, fit_kws=fit_kws)
-    assert logistic_result.nvarys == 3
     assert logistic_result.best_values['nu'] == 1
-    assert logistic_result.best_values['v'] == np.inf
+    assert np.isposinf(logistic_result.best_values['v'])
+    assert np.isposinf(logistic_result.best_values['q0'])
     results.append(logistic_result)
 
     # sort by increasing bic
@@ -948,7 +849,6 @@ def fit_model(df, ax=None, param_guess=None, param_min=None, param_max=None, par
 
 if __name__ == '__main__':
     # simulate 30 growth curves
-    from curveball.baranyi_roberts_model import baranyi_roberts_function
     rng = np.random.RandomState(0)
     t = np.linspace(0, 12)
     reps = 30

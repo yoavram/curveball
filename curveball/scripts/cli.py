@@ -48,8 +48,8 @@ def to_dict(ctx, param, value):
     return dict(value)
 
 
-def to_list(ctx, param, value):
-    return list(value)
+def to_set(ctx, param, value):
+    return set(value)
 
 
 def get_filename(filepath):
@@ -205,7 +205,7 @@ def plate(plate_folder, plate_file, output_file, list, show):
 @click.option('--guess', type=(str, float), multiple=True, callback=to_dict, help='set the initial guess for a parameter')
 @click.option('--param_min', type=(str, float), multiple=True, callback=to_dict, help='set the minimum allowed value for a parameter')
 @click.option('--param_max', type=(str, float), multiple=True, callback=to_dict, help='set the maximum allowed value for a parameter')
-@click.option('--param_fix', type=str, multiple=True, callback=to_list, help='fix a parameter to it\'s initial guess')
+@click.option('--param_fix', type=str, multiple=True, callback=to_set, help='fix a parameter to it\'s initial guess')
 @click.option('--weights/--no-weights', default=True, help="use weights for the fitting procedure")
 @cli.command()
 def analyse(path, output_file, plate_folder, plate_file, blank_strain, ref_strain, max_time, guess, param_min, param_max, param_fix, weights):

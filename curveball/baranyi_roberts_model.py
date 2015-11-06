@@ -49,7 +49,7 @@ def smooth(x, y, PLOT=False):
 	return yhat
 
 
-def baranyi_roberts_function(t, y0, r, K, nu, q0, v):
+def baranyi_roberts_function(t, y0, K, r, nu, q0, v):
 	r"""The Baranyi-Roberts growth model is an extension of the Richards model that adds a lag phase [1]_.
 
 	.. math::
@@ -94,7 +94,7 @@ def baranyi_roberts_function(t, y0, r, K, nu, q0, v):
 	----------
 	.. [1] Baranyi, J., Roberts, T. A., 1994. `A dynamic approach to predicting bacterial growth in food <www.ncbi.nlm.nih.gov/pubmed/7873331>`_. Int. J. Food Microbiol.
 	"""
-	if v == np.inf:
+	if np.isposinf(q0) or np.isposinf(v):
 		At = t
 	else:
 		At = t + (1.0 / v) * np.log((np.exp(-v * t) + q0) / (1.0 + q0))
@@ -262,12 +262,6 @@ class BaranyiRobertsModel(lmfit.model.Model):
 
 	def __init__(self, *args, **kwargs):
 		super(BaranyiRobertsModel, self).__init__(baranyi_roberts_function, *args, **kwargs)
-		self.set_param_hint(name = 'y0', min  = MIN_VALUE)
-		self.set_param_hint(name = 'K', min  = MIN_VALUE)
-		self.set_param_hint(name = 'r', min  = MIN_VALUE)
-		self.set_param_hint(name = 'nu', min  = MIN_VALUE)
-		self.set_param_hint(name = 'q0', min  = MIN_VALUE)
-		self.set_param_hint(name = 'v', min  = MIN_VALUE)
 
 
 	def guess(self, data, t, param_guess=None, param_min=None, param_max=None, param_fix=None):		
@@ -289,6 +283,8 @@ class BaranyiRobertsModel(lmfit.model.Model):
 			param_guess['r'] = guess_r(t, data, K=param_guess['K'], nu=param_guess['nu'])
 		if 'v' not in param_guess and 'v' in param_fix:
 			param_guess['v'] = param_guess['r']
+		if ('v' in param_guess and np.isposinf(param_guess['v'])) or ('q0' in param_guess and np.isposinf(param_guess['q0'])):
+			param_guess['q0'], param_guess['v'] = np.inf, np.inf
 		if 'v' not in param_guess or 'q0' not in param_guess:
 			param_guess['q0'], param_guess['v'] = guess_q0_v(t, data, param_guess)
 
@@ -308,24 +304,33 @@ class BaranyiRobertsModel(lmfit.model.Model):
 
 
 	def get_sympy_expr(self, params):	
-		t, y0, r, K, nu, q0, v = sympy.symbols('t y0 r K nu q0 v')
-		args = [y0, r, K, nu, q0, v]
+		t, y0, K, r, nu, q0, v = sympy.symbols('t y0 K r nu q0 v')
+		args = [y0, K, r, nu, q0, v]
+		if not params['y0'].vary:
+			args.remove(y0)
+			y0 = params['y0'].value
+		if not params['K'].vary:			
+			args.remove(K)			
+			K = params['K'].value
+		if not params['r'].vary:
+			args.remove(r)
+			r = params['r'].value
 		if not params['nu'].vary:
 			args.remove(nu)
 			nu = params['nu'].value
-		if not params['v'].vary:
-			args.remove(v)
-			v = params['v'].value
 		if not params['q0'].vary:
 			args.remove(q0)
 			q0 = params['q0'].value
-		if (isinstance(v, float) and np.isinf(v)) or (isinstance(q0, float) and np.isinf(q0)):
+		if not params['v'].vary:
+			args.remove(v)
+			v = params['v'].value
+		if (isinstance(q0, float) and np.isinf(q0)) or (isinstance(v, float) and np.isinf(v)):
 			At = t
 		else:
 			At = t + 1.0 / v * sympy.log((sympy.exp(-v * t) + q0) / (1 + q0))
-		dNdt = K / (1 - (1 - (K / y0)**nu) * sympy.exp(-r * nu * At))**(1 / nu)
+		dNdt = K / (1.0 - (1.0 - (K / y0)**nu) * sympy.exp(-r * nu * At))**(1.0 / nu)
 		return dNdt, t, tuple(args)
-	
+
 
 def nvarys(params):
 	return len([p for p in params.values() if p.vary])
@@ -364,20 +369,24 @@ if __name__ == '__main__':
 	richards_model = BaranyiRobertsModel()
 	richards_params = richards_model.guess(data=y, t=t, param_guess={'v':np.inf}, param_fix=['q0', 'v'])
 	assert nvarys(richards_params) == 4
-	assert richards_params['v'].value == np.inf
+	assert np.isposinf(richards_params['v'].value)
+	assert np.isposinf(richards_params['q0'].value)
 	richards_result = richards_model.fit(data=y, t=t, params=richards_params)
 	assert richards_result.nvarys == 4
-	assert richards_result.best_values['v'] == np.inf
+	assert np.isposinf(richards_result.best_values['v'])
+	assert np.isposinf(richards_result.best_values['q0'])
 	print(richards_result.model.name, richards_result.nvarys, richards_result.bic)
 
 	logistic_model = BaranyiRobertsModel()
 	logistic_params = logistic_model.guess(data=y, t=t, param_guess={'nu':1, 'v':np.inf}, param_fix=['nu', 'v', 'q0'])
 	assert nvarys(logistic_params) == 3
-	assert br4_params['nu'].value == 1
-	assert richards_params['v'].value == np.inf
+	assert logistic_params['nu'].value == 1
+	assert np.isposinf(logistic_params['v'].value)
+	assert np.isposinf(logistic_params['q0'].value)
 	logistic_result = logistic_model.fit(data=y, t=t, params=logistic_params)
 	assert logistic_result.nvarys == 3
 	assert logistic_result.best_values['nu'] == 1
-	assert logistic_result.best_values['v'] == np.inf
+	assert np.isposinf(logistic_result.best_values['v'])
+	assert np.isposinf(logistic_result.best_values['q0'])
 	print(logistic_result.model.name, logistic_result.nvarys, logistic_result.bic)
 	
