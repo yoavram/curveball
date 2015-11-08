@@ -89,7 +89,7 @@ The model is then described by the following ODE and exact solution:
 
 		N(t) = \frac{K}{\Big[1 - \Big(1 - \Big(\frac{K}{N_0}\Big)^{\nu}\Big) e^{-r \nu A(t)}\Big]^{1/\nu}}
 
-        A(t) = \int_0^t{\alpha(s)ds} = \int_0^t{\frac{q_0}{q_0 + e^{-v s}} ds} = t + \frac{1}{v} \log{\Big( \frac{e^{-v t} + q0}{1 + q0} \Big)}
+        A(t) = \int_0^t{\alpha(s)ds} = \int_0^t{\frac{q_0}{q_0 + e^{-v s}} ds} = t + \frac{1}{v} \log{\Big( \frac{e^{-v t} + q_0}{1 + q_0} \Big)}
 
 
 - :math:`N_0`: initial population size
