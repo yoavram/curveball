@@ -171,7 +171,8 @@ A more elaborate scheme can be found [here](https://khmer.readthedocs.org/en/v1.
 #### Adding changes to the change log
 
 Before delcaring a new verison you should describe the changes made since the last version.
-Call `git log` to see all the commit logs and edit `CHANGELOG.md`.
+Call `git log vV.. --oneline --decorate`, replacing `V` with the tag of the last version, 
+to see all the commit logs since the last version; then edit `CHANGELOG.md`.
 
 #### Declaring a new version
 
