@@ -777,6 +777,15 @@ def fit_model(df, ax=None, param_guess=None, param_min=None, param_max=None, par
     assert br5_result.best_values['nu'] == 1
     results.append(br5_result)
 
+    # Baranyi-Roberts /w v=r (5 params) 
+    br5b_model = BaranyiRobertsModel()    
+    br5b_params = br5b_model.guess(data=OD, t=time, param_guess=param_guess, param_min=param_min, param_max=param_max, param_fix=param_fix.union({'v'}))
+    assert br5b_params['nu'].value == 1
+    fit_kws = {'Dfun': make_Dfun(br5b_model, br5b_params), "col_deriv":True} if use_Dfun else {}
+    br5b_result = br5b_model.fit(data=OD, t=time, params=br5b_params, weights=weights)
+    assert br5b_result.best_values['nu'] == 1
+    results.append(br5b_result)
+
     # Baranyi-Roberts /w nu=1, v=r = Logistic /w lag (4 params)  (see Baty & Delignette-Muller, 2004)
     br4_model = BaranyiRobertsModel()
     _param_guess = param_guess.copy()
