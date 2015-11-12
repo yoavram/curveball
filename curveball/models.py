@@ -253,7 +253,7 @@ def find_max_growth(model_fit, after_lag=True):
     y0 = model_fit.params['y0'].value
     K  = model_fit.params['K'].value
 
-    t0 = find_lag(model_fit, PLOT=False) if after_lag else 0
+    t0 = find_lag(model_fit) if after_lag else 0
     t1 = model_fit.userkws['t'].max()
     t = np.linspace(t0, t1)     
     f = lambda t: model_fit.eval(t=t)
@@ -415,7 +415,7 @@ def has_lag(model_fits, alfa=0.05, PRINT=False):
         raised if the fittest of the :py:class:`lmfit.model.ModelResult` objects in `model_fits` is of an unknown model.
     """
     m1 = model_fits[0]
-    if np.isposinf(m1.best_values['q0']) or np.isposinf(m1.best_values['v']):
+    if np.isposinf(m1.best_values.get('q0', np.inf)) or np.isposinf(m1.best_values.get('v', np.inf)):
         return False
         
     try:
@@ -461,7 +461,7 @@ def has_nu(model_fits, alfa=0.05, PRINT=False):
         raised if the fittest of the :py:class:`lmfit.model.ModelResult` objects in `model_fits` is of an unknown model.
     """
     m1 = model_fits[0]
-    if m1.best_values['nu'] == 1.0:
+    if m1.best_values.get('nu', 1.0) == 1.0:
         return False
 
     try:
@@ -743,8 +743,7 @@ def fit_model(df, ax=None, param_guess=None, param_min=None, param_max=None, par
     weights =  _calc_weights(_df) if use_weights else None
     results = []
     
-    for model_name, model_class in get_models(curveball.baranyi_roberts_model).items():
-        print(model_name)
+    for model_name, model_class in get_models(curveball.baranyi_roberts_model).items():        
         model = model_class()
         params = model.guess(data=OD, t=time, param_guess=param_guess, param_min=param_min, param_max=param_max, param_fix=param_fix)    
         fit_kws = {'Dfun': make_Dfun(model, params), "col_deriv":True} if use_Dfun else {}        

@@ -12,16 +12,16 @@ import sys
 import os.path
 import pkg_resources
 import glob
+import warnings
+# catch some future warnings, mostly caused by matplotlib
+warnings.simplefilter(action="ignore", category=FutureWarning)
+import curveball
 import numpy as np
 import pandas as pd
 import click
 import xlrd
 import matplotlib.pyplot as plt
-import warnings
-with warnings.catch_warnings(): # catch warning caused by seaborn v0.6.0
-	warnings.filterwarnings(action="ignore", category=UserWarning, message="axes.color_cycle is deprecated", module="matplotlib")
-	import curveball
-	import seaborn as sns
+import seaborn as sns
 sns.set_style("ticks")
 
 
@@ -160,8 +160,6 @@ def cli(verbose, plot, prompt, where):
 		click.secho('=' * 40, fg='cyan')
 		click.secho('Curveball %s' % curveball.__version__, fg='cyan')
 		click.secho('=' * 40, fg='cyan')
-	else:
-		warnings.simplefilter(action="ignore", category=FutureWarning)
 
 
 @click.option('--plate_folder', default='plate_templates', help='plate templates default folder', type=click.Path())
@@ -332,8 +330,7 @@ def _process_file(filepath, plate, blank_strain, ref_strain, max_time, guess, pa
 			res['NRMSD'] = res['RMSD'] / (strain_df.OD.max() - strain_df.OD.min())
 			res['CV(RMSD)'] = res['RMSD'] / (strain_df.OD.mean())
 			res['bic'] = fit.bic
-			res['aic'] = fit.aic
-			res['benchmark'] = curveball.models.benchmark(fit_results)
+			res['aic'] = fit.aic			
 			params = fit.params
 			res['y0'] = params['y0'].value
 			res['K'] = params['K'].value
@@ -341,8 +338,8 @@ def _process_file(filepath, plate, blank_strain, ref_strain, max_time, guess, pa
 			res['nu'] = params['nu'].value if 'nu' in params else 1
 			res['q0'] = params['q0'].value if 'q0' in params else 0
 			res['v'] = params['v'].value if 'v' in params else 0
-			res['max_growth_rate'] = curveball.models.find_max_growth(fit, PLOT=False)[-1]
-			res['lag'] = curveball.models.find_lag(fit, PLOT=False)
+			res['max_growth_rate'] = curveball.models.find_max_growth(fit)[-1]
+			res['lag'] = curveball.models.find_lag(fit)
 			res['has_lag'] = curveball.models.has_lag(fit_results)
 			res['has_nu'] = curveball.models.has_nu(fit_results, PRINT=VERBOSE)			
 

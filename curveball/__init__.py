@@ -9,6 +9,9 @@
 # Copyright (c) 2015, Yoav Ram <yoav@yoavram.com>
 
 from __future__ import absolute_import
+import warnings
+# catch warning caused by seaborn v0.6.0
+warnings.filterwarnings(action="ignore", message="axes.color_cycle is deprecated and replaced with axes.prop_cycle; please use the latter.")
 
 __license__ = u'MIT'
 from ._version import get_versions
@@ -22,7 +25,7 @@ from . import competitions
 
 __citation_bibtex__ = u"""@article{
 Ram2015,
-author = {Ram, Yoav and Dellus-Gur, Eynat and Obolski, Uri and Bibi, Maayan and Berman, Judith and Hadany, Lilach},
+author = {Ram, Yoav, Dellus-Gur, Eynat, Obolski, Uri, Bibi, Maayan, Berman, Judith, and Hadany, Lilach},
 doi = {10.1101/022640},						
 journal = {bioRxiv},
 keywords = {experimental,fitness,mathematical model,selection coefficient},
