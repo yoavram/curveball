@@ -1,4 +1,3 @@
-from builtins import map
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
@@ -8,18 +7,22 @@ from builtins import map
 # Licensed under the MIT license:
 # http://www.opensource.org/licenses/MIT-license
 # Copyright (c) 2015, Yoav Ram <yoav@yoavram.com>
+from builtins import map
 import sys
 import os.path
 import pkg_resources
 import glob
 import numpy as np
-import matplotlib.pyplot as plt
 import pandas as pd
-import seaborn as sns
-sns.set_style("ticks")
 import click
-import curveball
 import xlrd
+import matplotlib.pyplot as plt
+import warnings
+with warnings.catch_warnings(): # catch warning caused by seaborn v0.6.0
+	warnings.filterwarnings(action="ignore", category=UserWarning, message="axes.color_cycle is deprecated", module="matplotlib")
+	import curveball
+	import seaborn as sns
+sns.set_style("ticks")
 
 
 VERBOSE = False
@@ -158,8 +161,7 @@ def cli(verbose, plot, prompt, where):
 		click.secho('Curveball %s' % curveball.__version__, fg='cyan')
 		click.secho('=' * 40, fg='cyan')
 	else:
-		import warnings
-		warnings.simplefilter(action = "ignore", category = FutureWarning)
+		warnings.simplefilter(action="ignore", category=FutureWarning)
 
 
 @click.option('--plate_folder', default='plate_templates', help='plate templates default folder', type=click.Path())

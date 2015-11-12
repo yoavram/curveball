@@ -14,6 +14,7 @@ from builtins import str
 from builtins import range
 from past.utils import old_div
 import sys
+import numbers
 from warnings import warn
 import numpy as np
 import matplotlib.pyplot as plt
@@ -22,12 +23,21 @@ from scipy.stats import chisqprob
 from scipy.misc import derivative
 import pandas as pd
 import copy
-from lmfit import Model
-from lmfit.models import LinearModel
-import curveball.baranyi_roberts_model
+import inspect
+import lmfit
 import sympy
 import seaborn as sns
 sns.set_style("ticks")
+import curveball
+import curveball.baranyi_roberts_model
+
+
+def is_model(cls):
+    return inspect.isclass(cls) and issubclass(cls, lmfit.model.Model)
+
+
+def get_models(module):
+    return dict(inspect.getmembers(module, is_model))
 
 
 def sample_params(model_fit, nsamples, params=None, covar=None):
@@ -79,6 +89,41 @@ def sample_params(model_fit, nsamples, params=None, covar=None):
         warn("Warning: truncated {0} parameter samples; please report at {1}, including the data and use case.".format(nsamples - param_samples.shape[0], "https://github.com/yoavram/curveball/issues"))
     return param_samples[idx]
     
+
+
+def noisify_normal_additive(data, std, rng=None):
+    if not rng:
+        rng = np.random
+    return data +  rng.normal(0, std, data.shape)
+
+
+def noisify_lognormal_multiplicative(data, std, random_seed=None):
+    if random_seed is None:
+        rng = np.random
+    else:
+        rng = np.random.RandomState(random_seed)
+    return data * rng.lognormal(0, std, data.shape)
+
+
+def randomize(t=12, y0=0.1, K=1.0, r=0.1, nu=1.0, q0=np.inf, v=np.inf, 
+        func=curveball.baranyi_roberts_model.baranyi_roberts_function, reps=1, noise_std=0.02, 
+        noise_func=noisify_lognormal_multiplicative, random_seed=None, as_df=True, data_label='OD', time_label='Time'):
+    if isinstance(t, numbers.Number):
+        t = np.linspace(0, t)
+    y = func(t, y0, K, r, nu, q0, v)
+    y.resize((len(t),))
+    y = y.repeat(reps)
+    y.resize((len(t), reps))
+    if noise_std > 0:
+        y = noise_func(y, noise_std, random_seed)
+    y[y < 0] = 0.0
+    y = y.flatten()
+    t = t.repeat(reps)
+    if as_df:
+        return pd.DataFrame({data_label: y, time_label: t})
+    else:
+        return t, y
+
 
 def lrtest(m0, m1, alfa=0.05):
     r"""Performs a likelihood ratio test on two nested models.
@@ -369,20 +414,19 @@ def has_lag(model_fits, alfa=0.05, PRINT=False):
     ValueError
         raised if the fittest of the :py:class:`lmfit.model.ModelResult` objects in `model_fits` is of an unknown model.
     """
-    best_fit = model_fits[0]
-    if np.isposinf(best_fit.best_values['q0']) or np.isposinf(best_fit.best_values['v']):
-        # no lag in these models
-        return False    
-    m1 = best_fit
-    # choose the null hypothesis model
-    nu = best_fit.params['nu']
-    v =  best_fit.params['v']
-    if nu.value == 1 and not nu.vary:        
-        # m1 is BR4 or BR5, m0 is Logistic
-        n0 = [m for m in model_fits if m.nvarys == 3]        
-    else:
-        ## m1 is BR6, m0 is Richards
-        m0 = [m for m in model_fits if m.nvarys == 4 and np.isposinf(m.best_values['v'])]        
+    m1 = model_fits[0]
+    if np.isposinf(m1.best_values['q0']) or np.isposinf(m1.best_values['v']):
+        return False
+        
+    try:
+        m0_model_class = m1.model.nested_models['lag']
+    except KeyError:
+        raise ValueError("The best fit model {} has no nested model for testing lag".format(m1.model.name))
+    try:
+        m0 = [m for m in model_fits if isinstance(res.model, m0_model_class)][0]
+    except IndexError:
+        raise ValueError("No {} in model results.".format(m0_model_class.name))
+    
     prefer_m1, pval, D, ddf = lrtest(m0, m1, alfa=alfa)
     if PRINT:
         print("Tested H0: %s vs. H1: %s; D=%.2g, ddf=%d, p-value=%.2g" % (m0.model.name, m1.model.name, D, ddf, pval))    
@@ -416,18 +460,19 @@ def has_nu(model_fits, alfa=0.05, PRINT=False):
     ValueError
         raised if the fittest of the :py:class:`lmfit.model.ModelResult` objects in `model_fits` is of an unknown model.
     """
-    best_fit = model_fits[0]
-    if best_fit.best_values['nu'] == 1.0:
+    m1 = model_fits[0]
+    if m1.best_values['nu'] == 1.0:
         return False
-    elif best_fit.nvarys == 4:
-        # m1 is Richards, m0 is Logistic        
-        m0 = [m for m in model_fits if m.nvarys == 3][0]
-    elif best_fit.nvarys == 6:
-        # m1 is BR6, m0 is BR5
-        m0 = [m for m in model_fits if m.nvarys == 5 and m.best_values['nu'] == 1.0][0]        
-    else:
-        raise ValueError("Unknown model: %s" % best_fit.model.name)    
-    m1 = best_fit
+
+    try:
+        m0_model_class = m1.model.nested_models['nu']
+    except KeyError:
+        raise ValueError("The best fit model {} has no nested model for testing nu".format(m1.model.name))
+    try:
+        m0 = [m for m in model_fits if isinstance(res.model, m0_model_class)][0]
+    except IndexError:
+        raise ValueError("No {} in model results.".format(m0_model_class.name))
+
     prefer_m1, pval, D, ddf = lrtest(m0, m1, alfa=alfa)
     if PRINT:
         msg = "Tested H0: %s (nu=%.2g) vs. H1: %s (nu=%.2g); D=%.2g, ddf=%d, p-value=%.2g"  
@@ -436,81 +481,20 @@ def has_nu(model_fits, alfa=0.05, PRINT=False):
 
 
 def make_Dfun(model, params):
-    expr, t, args = model.get_sympy_expr(params)    
+    expr, t, args = model.get_sympy_expr(params)
     partial_derivs = [None]*len(args)
     for i,x in enumerate(args):
         dydx = expr.diff(x)
         dydx = sympy.lambdify(args=(t,) + args, expr=dydx, modules="numpy")
-        partial_derivs[i] = dydx    
+        partial_derivs[i] = dydx        
     def Dfun(params, y, a, t):
-        values = [ par.value for par in params.values() if par.vary ]        
-        return np.array([dydx(t, *values) for dydx in partial_derivs])
+        values = [ par.value for par in params.values() if par.vary ]
+        res = np.array([dydx(t, *values) for dydx in partial_derivs])
+        expected_shape = (len(values), len(t))
+        if res.shape != expected_shape:
+            raise TypeError("Dfun result shape for {} is incorrect, expected {} but it is {}.".format(model.name, expected_shape, res.shape))
+        return res
     return Dfun
-
-
-def benchmark(model_fits, deltaBIC=6, PRINT=False, PLOT=False):
-    """Benchmark a model fit (or the best fit out of a sequence of fits).
-
-    The benchmark is successful -- the model fit is considered "better" then the benchmark fit -- 
-    if the `BIC <http://en.wikipedia.org/wiki/Bayesian_information_criterion>`_ of the benchmark fit 
-    is higher then the BIC of the model fit by at least `deltaBIC`.
-    For typical values of `deltaBIC` and their interpretation, see [3]_. 
-    The benchmark is done against a **linear model**. 
-
-    Parameters
-    ----------
-    model_fits : lmfit.model.ModelResult / list
-        one or more results of model fitting procedures. The first element will be benchmarked.
-    deltaBIC : float
-        the minimal difference in BIC that is interpreted as meaningful evidence in favor of the model fit.
-    PLOT : bool, optional
-        if :py:const:`True`, the function will plot the model fit and the benchmark fit; defaults to :py:const:`False`.
-
-    Returns
-    -------
-    passed : bool
-        :py:const:`True` if the model fit is significantly better than the benchmark, :py:const:`False` otherwise.
-    fig : matplotlib.figure.Figure
-        if the argument `PLOT` was :py:const:`True`, the generated figure.
-    ax : matplotlib.axes.Axes
-        if the argument `PLOT` was :py:const:`True`, the generated axis.
-
-    References
-    ----------
-    .. [3] Kass, R., Raftery, A., 1995. `Bayes Factors <http://www.tandfonline.com/doi/abs/10.1080/01621459.1995.10476572>`_. J. Am. Stat. Assoc.
-
-    See also
-    --------
-    Relevant information on `Wikipedia <http://en.wikipedia.org/wiki/Bayesian_information_criterion#Gaussian_Case>`_
-    """
-    best_fit = model_fits[0] if isinstance(model_fits, collections.Iterable) else model_fits
-    t = best_fit.userkws['t']
-    y = best_fit.data
-    weights = best_fit.weights
-
-    # Linear model used as benchmark
-    linear_model = LinearModel()
-    linear_model.name = 'linear-benchmark'
-    params = linear_model.guess(data=y, x=t)
-    linear_fit = linear_model.fit(data=y, x=t, params=params, weights=weights)
-    success = best_fit.bic + deltaBIC < linear_fit.bic
-
-    if PRINT:
-        print("Model fit: %s, BIC %.2f" % (best_fit.model.name, best_fit.bic))
-        print("Benchmark: %s, BIC %.2f" % (linear_fit.model.name, linear_fit.bic))
-        print("Fit success: %s" % success)
-    if PLOT:
-        fig,ax = plt.subplots(1,1)
-        ax = best_fit.plot_fit(ax=ax, init_kws={'ls':''})
-        linear_fit.plot_fit(ax=ax, init_kws={'ls':''})
-        ax.get_legend().set_visible(False)
-        ax.set_xlim(0, 1.1 * t.max())
-        ax.set_ylim(0.9 * y.min(), 1.1 * y.max())
-        ax.set_xlabel('Time')        
-        ax.set_ylabel('OD')
-        sns.despine()     
-        return success, fig, ax
-    return success
 
 
 def cooks_distance(df, model_fit, use_weights=True):
@@ -744,7 +728,7 @@ def fit_model(df, ax=None, param_guess=None, param_min=None, param_max=None, par
     >>> green_models = curveball.models.fit_model(df[df.Strain == 'G'])
     """
     if not isinstance(df, pd.DataFrame):
-        raise TypeError("Input df must be a %s, but it is %s" % (pd.DataFrame.__name__, df.__class__.__name__))
+        raise TypeError("Input df must be a %s, but it is %s" % (pd.Dfun.__name__, df.__class__.__name__))
     if df.shape[0] == 0:
         raise ValueError("No rows in input df")
     
@@ -759,77 +743,15 @@ def fit_model(df, ax=None, param_guess=None, param_min=None, param_max=None, par
     weights =  _calc_weights(_df) if use_weights else None
     results = []
     
-    # Baranyi-Roberts = Richards /w lag (6 params)
-    br6_model = curveball.baranyi_roberts_model.BaranyiRobertsModel()
-    br6_params = br6_model.guess(data=OD, t=time, param_guess=param_guess, param_min=param_min, param_max=param_max, param_fix=param_fix)    
-    fit_kws = {'Dfun': make_Dfun(br6_model, br6_params), "col_deriv":True} if use_Dfun else {}
-    br6_result = br6_model.fit(data=OD, t=time, params=br6_params, weights=weights, fit_kws=fit_kws)    
-    results.append(br6_result)
+    for model_name, model_class in get_models(curveball.baranyi_roberts_model).items():
+        print(model_name)
+        model = model_class()
+        params = model.guess(data=OD, t=time, param_guess=param_guess, param_min=param_min, param_max=param_max, param_fix=param_fix)    
+        fit_kws = {'Dfun': make_Dfun(model, params), "col_deriv":True} if use_Dfun else {}        
+        result = model.fit(data=OD, t=time, params=params, weights=weights, fit_kws=fit_kws)
+        results.append(result)
 
-    # Baranyi-Roberts /w nu=1 = Logistic /w lag (5 params) 
-    br5_model = curveball.baranyi_roberts_model.BaranyiRobertsModel()
-    _param_guess = param_guess.copy()
-    _param_guess['nu'] = 1
-    br5_params = br5_model.guess(data=OD, t=time, param_guess=_param_guess, param_min=param_min, param_max=param_max, param_fix=param_fix.union({'nu'}))
-    assert br5_params['nu'].value == 1
-    fit_kws = {'Dfun': make_Dfun(br5_model, br5_params), "col_deriv":True} if use_Dfun else {}
-    br5_result = br5_model.fit(data=OD, t=time, params=br5_params, weights=weights)
-    assert br5_result.best_values['nu'] == 1
-    results.append(br5_result)
-
-    # Baranyi-Roberts /w v=r (5 params) 
-    br5b_model = curveball.baranyi_roberts_model.BaranyiRobertsModel()    
-    br5b_params = br5b_model.guess(data=OD, t=time, param_guess=param_guess, param_min=param_min, param_max=param_max, param_fix=param_fix.union({'v'}))
-    assert not br5b_params['v'].vary
-    assert br5b_params['v'].value == br5b_params['r'].value
-    fit_kws = {'Dfun': make_Dfun(br5b_model, br5b_params), "col_deriv":True} if use_Dfun else {}
-    br5b_result = br5b_model.fit(data=OD, t=time, params=br5b_params, weights=weights)
-    assert br5b_result.best_values['v'] == br5b_result.best_values['r']
-    assert not br5b_result.params['v'].vary
-    results.append(br5b_result)
-
-    # Baranyi-Roberts /w nu=1, v=r = Logistic /w lag (4 params)  (see Baty & Delignette-Muller, 2004)
-    br4_model = curveball.baranyi_roberts_model.BaranyiRobertsModel()
-    _param_guess = param_guess.copy()
-    _param_guess['nu'] = 1
-    br4_params = br4_model.guess(data=OD, t=time, param_guess=_param_guess, param_min=param_min, param_max=param_max, param_fix=param_fix.union({'nu', 'v'}))
-    assert br4_params['nu'].value == 1
-    assert br4_params['v'].value == br4_params['r'].value
-    fit_kws = {'Dfun': make_Dfun(br4_model, br4_params), "col_deriv":True} if use_Dfun else {}
-    br4_result = br4_model.fit(data=OD, t=time, params=br4_params, weights=weights, fit_kws=fit_kws)
-    assert br4_result.best_values['v'] == br4_result.best_values['r']
-    results.append(br4_result)
-
-    # Richards = Baranyi-Roberts /wout lag (4 params)
-    richards_model = curveball.baranyi_roberts_model.BaranyiRobertsModel()
-    _param_guess = param_guess.copy()
-    _param_guess['v'] = np.inf
-    richards_params = richards_model.guess(data=OD, t=time, param_guess=_param_guess, param_min=param_min, param_max=param_max, param_fix=param_fix.union({'q0', 'v'}))
-    assert np.isposinf(richards_params['v'].value)
-    assert np.isposinf(richards_params['q0'].value)
-    fit_kws = {'Dfun': make_Dfun(richards_model, richards_params), "col_deriv":True} if use_Dfun else {}
-    richards_result = richards_model.fit(data=OD, t=time, params=richards_params, weights=weights, fit_kws=fit_kws)
-    assert np.isposinf(richards_result.best_values['v'])
-    assert np.isposinf(richards_result.best_values['q0'])
-    results.append(richards_result)
-
-    # Logistic = Richards /w nu = 1 (3 params)
-    logistic_model = curveball.baranyi_roberts_model.BaranyiRobertsModel()
-    _param_guess = param_guess.copy()
-    _param_guess['nu'] = 1
-    _param_guess['v'] = np.inf
-    logistic_params = logistic_model.guess(data=OD, t=time, param_guess=_param_guess, param_min=param_min, param_max=param_max, param_fix=param_fix.union({'nu', 'q0', 'v'}))
-    assert logistic_params['nu'].value == 1
-    assert np.isposinf(logistic_params['v'].value)
-    assert np.isposinf(logistic_params['q0'].value)
-    fit_kws = {'Dfun': make_Dfun(logistic_model, logistic_params), "col_deriv":True} if use_Dfun else {}
-    logistic_result = logistic_model.fit(data=OD, t=time, params=logistic_params, weights=weights, fit_kws=fit_kws)
-    assert logistic_result.best_values['nu'] == 1
-    assert np.isposinf(logistic_result.best_values['v'])
-    assert np.isposinf(logistic_result.best_values['q0'])
-    results.append(logistic_result)
-
-    # sort by increasing bic
+    # sort by increasing BIC
     results.sort(key=lambda m: m.bic)
 
     if PRINT:
@@ -837,31 +759,41 @@ def fit_model(df, ax=None, param_guess=None, param_min=None, param_max=None, par
     if PLOT:        
         dy = _df.OD.max() / 50.0
         dx = _df.Time.max() / 25.0
-        fig, ax = plt.subplots(1, len(results), sharex=True, sharey=True, figsize=(16,6))
+        columns = 3
+        rows = int(np.ceil(len(results) / columns))
+        fig, ax = plt.subplots(rows, columns, sharex=True, sharey=True, figsize=(16, 6))
         for i,fit in enumerate(results):
+            row = i // columns
+            col = i % columns
+            _ax = ax[row, col]
             vals = fit.best_values
-            fit.plot_fit(ax=ax[i], datafmt='.', fit_kws={'lw':4})
-            ax[i].axhline(y=vals.get('y0', 0), color='k', ls='--')
-            ax[i].axhline(y=vals.get('K', 0), color='k', ls='--')          
+            fit.plot_fit(ax=_ax, datafmt='.', fit_kws={'lw': 4})
+            _ax.axhline(y=vals.get('y0', 0), color='k', ls='--')
+            _ax.axhline(y=vals.get('K', 0), color='k', ls='--')          
             title = '%s %dp\nBIC: %.3f\ny0=%.2f, K=%.2f, r=%.2g\n' + r'$\nu$=%.2g, $q_0$=%.2g, v=%.2g'
-            title = title % (fit.model.name, fit.nvarys, fit.bic, vals.get('y0', 0), vals.get('K', 0), vals.get('r', 0), vals.get('nu',0), vals.get('q0',0), vals.get('v',0))
-            ax[i].set_title(title)
-            ax[i].get_legend().set_visible(False)
-            ax[i].set_xlim(0, 1.1 * _df.Time.max())
-            ax[i].set_ylim(0.9 * _df.OD.min(), 1.1 * _df.OD.max())
-            ax[i].set_xlabel('Time')
-            ax[i].set_ylabel('')
-        ax[0].set_ylabel('OD')
+            title = title % (fit.model.name, fit.nvarys, fit.bic, vals.get('y0', np.nan), vals.get('K', np.nan), vals.get('r', np.nan), vals.get('nu', np.nan), vals.get('q0', np.nan), vals.get('v', np.nan))
+            _ax.set_title(title)
+            _ax.get_legend().set_visible(False)
+            _ax.set_xlabel('')
+            _ax.set_ylabel('')
+            if col == 0:
+                _ax.set_ylabel('OD')
+            if row == rows - 1:
+                _ax.set_xlabel('Time')
+        _ax.set_xlim(0, 1.1 * _df.Time.max())
+        _ax.set_ylim(0.9 * _df.OD.min(), 1.1 * _df.OD.max())
         sns.despine()
         fig.tight_layout()
         return results, fig, ax
     return results
 
 
-if __name__ == '__main__':
+if __name__ == '__main__':    
     # simulate 30 growth curves
-    df = curveball.baranyi_roberts_model.randomize(t=12, y0=0.12, K=0.56, r=0.8, nu=1.8, q0=0.2, v=0.8, reps=30, noise_std=0.04, random_seed=0)
+    df = randomize(t=12, y0=0.12, K=0.56, r=0.8, nu=1.8, q0=0.2, v=0.8, reps=30, noise_std=0.04, random_seed=0)
 
     # fit models to growth curves
-    results, fig, ax = fit_model(df, use_Dfun=True, PLOT=True, PRINT=True)
-    plt.show()    
+    results, fig, ax = fit_model(df, use_Dfun=True, PLOT=True, PRINT=True)    
+    plt.savefig('models.png')
+    plt.show()
+
