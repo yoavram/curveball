@@ -16,6 +16,7 @@ import sys
 import os
 import shutil
 import curveball
+from curveball.baranyi_roberts_model import randomize as randomize_data
 from scipy.integrate import odeint
 import numpy as np
 import pandas as pd
@@ -28,6 +29,8 @@ import tempfile
 
 CI = os.environ.get('CI', 'false').lower() == 'true'
 RANDOM_SEED = int(os.environ.get('RANDOM_SEED', 0))
+REPS = 30
+NOISE_STD = 0.04
 
 
 def check_image(filename):      
@@ -55,17 +58,6 @@ def compare_curves(y1, y2):
 
 def relative_error(exp, obs):
 		return abs(exp - obs) / exp
-
-
-def randomize_data(func_ode, t=None, y0=0.1, K=1.0, r=0.75, nu=0.5, q0=0.1, v=0.1, reps=30, noise=0.02):
-	rng = np.random.RandomState(RANDOM_SEED)
-	if t is None:
-		t = np.linspace(0, 12)
-	y = odeint(func_ode, y0, t, args=(K, r, nu, q0, v))
-	y.resize((len(t),))
-	y = y.repeat(reps).reshape((len(t), reps)) + rng.normal(0, noise, (len(t), reps))
-	y[y < 0] = 0
-	return pd.DataFrame({'OD': y.flatten(), 'Time': t.repeat(reps)})
 
 
 class FunctionsTestCase(TestCase):
@@ -120,7 +112,7 @@ class ModelSelectionTestCase(TestCase):
 
 
 	def test_fit_model_logistic(self):
-		df = randomize_data(logistic_ode)        
+		df = randomize_data(t=12, y0=0.1, K=1, r=0.75, nu=1, reps=REPS, noise_std=NOISE_STD, random_seed=RANDOM_SEED)
 		models,fig,ax = curveball.models.fit_model(df, PLOT=True, PRINT=False)
 		self.assertIsInstance(fig, matplotlib.figure.Figure)
 		filename = sys._getframe().f_code.co_name + ".png"
@@ -137,7 +129,7 @@ class ModelSelectionTestCase(TestCase):
 		
 
 	def test_fit_model_logistic_with_param_min(self):
-		df = randomize_data(logistic_ode)        
+		df = randomize_data(t=12, y0=0.1, K=1, r=0.75, nu=1, reps=REPS, noise_std=NOISE_STD, random_seed=RANDOM_SEED)       
 		models,fig,ax = curveball.models.fit_model(df, PLOT=True, PRINT=False, param_min={'y0': 0.2})
 		self.assertIsInstance(fig, matplotlib.figure.Figure)
 		filename = sys._getframe().f_code.co_name + ".png"
@@ -150,7 +142,7 @@ class ModelSelectionTestCase(TestCase):
 
 
 	def test_fit_model_logistic_with_param_max(self):
-		df = randomize_data(logistic_ode)        
+		df = randomize_data(t=12, y0=0.1, K=1, r=0.75, nu=1, reps=REPS, noise_std=NOISE_STD, random_seed=RANDOM_SEED)
 		models,fig,ax = curveball.models.fit_model(df, PLOT=True, PRINT=False, param_max={'K': 0.5})
 		self.assertIsInstance(fig, matplotlib.figure.Figure)
 		filename = sys._getframe().f_code.co_name + ".png"
@@ -163,7 +155,7 @@ class ModelSelectionTestCase(TestCase):
 
 
 	def test_fit_model_logistic_with_param_fix(self):
-		df = randomize_data(logistic_ode)        
+		df = randomize_data(t=12, y0=0.1, K=1, r=0.75, nu=1, reps=REPS, noise_std=NOISE_STD, random_seed=RANDOM_SEED)
 		models,fig,ax = curveball.models.fit_model(df, PLOT=True, PRINT=False, param_guess={'K': 1}, param_fix={'K'})
 		self.assertIsInstance(fig, matplotlib.figure.Figure)
 		filename = sys._getframe().f_code.co_name + ".png"
@@ -181,7 +173,7 @@ class ModelSelectionTestCase(TestCase):
 
 
 	def test_fit_model_logistic_single_rep(self):
-		df = randomize_data(logistic_ode, reps=1)    
+		df = randomize_data(t=12, y0=0.1, K=1, r=0.75, nu=1, reps=1, noise_std=NOISE_STD, random_seed=RANDOM_SEED)
 		models,fig,ax = curveball.models.fit_model(df, PLOT=True, PRINT=False)
 		self.assertIsInstance(fig, matplotlib.figure.Figure)
 		filename = sys._getframe().f_code.co_name + ".png"
@@ -198,8 +190,8 @@ class ModelSelectionTestCase(TestCase):
 
 
 
-	def test_fit_model_richards(self):
-		df = randomize_data(richards_ode, t=np.linspace(0,24))
+	def test_fit_model_richards_nu_05(self):
+		df = randomize_data(t=24, y0=0.1, K=1, r=0.75, nu=0.5, reps=REPS, noise_std=NOISE_STD, random_seed=RANDOM_SEED)
 		models,fig,ax = curveball.models.fit_model(df, PLOT=True, PRINT=False)
 		self.assertIsInstance(fig, matplotlib.figure.Figure)
 		filename = sys._getframe().f_code.co_name + ".png"
@@ -215,7 +207,7 @@ class ModelSelectionTestCase(TestCase):
 
 
 	def test_fit_model_logistic_lag(self):        
-		df = randomize_data(baranyi_roberts_ode, t=np.linspace(0,48), nu=1.0)
+		df = randomize_data(t=48, y0=0.1, K=1, r=0.75, nu=1, q0=0.1, v=0.1, reps=REPS, noise_std=NOISE_STD, random_seed=RANDOM_SEED)
 		models,fig,ax = curveball.models.fit_model(df, PLOT=True, PRINT=False)
 		self.assertIsInstance(fig, matplotlib.figure.Figure)
 		filename = sys._getframe().f_code.co_name + ".png"
@@ -229,8 +221,8 @@ class ModelSelectionTestCase(TestCase):
 		self.assertTrue(models[0].chisqr / models[0].ndata < 0.05)
 
 
-	def test_fit_model_baranyi_roberts(self):        
-		df = randomize_data(baranyi_roberts_ode, t=np.linspace(0,24), nu=5.0)
+	def test_fit_model_baranyi_roberts_nu_5(self):        
+		df = randomize_data(t=24, y0=0.1, K=1, r=0.75, nu=5, q0=0.1, v=0.1, reps=REPS, noise_std=NOISE_STD, random_seed=RANDOM_SEED)
 		models,fig,ax = curveball.models.fit_model(df, PLOT=True, PRINT=False)
 		self.assertIsInstance(fig, matplotlib.figure.Figure)
 		filename = sys._getframe().f_code.co_name + ".png"
@@ -260,11 +252,7 @@ class FindLagTestCase(TestCase):
 
 
 	def test_find_lag_logistic(self):
-		y0=0.1; r=0.75; K=1.0
-		t = np.linspace(0, 12)
-		df = randomize_data(logistic_ode, t=t, y0=y0, r=r, K=K, reps=1)		
-		t = df.Time.as_matrix()
-		y = df.OD.as_matrix()
+		t, y = randomize_data(t=12, y0=0.1, K=1, r=0.75, nu=1, reps=REPS, noise_std=NOISE_STD, random_seed=RANDOM_SEED, as_df=False)
 		model = curveball.baranyi_roberts_model.BaranyiRobertsModel()
 		params = model.guess(data=y, t=t, param_guess={'nu': 1, 'q0': np.inf, 'v': np.inf}, param_fix={'nu', 'q0', 'v'})
 		result = model.fit(data=y, t=t, params=params)		
@@ -273,11 +261,7 @@ class FindLagTestCase(TestCase):
 
 
 	def test_find_lag_ci_logistic(self):
-		y0=0.1; r=0.75; K=1.0
-		t = np.linspace(0, 12)
-		df = randomize_data(logistic_ode, t=t, y0=y0, r=r, K=K, reps=1)		
-		t = df.Time.as_matrix()
-		y = df.OD.as_matrix()
+		t, y = randomize_data(t=12, y0=0.1, K=1, r=0.75, nu=1, reps=REPS, noise_std=NOISE_STD, random_seed=RANDOM_SEED, as_df=False)
 		model = curveball.baranyi_roberts_model.BaranyiRobertsModel()
 		params = model.guess(data=y, t=t, param_guess={'nu': 1, 'q0': np.inf, 'v': np.inf}, param_fix={'nu', 'q0', 'v'})
 		result = model.fit(data=y, t=t, params=params)
@@ -287,12 +271,8 @@ class FindLagTestCase(TestCase):
 
 
 	def test_find_lag_richards(self):
-		y0=0.1; r=0.75; K=1.0
-		t = np.linspace(0, 12)
 		for nu in [1.0, 2.0, 5.0]:
-			df = randomize_data(richards_ode, t=t, y0=y0, r=r, K=K, nu=nu, reps=1)
-			t = df.Time.as_matrix()
-			y = df.OD.as_matrix()
+			t, y = randomize_data(t=12, y0=0.1, K=1, r=0.75, nu=nu, reps=REPS, noise_std=NOISE_STD, random_seed=RANDOM_SEED, as_df=False)
 			model = curveball.baranyi_roberts_model.BaranyiRobertsModel()
 			params = model.guess(data=y, t=t, param_guess={'q0': np.inf, 'v': np.inf}, param_fix={'q0', 'v'})
 			result = model.fit(data=y, t=t, params=params)
@@ -301,12 +281,8 @@ class FindLagTestCase(TestCase):
 
 
 	def test_find_lag_ci_richards(self):
-		y0=0.1; r=0.75; K=1.0
-		t = np.linspace(0, 12)
 		for nu in [1.0, 2.0, 5.0]:
-			df = randomize_data(richards_ode, t=t, y0=y0, r=r, K=K, nu=nu, reps=1)			
-			t = df.Time.as_matrix()
-			y = df.OD.as_matrix()
+			t, y = randomize_data(t=12, y0=0.1, K=1, r=0.75, nu=nu, reps=REPS, noise_std=NOISE_STD, random_seed=RANDOM_SEED, as_df=False)
 			model = curveball.baranyi_roberts_model.BaranyiRobertsModel()
 			params = model.guess(data=y, t=t, param_guess={'q0': np.inf, 'v': np.inf}, param_fix={'q0', 'v'})
 			result = model.fit(data=y, t=t, params=params)
@@ -316,15 +292,12 @@ class FindLagTestCase(TestCase):
 
 
 	def test_find_lag_baranyi_roberts(self):
-		t = np.linspace(0, 16)
-		y0=0.1; r=0.75; K=1.0
+		r = 0.75
 		v = r
 		for nu in [1.0, 2.0, 5.0]:
 			for _lam in [2., 3., 4.]:
 				q0 = 1.0 / (np.exp(_lam * v) - 1.0)
-				df = randomize_data(baranyi_roberts_ode, t=t, y0=y0, r=r, K=K, nu=nu, q0=q0, v=v, reps=1)
-				t = df.Time.as_matrix()
-				y = df.OD.as_matrix()
+				t, y = randomize_data(t=16, y0=0.1, K=1, r=r, nu=nu, q0=q0, v=r, reps=REPS, noise_std=NOISE_STD, random_seed=RANDOM_SEED, as_df=False)
 				model = curveball.baranyi_roberts_model.BaranyiRobertsModel()
 				params = model.guess(data=y, t=t)
 				result = model.fit(data=y, t=t, params=params)
@@ -369,10 +342,8 @@ class FindMaxGrowthTestCase(TestCase):
 			shutil.rmtree(self.folder)
 
 
-	def test_find_max_growth_logistic(self):
-		y0=0.1; r=0.75; K=1.0
-		t = np.linspace(0,12)
-		df = randomize_data(logistic_ode, t=t, y0=y0, r=r, K=K, reps=10)
+	def test_find_max_growth_logistic(self):		
+		df = randomize_data(t=12, y0=0.1, K=1, r=0.75, nu=1, reps=REPS, noise_std=NOISE_STD, random_seed=RANDOM_SEED)
 		model_fit = curveball.models.logistic_model.fit(df.OD, t=df.Time, y0=y0, K=K, r=r)
 		  
 		t1,y1,a,t2,y2,mu,fig,ax1,ax2 = curveball.models.find_max_growth(model_fit, PLOT=True)
@@ -382,18 +353,16 @@ class FindMaxGrowthTestCase(TestCase):
 		filename = sys._getframe().f_code.co_name + ".png"
 		fig.savefig(filename)
 		self.assertTrue(check_image(filename))   
-		self.assertTrue(relative_error(old_div(K, 2), y1) < 1, "y1=%.4g, K/2=%.4g" % (y1, old_div(K, 2)))
-		self.assertTrue(relative_error(K * r / 4, a) < 1, "a=%.4g, Kr/4=%.4g" % (a, K * r / 4))
+		self.assertTrue(relative_error(K / 2.0, y1) < 1, "y1=%.4g, K/2=%.4g" % (y1, K / 2.0))
+		self.assertTrue(relative_error(K * r / 4.0, a) < 1, "a=%.4g, Kr/4=%.4g" % (a, K * r / 4.0))
 		self.assertTrue(relative_error(y0, y2) < 1, "y2=%.4g, y0=%.4g" % (y2, y0))
-		self.assertTrue(relative_error(r * (1 - old_div(y0,K)), mu) < 1, "mu=%.4g, r(1-y0/K)=%.4g" % (mu, r * (1-old_div(y0,K))))
+		self.assertTrue(relative_error(r * (1 - y0 / K), mu) < 1, "mu=%.4g, r(1-y0/K)=%.4g" % (mu, r * (1 - y0 / K)))
 
 
 	def test_find_max_growth_logistic_lag(self):
-		y0=0.1; r=0.75; K=1.0; nu=1.0
 		v=r; lam=3.0
-		q0 = old_div(1,(np.exp(lam * v) - 1))
-		t = np.linspace(0,12)
-		df = randomize_data(baranyi_roberts_ode, t=t, y0=y0, r=r, K=K, nu=nu, q0=q0, v=v, reps=10)
+		q0 = 1.0 /(np.exp(lam * v) - 1)		
+		df = randomize_data(t=12, y0=0.1, K=1, r=0.75, nu=1, q0=q0, v=v, reps=REPS, noise_std=NOISE_STD, random_seed=RANDOM_SEED)
 		model_fit = curveball.models.baranyi_roberts_model.fit(df.OD, t=df.Time, y0=y0, K=K, r=r, nu=nu, q0=q0, v=v)        
 			 
 		t1,y1,a,t2,y2,mu,fig,ax1,ax2 = curveball.models.find_max_growth(model_fit, PLOT=True)
@@ -409,9 +378,7 @@ class FindMaxGrowthTestCase(TestCase):
 
 
 	def test_find_max_growth_richards(self):
-		y0=0.1; r=0.75; K=1.0; nu=0.5
-		t = np.linspace(0,12)
-		df = randomize_data(richards_ode, t=t, y0=y0, r=r, K=K, nu=nu, reps=10)
+		df = randomize_data(t=12, y0=0.1, K=1, r=0.75, nu=0.5, reps=REPS, noise_std=NOISE_STD, random_seed=RANDOM_SEED)
 		model_fit = curveball.models.richards_model.fit(df.OD, t=df.Time, y0=y0, K=K, r=r, nu=nu)        
 			 
 		t1,y1,a,t2,y2,mu,fig,ax1,ax2 = curveball.models.find_max_growth(model_fit, PLOT=True)
@@ -419,12 +386,12 @@ class FindMaxGrowthTestCase(TestCase):
 		filename = sys._getframe().f_code.co_name + ".png"
 		fig.savefig(filename)
 		self.assertTrue(check_image(filename))       
-		exp_y1 = K * (nu + 1)**(old_div(-1,nu))
+		exp_y1 = K * (nu + 1)**(-1.0 / nu)
 		self.assertTrue(relative_error(exp_y1, y1) < 1, "y1=%.4g, K/(nu+1)**(1/nu)=%.4g" % (y1, exp_y1))
-		exp_a = r * K * nu * (nu + 1)**(- 1 - old_div(1,nu))
+		exp_a = r * K * nu * (nu + 1)**(- 1 - 1.0 / nu)
 		self.assertTrue(relative_error(exp_a, a) < 1, "a=%.4g, rKnu/(nu+1)**(1+1/nu)=%.4g" % (a, exp_a))
 		self.assertTrue(relative_error(y0, y2) < 1, "y2=%.4g, y0=%.4g" % (y2, y0))
-		self.assertTrue(relative_error(r * (1 - (old_div(y0,K))**nu), mu) < 1, "mu=%.4g, r(1-(y0/K)**nu)=%.4g" % (mu, r * (1 - (old_div(y0,K))**nu)))
+		self.assertTrue(relative_error(r * (1 - (y0 / K)**nu), mu) < 1, "mu=%.4g, r(1-(y0/K)**nu)=%.4g" % (mu, r * (1 - (y0 / K)**nu)))
 
 
 class LRTestTestCase(TestCase):
@@ -451,7 +418,7 @@ class LRTestTestCase(TestCase):
 		alfa = 0.05
 		noise = 0.03
 		t = np.linspace(0,12)
-		f = lambda t,a,b: b + np.exp(-a * t)
+		f = lambda t, a, b: b + np.exp(-a * t)
 		y = f(t,a,b) + rng.normal(0, noise, len(t))
 		model = Model(f)
 		params = model.make_params(a=a_init, b=b_init)
@@ -467,21 +434,23 @@ class LRTestTestCase(TestCase):
 
 
 	def test_has_lag_logistic(self):
-		df = randomize_data(logistic_ode)
+		df = randomize_data(t=12, y0=0.1, K=1, r=0.75, nu=1, reps=REPS, noise_std=NOISE_STD, random_seed=RANDOM_SEED)
+
 		models = curveball.models.fit_model(df, PLOT=False, PRINT=False)
 		lag = curveball.models.has_lag(models)
 		self.assertFalse(lag)
 
 
 	def test_has_lag_richards(self):
-		df = randomize_data(richards_ode)
+		df = randomize_data(t=12, y0=0.1, K=1, r=0.75, nu=0.5, reps=REPS, noise_std=NOISE_STD, random_seed=RANDOM_SEED)
+
 		models = curveball.models.fit_model(df, PLOT=False, PRINT=False)
 		lag = curveball.models.has_lag(models)
 		self.assertFalse(lag)
 
 
-	def test_has_lag_logistic_lag(self):
-		df = randomize_data(baranyi_roberts_ode, t=np.linspace(0,36), nu=1.0)
+	def test_has_lag_logistic_lag(self):		
+		df = randomize_data(t=36, y0=0.1, K=1, r=0.75, nu=1, q0=0.1, v=0.1, reps=REPS, noise_std=NOISE_STD, random_seed=RANDOM_SEED)
 		
 		models,fig,ax = curveball.models.fit_model(df, PLOT=True, PRINT=True)
 		self.assertIsInstance(fig, matplotlib.figure.Figure)
@@ -493,7 +462,7 @@ class LRTestTestCase(TestCase):
  
 
 	def test_has_lag_baranyi_roberts(self):
-		df = randomize_data(baranyi_roberts_ode, t=np.linspace(0,32))
+		df = randomize_data(t=32, y0=0.1, K=1, r=0.75, nu=0.5, q0=0.1, v=0.1, reps=REPS, noise_std=NOISE_STD, random_seed=RANDOM_SEED)
 		
 		models,fig,ax = curveball.models.fit_model(df, PLOT=True, PRINT=True)
 		self.assertIsInstance(fig, matplotlib.figure.Figure)
@@ -505,28 +474,31 @@ class LRTestTestCase(TestCase):
 
 
 	def test_has_nu_logistic(self):
-		df = randomize_data(logistic_ode)
+		df = randomize_data(t=12, y0=0.1, K=1, r=0.75, nu=1, reps=REPS, noise_std=NOISE_STD, random_seed=RANDOM_SEED)
+
 		models = curveball.models.fit_model(df, PLOT=False, PRINT=False)
 		result = curveball.models.has_nu(models)
 		self.assertFalse(result)
 
 	
 	def test_has_nu_richards(self):
-		df = randomize_data(richards_ode)
+		df = randomize_data(t=12, y0=0.1, K=1, r=0.75, nu=0.5, reps=REPS, noise_std=NOISE_STD, random_seed=RANDOM_SEED)
+
 		models = curveball.models.fit_model(df, PLOT=False, PRINT=False)
 		result = curveball.models.has_nu(models)
 		self.assertTrue(result)
 
 
 	def test_has_nu_logistic_lag(self):
-		df = randomize_data(baranyi_roberts_ode, t=np.linspace(0,36), nu=1.0)
+		df = randomize_data(t=36, y0=0.1, K=1, r=0.75, nu=1, q0=0.1, v=0.1, reps=REPS, noise_std=NOISE_STD, random_seed=RANDOM_SEED)
+
 		models = curveball.models.fit_model(df, PLOT=False, PRINT=False)
 		result = curveball.models.has_nu(models)
 		self.assertFalse(result)
 
 
 	def test_has_nu_baranyi_roberts_nu_1(self):
-		df = randomize_data(baranyi_roberts_ode, t=np.linspace(0,32), nu=1.0)
+		df = randomize_data(t=32, y0=0.1, K=1, r=0.75, nu=1.0, q0=0.1, v=0.1, reps=REPS, noise_std=NOISE_STD, random_seed=RANDOM_SEED)
 		
 		models,fig,ax = curveball.models.fit_model(df, PLOT=True, PRINT=False)
 		self.assertIsInstance(fig, matplotlib.figure.Figure)
@@ -538,7 +510,7 @@ class LRTestTestCase(TestCase):
 
 
 	def test_has_nu_baranyi_roberts_nu_01(self):
-		df = randomize_data(baranyi_roberts_ode, t=np.linspace(0,120), nu=0.1)
+		df = randomize_data(t=120, y0=0.1, K=1, r=0.75, nu=0.1, q0=0.1, v=0.1, reps=REPS, noise_std=NOISE_STD, random_seed=RANDOM_SEED)		
 		
 		models,fig,ax = curveball.models.fit_model(df, PLOT=True, PRINT=False)
 		self.assertIsInstance(fig, matplotlib.figure.Figure)
@@ -550,7 +522,8 @@ class LRTestTestCase(TestCase):
 
 
 	def test_has_nu_baranyi_roberts_nu_5(self):
-		df = randomize_data(baranyi_roberts_ode, t=np.linspace(0,32), nu=5.0)        
+		df = randomize_data(t=32, y0=0.1, K=1, r=0.75, nu=5.0, q0=0.1, v=0.1, reps=REPS, noise_std=NOISE_STD, random_seed=RANDOM_SEED)
+
 		models = curveball.models.fit_model(df, PLOT=False, PRINT=False)
 		result = curveball.models.has_nu(models, PRINT=True)
 		self.assertTrue(result)
@@ -572,16 +545,17 @@ class BenchmarkTestCase(TestCase):
 			shutil.rmtree(self.folder)
 
 
-	def test_benchmark_success(self):
-		y0=0.1; r=0.75; K=1.0; nu=5.0
-		v=r; lam=3.0
-		q0 = old_div(1,(np.exp(lam * v) - 1))
-		t = np.linspace(0,12)
-		df = randomize_data(baranyi_roberts_ode, t=t, r=r, y0=y0, K=K, nu=nu, q0=q0, v=v, reps=1)
-		params = curveball.models.baranyi_roberts_model.make_params(r=0.1, y0=df.OD.min(), K=df.OD.max(), nu=1.0, q0=1.0, v=1.0)
-		model_fit = curveball.models.baranyi_roberts_model.fit(data=df.OD, t=df.Time, params=params)
+	def test_benchmark_success(self):		
+		v = r = 0.75
+		lam = 3.0
+		q0 = 1.0 / np.exp(lam * v) - 1.0
+		t, y = randomize_data(t=12, y0=0.1, K=1, r=r, nu=5.0, q0=q0, v=v, reps=1, noise_std=NOISE_STD, random_seed=RANDOM_SEED, as_df=False)
 		
-		success,fig,ax = curveball.models.benchmark(model_fit, PLOT=True)
+		model = curveball.baranyi_roberts_model.BaranyiRobertsModel()
+		params = model.guess(data=y, t=t)    
+		model_fit = model.fit(data=OD, t=time, params=params)
+
+		success, fig, ax = curveball.models.benchmark(model_fit, PLOT=True)
 		self.assertIsInstance(fig, matplotlib.figure.Figure)
 		filename = sys._getframe().f_code.co_name + ".png"
 		fig.savefig(filename)
@@ -590,15 +564,20 @@ class BenchmarkTestCase(TestCase):
 		
 
 	def test_benchmark_failure(self):
-		y0=0.1; r=0.75; K=1.0; nu=5.0
-		v=r; lam=3.0
-		q0 = old_div(1,(np.exp(lam * v) - 1))
-		t = np.linspace(0,12)
-		df = randomize_data(baranyi_roberts_ode, t=t, r=r, y0=y0, K=K, nu=nu, q0=q0, v=v, reps=1)
+		v = r = 0.75
+		lam = 3.0
+		q0 = 1.0 / np.exp(lam * v) - 1.05
+		t, y = randomize_data(t=12, y0=0.1, K=1, r=r, nu=5.0, q0=q0, v=v, reps=1, noise_std=NOISE_STD, random_seed=RANDOM_SEED, as_df=False)
+		
+
 		params = curveball.models.logistic_model.make_params(r=0.1, y0=df.OD.min(), K=df.OD.max())
 		model_fit = curveball.models.logistic_model.fit(data=df.OD, t=df.Time, params=params)
+
+		model = curveball.baranyi_roberts_model.BaranyiRobertsModel()
+		params = model.guess(data=y, t=t, param_guess={'nu': 1, 'q0': np.inf, 'v': np.inf}, param_fix={'nu', 'q0', 'v'})                
+		model_fit = model.fit(data=y, t=t, params=params)
 		
-		success,fig,ax = curveball.models.benchmark(model_fit, PLOT=True)
+		success, fig, ax = curveball.models.benchmark(model_fit, PLOT=True)
 		self.assertIsInstance(fig, matplotlib.figure.Figure)
 		filename = sys._getframe().f_code.co_name + ".png"
 		fig.savefig(filename)
@@ -633,8 +612,7 @@ class OutliersTestCase(TestCase):
 		self.assertTrue( (np.array(list(D.values())) > 0).all(), msg=list(D.values()) )
 
 
-	def test_find_outliers(self):
-		
+	def test_find_outliers(self):		
 		outliers,fig,ax = curveball.models.find_outliers(self.df, self.model_fit, PLOT=True)
 		self.assertIsInstance(fig, matplotlib.figure.Figure)
 		filename = sys._getframe().f_code.co_name + ".png"
@@ -662,9 +640,7 @@ class SamplingTestCase(TestCase):
 
 
 	def test_sample_params(self):
-		df = randomize_data(logistic_ode, reps=1)
-		t = df.Time.as_matrix()
-		y = df.OD.as_matrix()
+		t, y = randomize_data(t=12, y0=0.1, K=1, r=0.75, nu=1.0, reps=1, noise_std=NOISE_STD, random_seed=RANDOM_SEED, as_df=False)
 		model = curveball.baranyi_roberts_model.BaranyiRobertsModel()
 		params = model.guess(data=y, t=t, param_guess={'v': np.inf, 'nu': 1}, param_fix={'v', 'nu', 'q0'})
 		model_fit = model.fit(data=y, t=t, params=params)
@@ -675,9 +651,7 @@ class SamplingTestCase(TestCase):
 
 
 	def test_sample_params_with_params(self):
-		df = randomize_data(logistic_ode, reps=1)
-		t = df.Time.as_matrix()
-		y = df.OD.as_matrix()
+		t, y = randomize_data(t=12, y0=0.1, K=1, r=0.75, nu=1.0, reps=1, noise_std=NOISE_STD, random_seed=RANDOM_SEED, as_df=False)
 		model = curveball.baranyi_roberts_model.BaranyiRobertsModel()
 		params = model.guess(data=y, t=t, param_guess={'v': np.inf, 'nu': 1}, param_fix={'v', 'nu', 'q0'})
 		model_fit = model.fit(data=y, t=t, params=params)
@@ -688,9 +662,7 @@ class SamplingTestCase(TestCase):
 
 
 	def test_sample_params_with_covar(self):
-		df = randomize_data(logistic_ode, reps=1)
-		t = df.Time.as_matrix()
-		y = df.OD.as_matrix()
+		t, y = randomize_data(t=12, y0=0.1, K=1, r=0.75, nu=1.0, reps=1, noise_std=NOISE_STD, random_seed=RANDOM_SEED, as_df=False)
 		model = curveball.baranyi_roberts_model.BaranyiRobertsModel()
 		params = model.guess(data=y, t=t, param_guess={'v': np.inf, 'nu': 1}, param_fix={'v', 'nu', 'q0'})
 		model_fit = model.fit(data=y, t=t, params=params)
@@ -707,18 +679,8 @@ class GuessTestCase(TestCase):
 	_multiprocess_can_split_ = True
 
 
-	def test_guess_nu_5(self):
-		df = randomize_data(baranyi_roberts_ode, t=np.linspace(0,32), nu=5.0, reps=1)
-		nu, fig, ax = curveball.models.guess_nu(t=df.Time, N=df.OD, PLOT=True, PRINT=False)
-		self.assertIsInstance(fig, matplotlib.figure.Figure)
-		filename = sys._getframe().f_code.co_name + ".png"
-		fig.savefig(filename)
-		self.assertTrue(check_image(filename))               
-		self.assertTrue(1 < nu < 10, 'nu={0}'.format(nu))
-
-
 	def test_guess_nu_1(self):
-		df = randomize_data(baranyi_roberts_ode, t=np.linspace(0,32), nu=1.0, reps=1)
+		df = randomize_data(t=32, y0=0.1, K=1, r=0.75, nu=1.0, reps=1, noise_std=NOISE_STD, random_seed=RANDOM_SEED)
 		nu, fig, ax = curveball.models.guess_nu(t=df.Time, N=df.OD, PLOT=True, PRINT=False)
 		self.assertIsInstance(fig, matplotlib.figure.Figure)
 		filename = sys._getframe().f_code.co_name + ".png"
@@ -727,8 +689,18 @@ class GuessTestCase(TestCase):
 		self.assertTrue(0 < nu < 3, 'nu={0}'.format(nu))
 
 
+	def test_guess_nu_5(self):
+		df = randomize_data(t=32, y0=0.1, K=1, r=0.75, nu=5.0, reps=1, noise_std=NOISE_STD, random_seed=RANDOM_SEED)
+		nu, fig, ax = curveball.models.guess_nu(t=df.Time, N=df.OD, PLOT=True, PRINT=False)
+		self.assertIsInstance(fig, matplotlib.figure.Figure)
+		filename = sys._getframe().f_code.co_name + ".png"
+		fig.savefig(filename)
+		self.assertTrue(check_image(filename))               
+		self.assertTrue(1 < nu < 10, 'nu={0}'.format(nu))
+
+
 	def test_guess_nu_01(self):
-		df = randomize_data(baranyi_roberts_ode, t=np.linspace(0,32), nu=0.1, reps=1)
+		df = randomize_data(t=32, y0=0.1, K=1, r=0.75, nu=0.1, reps=1, noise_std=NOISE_STD, random_seed=RANDOM_SEED)
 		nu, fig, ax = curveball.models.guess_nu(t=df.Time, N=df.OD, PLOT=True, PRINT=False)
 		self.assertIsInstance(fig, matplotlib.figure.Figure)
 		filename = sys._getframe().f_code.co_name + ".png"
@@ -759,8 +731,8 @@ class IssuesTestCase(TestCase):
 	def test_has_nu_issue22(self):
 		'''`Issue 22 <https://github.com/yoavram/curveball/issues/22>`_.
 		'''
-		df = randomize_data(baranyi_roberts_ode, t=np.linspace(0,48), nu=5.0)
-		
+		df = randomize_data(t=48, y0=0.1, K=1, r=0.75, nu=5.0, q0=0.1, v=0.1, reps=REPS, noise_std=NOISE_STD, random_seed=RANDOM_SEED)
+
 		models,fig,ax = curveball.models.fit_model(df, PLOT=True, PRINT=False)
 		self.assertIsInstance(fig, matplotlib.figure.Figure)
 		filename = sys._getframe().f_code.co_name + ".png"

@@ -24,7 +24,7 @@ import pandas as pd
 import copy
 from lmfit import Model
 from lmfit.models import LinearModel
-from curveball.baranyi_roberts_model import baranyi_roberts_function, BaranyiRobertsModel
+import curveball.baranyi_roberts_model
 import sympy
 import seaborn as sns
 sns.set_style("ticks")
@@ -760,14 +760,14 @@ def fit_model(df, ax=None, param_guess=None, param_min=None, param_max=None, par
     results = []
     
     # Baranyi-Roberts = Richards /w lag (6 params)
-    br6_model = BaranyiRobertsModel()
+    br6_model = curveball.baranyi_roberts_model.BaranyiRobertsModel()
     br6_params = br6_model.guess(data=OD, t=time, param_guess=param_guess, param_min=param_min, param_max=param_max, param_fix=param_fix)    
     fit_kws = {'Dfun': make_Dfun(br6_model, br6_params), "col_deriv":True} if use_Dfun else {}
     br6_result = br6_model.fit(data=OD, t=time, params=br6_params, weights=weights, fit_kws=fit_kws)    
     results.append(br6_result)
 
     # Baranyi-Roberts /w nu=1 = Logistic /w lag (5 params) 
-    br5_model = BaranyiRobertsModel()
+    br5_model = curveball.baranyi_roberts_model.BaranyiRobertsModel()
     _param_guess = param_guess.copy()
     _param_guess['nu'] = 1
     br5_params = br5_model.guess(data=OD, t=time, param_guess=_param_guess, param_min=param_min, param_max=param_max, param_fix=param_fix.union({'nu'}))
@@ -778,16 +778,18 @@ def fit_model(df, ax=None, param_guess=None, param_min=None, param_max=None, par
     results.append(br5_result)
 
     # Baranyi-Roberts /w v=r (5 params) 
-    br5b_model = BaranyiRobertsModel()    
+    br5b_model = curveball.baranyi_roberts_model.BaranyiRobertsModel()    
     br5b_params = br5b_model.guess(data=OD, t=time, param_guess=param_guess, param_min=param_min, param_max=param_max, param_fix=param_fix.union({'v'}))
-    assert br5b_params['nu'].value == 1
+    assert not br5b_params['v'].vary
+    assert br5b_params['v'].value == br5b_params['r'].value
     fit_kws = {'Dfun': make_Dfun(br5b_model, br5b_params), "col_deriv":True} if use_Dfun else {}
     br5b_result = br5b_model.fit(data=OD, t=time, params=br5b_params, weights=weights)
-    assert br5b_result.best_values['nu'] == 1
+    assert br5b_result.best_values['v'] == br5b_result.best_values['r']
+    assert not br5b_result.params['v'].vary
     results.append(br5b_result)
 
     # Baranyi-Roberts /w nu=1, v=r = Logistic /w lag (4 params)  (see Baty & Delignette-Muller, 2004)
-    br4_model = BaranyiRobertsModel()
+    br4_model = curveball.baranyi_roberts_model.BaranyiRobertsModel()
     _param_guess = param_guess.copy()
     _param_guess['nu'] = 1
     br4_params = br4_model.guess(data=OD, t=time, param_guess=_param_guess, param_min=param_min, param_max=param_max, param_fix=param_fix.union({'nu', 'v'}))
@@ -799,7 +801,7 @@ def fit_model(df, ax=None, param_guess=None, param_min=None, param_max=None, par
     results.append(br4_result)
 
     # Richards = Baranyi-Roberts /wout lag (4 params)
-    richards_model = BaranyiRobertsModel()
+    richards_model = curveball.baranyi_roberts_model.BaranyiRobertsModel()
     _param_guess = param_guess.copy()
     _param_guess['v'] = np.inf
     richards_params = richards_model.guess(data=OD, t=time, param_guess=_param_guess, param_min=param_min, param_max=param_max, param_fix=param_fix.union({'q0', 'v'}))
@@ -812,7 +814,7 @@ def fit_model(df, ax=None, param_guess=None, param_min=None, param_max=None, par
     results.append(richards_result)
 
     # Logistic = Richards /w nu = 1 (3 params)
-    logistic_model = BaranyiRobertsModel()
+    logistic_model = curveball.baranyi_roberts_model.BaranyiRobertsModel()
     _param_guess = param_guess.copy()
     _param_guess['nu'] = 1
     _param_guess['v'] = np.inf
@@ -858,15 +860,7 @@ def fit_model(df, ax=None, param_guess=None, param_min=None, param_max=None, par
 
 if __name__ == '__main__':
     # simulate 30 growth curves
-    rng = np.random.RandomState(0)
-    t = np.linspace(0, 12)
-    reps = 30
-    noise = 0.02
-    y = baranyi_roberts_function(t=t, y0=0.12, K=0.56, r=0.8, nu=1.8, q0=0.2, v=0.8)
-    y.resize((len(t),))
-    y = y.repeat(reps).reshape((len(t), reps)) + rng.normal(0, noise, (len(t), reps))
-    y[y < 0] = 0
-    df = pd.DataFrame({'OD': y.flatten(), 'Time': t.repeat(reps)})
+    df = curveball.baranyi_roberts_model.randomize(t=12, y0=0.12, K=0.56, r=0.8, nu=1.8, q0=0.2, v=0.8, reps=30, noise_std=0.04, random_seed=0)
 
     # fit models to growth curves
     results, fig, ax = fit_model(df, use_Dfun=True, PLOT=True, PRINT=True)

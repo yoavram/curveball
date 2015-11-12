@@ -9,21 +9,21 @@
 # Copyright (c) 2015, Yoav Ram <yoav@yoavram.com>
 from __future__ import print_function
 from __future__ import division
-from builtins import filter
-from builtins import str
-from builtins import range
-from past.utils import old_div
 import sys
 from warnings import warn
+import numbers
 import numpy as np
 from scipy.optimize import minimize
 from statsmodels.nonparametric.smoothers_lowess import lowess
-import copy
 import matplotlib.pyplot as plt
+import pandas as pd
 import lmfit
 import sympy
 
+
 MIN_VALUE = 1e-4
+STEP_RATIO = 0.1
+USE_STEP_FUNC = True
 
 
 def smooth(x, y, PLOT=False):
@@ -99,6 +99,24 @@ def baranyi_roberts_function(t, y0, K, r, nu, q0, v):
 	else:
 		At = t + (1.0 / v) * np.log((np.exp(-v * t) + q0) / (1.0 + q0))
 	return K / ((1 - (1 - (K / y0)**nu) * np.exp(-r * nu * At))**(1.0/nu))
+
+
+def baranyi_roberts_step_function(t, y0, K, r, nu, q0, v):
+	r"""TODO
+	"""
+	S = STEP_RATIO
+	if np.isposinf(q0) or np.isposinf(v):
+		# without lag
+		return K / ((1 - (1 - (K / y0)**nu) * np.exp(-r * nu * t))**(1.0/nu))
+	# with lag: find time where (y-y0)/(K-y0) = S
+	tS = (1.0/r) * np.log( ((S * (K - y0) / y0 + 1)*(1 + q0) - 1) / q0 )
+	y = np.zeros(len(t))
+	# small population, no logistic term (1-(N/K)**nu)
+	y[t < tS] = y0 * (1 + q0 * np.exp(r * t[t < tS])) / (1 + q0)
+	# big population, standard baranyi-roberts function
+	At = t[t >= tS] + (1.0 / v) * np.log((np.exp(-v * t[t >= tS]) + q0)/(1 + q0))
+	y[t >= tS] = K / (1 - (1 - (K / y0)**nu) * np.exp(-r * nu * At))**(1.0 / nu)
+	return y
 
 
 def guess_nu(t, N, K=None, PLOT=False, PRINT=False):
@@ -261,7 +279,10 @@ class BaranyiRobertsModel(lmfit.model.Model):
 	"""
 
 	def __init__(self, *args, **kwargs):
-		super(BaranyiRobertsModel, self).__init__(baranyi_roberts_function, *args, **kwargs)
+		if kwargs.get('stepfunc', USE_STEP_FUNC):
+			super(BaranyiRobertsModel, self).__init__(baranyi_roberts_step_function, *args, **kwargs)
+		else:
+			super(BaranyiRobertsModel, self).__init__(baranyi_roberts_function, *args, **kwargs)
 
 
 	def guess(self, data, t, param_guess=None, param_min=None, param_max=None, param_fix=None):		
@@ -332,20 +353,62 @@ class BaranyiRobertsModel(lmfit.model.Model):
 		return dNdt, t, tuple(args)
 
 
+
+def noisify_normal_additive(data, std, rng=None):
+	if not rng:
+		rng = np.random
+	return data +  rng.normal(0, std, data.shape)
+
+
+def noisify_lognormal_multiplicative(data, std, random_seed=None):
+	if random_seed is None:
+		rng = np.random
+	else:
+		rng = np.random.RandomState(random_seed)
+	return data * rng.lognormal(0, std, data.shape)
+
+
+def randomize(t=12, y0=0.1, K=1.0, r=0.1, nu=1, q0=np.inf, v=np.inf, reps=1, noise_std=0.02, noise_func=noisify_lognormal_multiplicative, random_seed=None, as_df=True):
+	if isinstance(t, numbers.Number):
+		t = np.linspace(0, t)
+	y = baranyi_roberts_function(t, y0, K, r, nu, q0, v)
+	y.resize((len(t),))
+	y = y.repeat(reps)
+	y.resize((len(t), reps))
+	y = noise_func(y, noise_std, random_seed)
+	y[y < 0] = 0
+	y = y.flatten()
+	t = t.repeat(reps)
+	if as_df:
+		return pd.DataFrame({'OD': y, 'Time': t})
+	else:
+		return t, y
+
+
 def nvarys(params):
 	return len([p for p in params.values() if p.vary])
 
 
+def lag(result):
+	q0 = result.best_values['q0']
+	v = result.best_values['v']
+	if np.isinf(q0) or np.isinf(v):
+		return 0
+	return np.log(1.0 + 1.0 / q0) / v
+
+
 if __name__ == '__main__':
-	t = np.linspace(0, 12)
-	y = baranyi_roberts_function(t=t, y0=0.12, K=0.56, r=0.8, nu=1.0, q0=0.2, v=np.inf)
-	
+	t, y = randomize(t=12, y0=0.12, K=0.56, r=0.8, nu=3.0, q0=0.2, v=0.8, reps=1, as_df=False, random_seed=0)
+	plt.plot(t, y, 'o')
+	plt.show()
+	print("Step", USE_STEP_FUNC)
+
 	br6_model = BaranyiRobertsModel()
 	br6_params = br6_model.guess(data=y, t=t)
 	assert nvarys(br6_params) == 6
 	br6_result = br6_model.fit(data=y, t=t, params=br6_params)
-	assert br6_result.nvarys == 6	
-	print(br6_result.model.name, br6_result.nvarys, br6_result.bic)
+	assert br6_result.nvarys == 6
+	print(br6_result.model.name, br6_result.nvarys, br6_result.bic, lag(br6_result))
 
 	br5_model = BaranyiRobertsModel()
 	br5_params = br5_model.guess(data=y, t=t, param_guess={'nu':1}, param_fix=['nu'])
@@ -354,7 +417,18 @@ if __name__ == '__main__':
 	br5_result = br5_model.fit(data=y, t=t, params=br5_params)
 	assert br5_result.nvarys == 5
 	assert br5_result.best_values['nu'] == 1
-	print(br5_result.model.name, br5_result.nvarys, br5_result.bic)
+	print(br5_result.model.name, br5_result.nvarys, br5_result.bic, lag(br5_result))
+
+
+	br5b_model = BaranyiRobertsModel()
+	br5b_params = br5b_model.guess(data=y, t=t, param_fix=['v'])
+	assert nvarys(br5b_params) == 5, br5b_params
+	assert br5b_params['v'].value == br5b_params['r'].value
+	br5b_result = br5b_model.fit(data=y, t=t, params=br5b_params)
+	assert br5b_result.nvarys == 5
+	assert br5b_result.best_values['v'] == br5b_result.best_values['r']
+	print(br5b_result.model.name, br5b_result.nvarys, br5b_result.bic, lag(br5b_result))
+
 
 	br4_model = BaranyiRobertsModel()
 	br4_params = br4_model.guess(data=y, t=t, param_guess={'nu':1}, param_fix=['nu', 'v'])
@@ -364,7 +438,7 @@ if __name__ == '__main__':
 	br4_result = br4_model.fit(data=y, t=t, params=br4_params)
 	assert br4_result.nvarys == 4
 	assert br4_result.best_values['v'] == br4_result.best_values['r']
-	print(br4_result.model.name, br4_result.nvarys, br4_result.bic)
+	print(br4_result.model.name, br4_result.nvarys, br4_result.bic, lag(br4_result))
 
 	richards_model = BaranyiRobertsModel()
 	richards_params = richards_model.guess(data=y, t=t, param_guess={'v':np.inf}, param_fix=['q0', 'v'])
@@ -375,7 +449,7 @@ if __name__ == '__main__':
 	assert richards_result.nvarys == 4
 	assert np.isposinf(richards_result.best_values['v'])
 	assert np.isposinf(richards_result.best_values['q0'])
-	print(richards_result.model.name, richards_result.nvarys, richards_result.bic)
+	print(richards_result.model.name, richards_result.nvarys, richards_result.bic, lag(richards_result))
 
 	logistic_model = BaranyiRobertsModel()
 	logistic_params = logistic_model.guess(data=y, t=t, param_guess={'nu':1, 'v':np.inf}, param_fix=['nu', 'v', 'q0'])
@@ -388,5 +462,5 @@ if __name__ == '__main__':
 	assert logistic_result.best_values['nu'] == 1
 	assert np.isposinf(logistic_result.best_values['v'])
 	assert np.isposinf(logistic_result.best_values['q0'])
-	print(logistic_result.model.name, logistic_result.nvarys, logistic_result.bic)
+	print(logistic_result.model.name, logistic_result.nvarys, logistic_result.bic, lag(logistic_result))
 	
