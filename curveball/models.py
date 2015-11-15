@@ -70,6 +70,8 @@ def sample_params(model_fit, nsamples, params=None, covar=None):
         params = _params
     if covar is None:
         covar = model_fit.covar
+    if covar is None:
+        raise ValueError("Covariance matrix for {0} is invalid (None).".format(model_fit.model))
     if covar.ndim != 2:
         warn("Covariance matrix doesn't have 2 dimensions: \n{}".format(covar))
     w, h = covar.shape
@@ -415,7 +417,7 @@ def has_lag(model_fits, alfa=0.05, PRINT=False):
         raised if the fittest of the :py:class:`lmfit.model.ModelResult` objects in `model_fits` is of an unknown model.
     """
     m1 = model_fits[0]
-    if np.isposinf(m1.best_values.get('q0', np.inf)) or np.isposinf(m1.best_values.get('v', np.inf)):
+    if np.isposinf(m1.best_values.get('q0', np.inf)) and np.isposinf(m1.best_values.get('v', np.inf)):
         return False
         
     try:
@@ -423,7 +425,7 @@ def has_lag(model_fits, alfa=0.05, PRINT=False):
     except KeyError:
         raise ValueError("The best fit model {} has no nested model for testing lag".format(m1.model.name))
     try:
-        m0 = [m for m in model_fits if isinstance(res.model, m0_model_class)][0]
+        m0 = [m for m in model_fits if isinstance(m.model, m0_model_class)][0]
     except IndexError:
         raise ValueError("No {} in model results.".format(m0_model_class.name))
     
@@ -469,7 +471,7 @@ def has_nu(model_fits, alfa=0.05, PRINT=False):
     except KeyError:
         raise ValueError("The best fit model {} has no nested model for testing nu".format(m1.model.name))
     try:
-        m0 = [m for m in model_fits if isinstance(res.model, m0_model_class)][0]
+        m0 = [m for m in model_fits if isinstance(m.model, m0_model_class)][0]
     except IndexError:
         raise ValueError("No {} in model results.".format(m0_model_class.name))
 
@@ -492,7 +494,7 @@ def make_Dfun(model, params):
         res = np.array([dydx(t, *values) for dydx in partial_derivs])
         expected_shape = (len(values), len(t))
         if res.shape != expected_shape:
-            raise TypeError("Dfun result shape for {} is incorrect, expected {} but it is {}.".format(model.name, expected_shape, res.shape))
+            raise TypeError("Dfun result shape for {0} is incorrect, expected {1} but it is {2}.".format(model.name, expected_shape, res.shape))
         return res
     return Dfun
 
@@ -523,17 +525,17 @@ def cooks_distance(df, model_fit, use_weights=True):
     `Wikipedia <https://en.wikipedia.org/wiki/Cook's_distance>`_
     """
     p = model_fit.nvarys
-    MSE = old_div(model_fit.chisqr, model_fit.ndata)
+    MSE = model_fit.chisqr / model_fit.ndata
     wells = df.Well.unique()
     D = {}
     
     for well in wells:    
         _df = df[df.Well != well]
-        _df = _df.groupby('Time')['OD'].agg([np.mean, np.std]).reset_index()
+        time, OD = unpack_df(_df)
         weights =  _calc_weights(_df) if use_weights else None
         model_fit_i = copy.deepcopy(model_fit)
-        model_fit_i.fit(_df['mean'], weights=weights)
-        D[well] = old_div(model_fit_i.chisqr, (p * MSE))
+        model_fit_i.fit(data=OD, t=time, weights=weights)
+        D[well] = model_fit_i.chisqr / (p * MSE)
     return D
 
 
@@ -652,25 +654,34 @@ def _calc_weights(df):
     """If there is more than one replicate, use the standard deviations as weight.
     Warn about NaN and infinite values.
     """
-    if np.isnan(df['std']).any():
+    std = df.groupby('Time').OD.transform(lambda x: np.repeat(x.std(), len(x))).as_matrix()
+    if np.isnan(std).any():
         warn("Warning: NaN in standard deviations, can't use weights")
         weights = None
     else:
-        weights = old_div(1.,df['std'])
+        weights = 1.0 / std
         # if any weight is nan, raise error
         idx = np.isnan(weights)
         if idx.any():
-            raise ValueError("NaN weights are illegal, indices: " + str(idx))
+            raise ValueError("NaN weights are illegal, indices: {0}".format(idx))
         # if any weight is infinite, change to the max
         idx = np.isinf(weights)
         if idx.any():
-            warn("Warning: found infinite weight, changing to maximum (%d occurences)" % idx.sum())
+            warn("Warning: found infinite weight, changing to maximum ({0} occurences)".format(idx.sum()))
             weights[idx] = weights[~idx].max()
     return weights
 
 
 def nvarys(params):
     return len([p for p in params.values() if p.vary])
+
+
+def unpack_df(df):
+
+    sorted_df = df.sort_values(by=['Time', 'OD'])
+    t = sorted_df.Time.as_matrix()
+    y = sorted_df.OD.as_matrix()
+    return t, y
 
 
 def fit_model(df, ax=None, param_guess=None, param_min=None, param_max=None, param_fix=None, use_weights=True, use_Dfun=True, PLOT=True, PRINT=True):
@@ -737,10 +748,9 @@ def fit_model(df, ax=None, param_guess=None, param_min=None, param_max=None, par
     if param_fix is None:
         param_fix = set()
 
-    _df = df.groupby('Time')['OD'].agg([np.mean, np.std]).reset_index().rename(columns={'mean':'OD'})
-    OD = _df.OD.as_matrix()
-    time = _df.Time.as_matrix()
-    weights =  _calc_weights(_df) if use_weights else None
+    time, OD = unpack_df(df)
+    #_df = df.groupby('Time')['OD'].agg([np.mean, np.std]).reset_index().rename(columns={'mean':'OD'})    
+    weights =  _calc_weights(df) if use_weights else None
     results = []
     
     for model_name, model_class in get_models(curveball.baranyi_roberts_model).items():        
@@ -756,8 +766,8 @@ def fit_model(df, ax=None, param_guess=None, param_min=None, param_max=None, par
     if PRINT:
         print(results[0].fit_report(show_correl=False))
     if PLOT:        
-        dy = _df.OD.max() / 50.0
-        dx = _df.Time.max() / 25.0
+        dy = df.OD.max() / 50.0
+        dx = df.Time.max() / 25.0
         columns = 3
         rows = int(np.ceil(len(results) / columns))
         fig, ax = plt.subplots(rows, columns, sharex=True, sharey=True, figsize=(16, 6))
@@ -779,8 +789,8 @@ def fit_model(df, ax=None, param_guess=None, param_min=None, param_max=None, par
                 _ax.set_ylabel('OD')
             if row == rows - 1:
                 _ax.set_xlabel('Time')
-        _ax.set_xlim(0, 1.1 * _df.Time.max())
-        _ax.set_ylim(0.9 * _df.OD.min(), 1.1 * _df.OD.max())
+        _ax.set_xlim(0, 1.1 * df.Time.max())
+        _ax.set_ylim(0.9 * df.OD.min(), 1.1 * df.OD.max())
         sns.despine()
         fig.tight_layout()
         return results, fig, ax
@@ -793,6 +803,6 @@ if __name__ == '__main__':
 
     # fit models to growth curves
     results, fig, ax = fit_model(df, use_Dfun=True, PLOT=True, PRINT=True)    
-    plt.savefig('models.png')
+    plt.savefig('test_models.png')
     plt.show()
 

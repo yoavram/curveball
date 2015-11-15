@@ -28,7 +28,7 @@ USE_STEP_FUNC = False
 
 
 def lag(model_result=None, q0=None, v=None):
-	if not model_result is None:
+	if model_result is not None:
 		q0 = model_result.best_values['q0']
 		v = model_result.best_values['v']
 	elif q0 is None or v is None:
@@ -111,7 +111,7 @@ def baranyi_roberts_step_function(t, y0, K, r, nu, q0, v):
 	return y
 
 
-def smooth(x, y, PLOT=False):
+def smooth(x, y, PLOT=False, **kwargs):
 	"""Lowess smoothing function.
 
 	Parameters
@@ -120,17 +120,28 @@ def smooth(x, y, PLOT=False):
 		array of floats for the independent variable
 	y : numpy.ndarray
 		array of floats for the dependent variable
+	PLOT : bool, optional
+		if :py:const:`True`, plots a figure of the input and smoothed data, defaults to :py:const:`False`
+	kwargs : optional
+		extra keyword arguments passed to the smoothing function. Use `frac` (between 0 and 1) to control the fraction of the data used when estimating each y-value.
 
 	Returns
 	-------
-	numpy.ndarray
+	yhat : numpy.ndarray
 		array of floats for the smoothed dependent variable
+	fig : matplotlib.figure.Figure
+		if the argument `PLOT` was :py:const:`True`, the generated figure.
+	ax : matplotlib.axes.Axes
+		if the argument `PLOT` was :py:const:`True`, the generated axis.		
 	"""
-	yhat = lowess(y, x, 0.1, return_sorted=False)
+	if 'return_sorted' not in kwargs:
+		kwargs['return_sorted'] = False	
+	yhat = lowess(y, x, **kwargs)
 	if PLOT:
 		fig, ax = plt.subplots(1, 1)
 		ax.plot(x, yhat, 'k--')
 		ax.plot(x, y, 'ko')
+		return yhat, fig, ax
 	return yhat
 
 
@@ -177,17 +188,23 @@ def guess_nu(t, N, K=None, PLOT=False, PRINT=False):
 	"""
 	if K is None:
 		K = N.max()
-	# only use the first part of the curve up to N=K/e (inflexion point for nu=0)
-	idx = N >= K/np.exp(1)
+	# only use the second part of the curve starting from N=K/2e (inflexion point for nu=0)
+	idx = N >= K * np.exp(-1)
+	assert idx.any()
 	t = t[idx]
 	N = N[idx]
-	# smooth and calculate derivative
-	N_smooth = smooth(t, N)
-	dNdt = np.gradient(N_smooth, t[1]-t[0])   
-	dNdt_smooth = smooth(t, dNdt)
+	## smooth and calculate derivative
+	N_smooth = smooth(t, N) 
+	# remove replicates
+	N_smooth = np.unique(N_smooth)
+	t = np.unique(t)
+	# calculate gradient
+	dt = np.gradient(t)[0]
+	dNdt = np.gradient(N_smooth, dt)
+	dNdt_smooth = smooth(t, dNdt, frac=0.05) # frac=0.1 gave good results in the tests, 15 Nov 15.
 	# find inflexion point
 	i = dNdt_smooth.argmax()
-	Nmax = N[i]    
+	Nmax = N_smooth[i]
 	# find nu that gives this inflexion point
 	def target(nu):
 		return np.abs((1 + nu)**(-1.0 / nu) - Nmax / K)
@@ -201,7 +218,7 @@ def guess_nu(t, N, K=None, PLOT=False, PRINT=False):
 	if not opt_res.success and not np.allclose(y, 0):
 		warn("Minimization warning in %s: %s\nGuessed nu=%.4f with f(nu)=%.4f" % (sys._getframe().f_code.co_name, opt_res.message, x, y))
 	if y1 < y:
-		print("f(1)=%.4f < f(%.4f)=%.4f, Setting nu=1" % (y1, x, y))
+		warn("f(1)=%.4f < f(%.4f)=%.4f, Setting nu=1" % (y1, x, y))
 		x = 1.0
 	if PLOT:
 		fs = plt.rcParams['figure.figsize']
@@ -209,6 +226,7 @@ def guess_nu(t, N, K=None, PLOT=False, PRINT=False):
 		ax1,ax2 = ax
 		ax1.plot(t, dNdt, 'ok')
 		ax1.plot(t, dNdt_smooth, '--k')
+		ax1.axvline(t[i], color='k', ls='--')
 		ax1.axvline(t[i], color='k', ls='--')
 		ax1.axhline(dNdt[i], color='k', ls='--')
 		ax1.set_xlabel('Time')
@@ -220,7 +238,7 @@ def guess_nu(t, N, K=None, PLOT=False, PRINT=False):
 		ax2.set_xscale('log')
 		
 		fig.tight_layout()        
-		return x, fig, ax
+		return x[0], fig, ax
 	return x[0]
 
 
@@ -262,14 +280,18 @@ def guess_r(t, N, nu=None, K=None):
 	if K is None:
 		K = N.max()
 	if nu is None:
-		nu = guess_nu(t, N, K)
-	idx = N >= K/np.exp(1)
+		nu = guess_nu(t, N, K, PLOT=False, PRINT=False)
+
+	idx = N >= K * np.exp(-1) / 4
 	t = t[idx]
 	N = N[idx]
-
-	dNdt = np.gradient(N, t[1]-t[0])
-	smoothed = smooth(t, dNdt)
-	dNdtmax = smoothed.max()    
+	N_smooth = smooth(t, N)
+	N_smooth = np.unique(N_smooth)
+	t = np.unique(t)
+	dt = np.gradient(t)[0]
+	dNdt = np.gradient(N_smooth, dt)
+	dNdt_smooth = smooth(t, dNdt)
+	dNdtmax = dNdt_smooth.max()
 	
 	return dNdtmax / (K * nu * (1 + nu)**(-(1 + nu) / nu))
 
@@ -294,7 +316,7 @@ class BaranyiRoberts(lmfit.model.Model):
 	"""
 
 	def __init__(self, *args, **kwargs):
-		if len(args) > 0:
+		if args:
 			func, args = args[0], args[1:]
 		else:
 			func = baranyi_roberts_function
@@ -323,7 +345,7 @@ class BaranyiRoberts(lmfit.model.Model):
 		if 'nu' not in self.param_names:
 			nu = 1.0
 		elif 'nu' not in param_guess:
-			param_guess['nu'] = guess_nu(t, data, K=param_guess['K'])
+			param_guess['nu'] = guess_nu(t, data, K=param_guess['K'], PLOT=False, PRINT=False)
 			nu = param_guess['nu']
 		else:
 			nu = param_guess['nu']
@@ -392,7 +414,8 @@ class BaranyiRoberts(lmfit.model.Model):
 
 class Richards(BaranyiRoberts):
 	def __init__(self, *args, **kwargs):
-		func = lambda t, y0, K, r, nu: baranyi_roberts_function(t, y0, K, r, nu, np.inf, np.inf)
+		def func(t, y0, K, r, nu): 
+			return baranyi_roberts_function(t, y0, K, r, nu, np.inf, np.inf)
 		super(Richards, self).__init__(func, *args, **kwargs)
 		self.nested_models = {
 			'nu': Logistic
@@ -400,7 +423,8 @@ class Richards(BaranyiRoberts):
 
 class RichardsLag1(BaranyiRoberts):
 	def __init__(self, *args, **kwargs):
-		func = lambda t, y0, K, r, nu, q0: baranyi_roberts_function(t, y0, K, r, nu, q0, r)
+		def func(t, y0, K, r, nu, q0): 
+			return baranyi_roberts_function(t, y0, K, r, nu, q0, r)
 		super(RichardsLag1, self).__init__(func, *args, **kwargs)
 		self.nested_models = {
 			'nu': LogisticLag1,
@@ -409,7 +433,8 @@ class RichardsLag1(BaranyiRoberts):
 
 class LogisticLag2(BaranyiRoberts):
 	def __init__(self, *args, **kwargs):
-		func = lambda t, y0, K, r, q0, v: baranyi_roberts_function(t, y0, K, r, 1.0, q0, v)
+		def func(t, y0, K, r, q0, v): 
+			return baranyi_roberts_function(t, y0, K, r, 1.0, q0, v)
 		super(LogisticLag2, self).__init__(func, *args, **kwargs)
 		self.nested_models = {
 			'lag': Logistic
@@ -417,7 +442,8 @@ class LogisticLag2(BaranyiRoberts):
 
 class LogisticLag1(BaranyiRoberts):
 	def __init__(self, *args, **kwargs):
-		func = lambda t, y0, K, r, q0: baranyi_roberts_function(t, y0, K, r, 1.0, q0, r)
+		def func(t, y0, K, r, q0): 
+			return baranyi_roberts_function(t, y0, K, r, 1.0, q0, r)
 		super(LogisticLag1, self).__init__(func, *args, **kwargs)
 		self.nested_models = {
 			'lag': Logistic
@@ -425,7 +451,8 @@ class LogisticLag1(BaranyiRoberts):
 
 class Logistic(BaranyiRoberts):
 	def __init__(self, *args, **kwargs):
-		func = lambda t, y0, K, r: baranyi_roberts_function(t, y0, K, r, 1.0, np.inf, np.inf)
+		def func(t, y0, K, r): 
+			return baranyi_roberts_function(t, y0, K, r, 1.0, np.inf, np.inf)
 		super(Logistic, self).__init__(func, *args, **kwargs)
 		self.nested_models = {}
 
@@ -449,9 +476,10 @@ class Logistic(BaranyiRoberts):
 
 
 if __name__ == '__main__':
-	nvarys = lambda params: len([p for p in params.values() if p.vary])
-
+	def nvarys(params): 
+		return len([p for p in params.values() if p.vary])
 	from curveball.models import randomize
+
 	t, y = randomize(t=12, y0=0.12, K=0.56, r=0.8, nu=3.0, q0=0.2, v=0.8, reps=1, as_df=False, random_seed=0)
 	plt.plot(t, y, 'o')
 	plt.show()
