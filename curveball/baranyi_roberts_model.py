@@ -22,12 +22,19 @@ import sympy
 import curveball
 
 
-MIN_VALUE = 1e-4
+MIN_VALUES = {
+	'y0': 1e-4,
+	'K': 1e-4,
+	'r': 1e-4,
+	'nu': 1e-4,
+	'q0': 1e-4,
+	'v': 1e-4
+}
 STEP_RATIO = 0.1
 USE_STEP_FUNC = False
 
 
-def lag(model_result=None, q0=None, v=None):
+def _lag(model_result=None, q0=None, v=None):
 	if model_result is not None:
 		q0 = model_result.best_values['q0']
 		v = model_result.best_values['v']
@@ -145,7 +152,7 @@ def smooth(x, y, PLOT=False, **kwargs):
 	return yhat
 
 
-def guess_nu(t, N, K=None, PLOT=False, PRINT=False):
+def guess_nu(t, N, K=None, frac=0.1, PLOT=False, PRINT=False):
 	r"""Guesses the value of :math:`\nu` from the shape of the growth curve.
 
 	Following [4]_:
@@ -168,6 +175,8 @@ def guess_nu(t, N, K=None, PLOT=False, PRINT=False):
 		`N[i]` is the population size at time `t[i]`
 	K : float, optional
 		a guess of `K`, the maximum population size. If not given, it is guessed.
+	frac : float, optional
+		fraction of data to use when smoothing the derivative curve.
 	PLOT : bool, optional
 		if :py:const:`True`, the function will plot the calculations.
 	PRINT : bool, optional
@@ -188,7 +197,7 @@ def guess_nu(t, N, K=None, PLOT=False, PRINT=False):
 	"""
 	if K is None:
 		K = N.max()
-	# only use the second part of the curve starting from N=K/2e (inflexion point for nu=0)
+	# only use the second part of the curve starting from N=K/e (inflexion point for nu=0)
 	idx = N >= K * np.exp(-1)
 	assert idx.any()
 	t = t[idx]
@@ -201,13 +210,13 @@ def guess_nu(t, N, K=None, PLOT=False, PRINT=False):
 	# calculate gradient
 	dt = np.gradient(t)[0]
 	dNdt = np.gradient(N_smooth, dt)
-	dNdt_smooth = smooth(t, dNdt, frac=0.05) # frac=0.1 gave good results in the tests, 15 Nov 15.
+	dNdt_smooth = smooth(t, dNdt, frac=frac)
 	# find inflexion point
 	i = dNdt_smooth.argmax()
 	Nmax = N_smooth[i]
-	# find nu that gives this inflexion point
+	# find nu that gives Nmax at the inflexion point
 	def target(nu):
-		return np.abs((1 + nu)**(-1.0 / nu) - Nmax / K)
+		return np.abs(K * (1 + nu)**(-1.0 / nu)  - Nmax)
 	opt_res = minimize(target, x0=1, bounds=[(0, None)])
 	x = opt_res.x
 	y = target(x)
@@ -328,7 +337,6 @@ class BaranyiRoberts(lmfit.model.Model):
 		}
 
 
-
 	def guess(self, data, t, param_guess=None, param_min=None, param_max=None, param_fix=None):		
 		if (sorted(t) != t).all():
 			raise ValueError("Time argument t must be sorted")
@@ -345,7 +353,9 @@ class BaranyiRoberts(lmfit.model.Model):
 		if 'nu' not in self.param_names:
 			nu = 1.0
 		elif 'nu' not in param_guess:
-			param_guess['nu'] = guess_nu(t, data, K=param_guess['K'], PLOT=False, PRINT=False)
+			# guess_nu has not been performing well, just use 1.0
+			# param_guess['nu'] = guess_nu(t, data, K=param_guess['K'], PLOT=False, PRINT=False)
+			param_guess['nu'] = 1.0 
 			nu = param_guess['nu']
 		else:
 			nu = param_guess['nu']
@@ -362,10 +372,18 @@ class BaranyiRoberts(lmfit.model.Model):
 			params.add(
 				name 	= pname,
 				value 	= param_guess[pname],
-				min 	= param_min.get(pname, MIN_VALUE),
+				min 	= param_min.get(pname, MIN_VALUES.get(pname, 0)),
 				max 	= param_max.get(pname, np.inf),
 				vary 	= pname not in param_fix
 			)
+		# if 'q0' in params:
+		# 	if 'v' in params:
+		# 		params.add('lag', value=_lag(q0=param_guess['q0'], v=param_guess['v']), min=1.0/60.0, vary=params['q0'].vary)
+		# 		params['q0'].set(expr='1/(exp(v / 60.0) - 1)')
+		# 	else:
+		# 		params.add('lag', value=_lag(q0=param_guess['q0'], v=param_guess['r']), min=1.0/60.0, vary=params['q0'].vary)
+		# 		params['q0'].set(expr='1/(exp(r / 60.0) - 1)')
+			
 		return params
 
 
@@ -490,7 +508,7 @@ if __name__ == '__main__':
 	assert nvarys(br6_params) == 6
 	br6_result = br6_model.fit(data=y, t=t, params=br6_params)
 	assert br6_result.nvarys == 6
-	print(br6_result.model.name, br6_result.nvarys, br6_result.bic, lag(br6_result))
+	print(br6_result.model.name, br6_result.nvarys, br6_result.bic, _lag(br6_result))
 
 	br5_model = LogisticLag2()
 	br5_params = br5_model.guess(data=y, t=t, param_guess={'nu':1}, param_fix=['nu'])
@@ -499,7 +517,7 @@ if __name__ == '__main__':
 	br5_result = br5_model.fit(data=y, t=t, params=br5_params)
 	assert br5_result.nvarys == 5
 	assert br5_result.best_values['nu'] == 1
-	print(br5_result.model.name, br5_result.nvarys, br5_result.bic, lag(br5_result))
+	print(br5_result.model.name, br5_result.nvarys, br5_result.bic, _lag(br5_result))
 
 
 	br5b_model = RichardsLag1()
@@ -509,7 +527,7 @@ if __name__ == '__main__':
 	br5b_result = br5b_model.fit(data=y, t=t, params=br5b_params)
 	assert br5b_result.nvarys == 5
 	assert br5b_result.best_values['v'] == br5b_result.best_values['r']
-	print(br5b_result.model.name, br5b_result.nvarys, br5b_result.bic, lag(br5b_result))
+	print(br5b_result.model.name, br5b_result.nvarys, br5b_result.bic, _lag(br5b_result))
 
 
 	br4_model = LogisticLag1()
@@ -520,7 +538,7 @@ if __name__ == '__main__':
 	br4_result = br4_model.fit(data=y, t=t, params=br4_params)
 	assert br4_result.nvarys == 4
 	assert br4_result.best_values['v'] == br4_result.best_values['r']
-	print(br4_result.model.name, br4_result.nvarys, br4_result.bic, lag(br4_result))
+	print(br4_result.model.name, br4_result.nvarys, br4_result.bic, _lag(br4_result))
 
 	richards_model = Richards()
 	richards_params = richards_model.guess(data=y, t=t, param_guess={'v':np.inf}, param_fix=['q0', 'v'])
@@ -531,7 +549,7 @@ if __name__ == '__main__':
 	assert richards_result.nvarys == 4
 	assert np.isposinf(richards_result.best_values['v'])
 	assert np.isposinf(richards_result.best_values['q0'])
-	print(richards_result.model.name, richards_result.nvarys, richards_result.bic, lag(richards_result))
+	print(richards_result.model.name, richards_result.nvarys, richards_result.bic, _lag(richards_result))
 
 	logistic_model = Logistic()
 	logistic_params = logistic_model.guess(data=y, t=t, param_guess={'nu':1, 'v':np.inf}, param_fix=['nu', 'v', 'q0'])
@@ -544,5 +562,5 @@ if __name__ == '__main__':
 	assert logistic_result.best_values['nu'] == 1
 	assert np.isposinf(logistic_result.best_values['v'])
 	assert np.isposinf(logistic_result.best_values['q0'])
-	print(logistic_result.model.name, logistic_result.nvarys, logistic_result.bic, lag(logistic_result))
+	print(logistic_result.model.name, logistic_result.nvarys, logistic_result.bic, _lag(logistic_result))
 	

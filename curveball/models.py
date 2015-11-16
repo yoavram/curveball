@@ -189,8 +189,7 @@ def lrtest(m0, m1, alfa=0.05):
     k1 = m1.nvarys
     chisqr1 = m1.chisqr
     assert chisqr1 > 0, chisqr1
-    lam = (old_div(m1.chisqr, m0.chisqr))**(old_div(n0, 2.))
-    D = -2 * np.log( lam )
+    D = -n0 * (np.log(m1.chisqr)-np.log(m0.chisqr))
     assert D > 0, D
     ddf = k1 - k0
     assert ddf > 0, ddf
@@ -534,7 +533,7 @@ def cooks_distance(df, model_fit, use_weights=True):
     for well in wells:    
         _df = df[df.Well != well]
         time, OD = unpack_df(_df)
-        weights =  _calc_weights(_df) if use_weights else None
+        weights =  calc_weights(_df) if use_weights else None
         model_fit_i = copy.deepcopy(model_fit)
         model_fit_i.fit(data=OD, t=time, weights=weights)
         D[well] = model_fit_i.chisqr / (p * MSE)
@@ -652,16 +651,16 @@ def find_all_outliers(df, model_fit, deviations=2, max_outlier_fraction=0.1, use
     return outliers[:-1]
 
 
-def _calc_weights(df):
+def calc_weights(df, PLOT=False):
     """If there is more than one replicate, use the standard deviations as weight.
     Warn about NaN and infinite values.
     """
-    std = df.groupby('Time').OD.transform(lambda x: np.repeat(x.std(), len(x))).as_matrix()
-    if np.isnan(std).any():
-        warn("Warning: NaN in standard deviations, can't use weights")
+    deviations = df.groupby('Time').OD.transform(lambda x: np.repeat(np.log(x).std(), len(x))).as_matrix()
+    if np.isnan(deviations).any():
+        warn("Warning: NaN in deviations, can't use weights")
         weights = None
     else:
-        weights = 1.0 / std
+        weights = 1.0 / deviations
         # if any weight is nan, raise error
         idx = np.isnan(weights)
         if idx.any():
@@ -671,6 +670,13 @@ def _calc_weights(df):
         if idx.any():
             warn("Warning: found infinite weight, changing to maximum ({0} occurences)".format(idx.sum()))
             weights[idx] = weights[~idx].max()
+    if PLOT:
+        fig, ax = plt.subplots(1, 1)
+        ax.plot(df.Time, weights, 'o')
+        ax.set_xlabel('Time')
+        ax.set_ylabel('Weight')
+        sns.despine()
+        return weights, fig, ax
     return weights
 
 
@@ -679,14 +685,13 @@ def nvarys(params):
 
 
 def unpack_df(df):
-
     sorted_df = df.sort_values(by=['Time', 'OD'])
     t = sorted_df.Time.as_matrix()
     y = sorted_df.OD.as_matrix()
     return t, y
 
 
-def fit_model(df, ax=None, param_guess=None, param_min=None, param_max=None, param_fix=None, use_weights=True, use_Dfun=True, PLOT=True, PRINT=True):
+def fit_model(df, ax=None, param_guess=None, param_min=None, param_max=None, param_fix=None, use_weights=True, use_Dfun=False, PLOT=True, PRINT=True):
     r"""Fit and select a growth model to growth curve data.
 
     This function fits several growth models to growth curve data (``OD`` as a function of ``Time``).
@@ -706,7 +711,7 @@ def fit_model(df, ax=None, param_guess=None, param_min=None, param_max=None, par
     param_fix : set, optional
         a set of names (:py:class:`str`) of parameters to fix rather then vary, while fitting the models.
     use_weights : bool, optional
-        should the function use standard deviation across replicates as weights for the fitting procedure, defaults to :py:const:`True`. 
+        should the function use the deviation across replicates as weights for the fitting procedure, defaults to :py:const:`True`.
     use_Dfun : bool, optional
         should the function calculate the partial derivatives of the model functions to be used in the fitting procedure, defaults to :py:const:`False`.
     PLOT : bool, optional
@@ -739,6 +744,10 @@ def fit_model(df, ax=None, param_guess=None, param_min=None, param_max=None, par
     >>> plate = pd.read_csv('plate_templates/G-RG-R.csv')
     >>> df = curveball.ioutils.read_tecan_xlsx('data/Tecan_280715.xlsx', label='OD', plate=plate)
     >>> green_models = curveball.models.fit_model(df[df.Strain == 'G'])
+
+    See also
+    --------
+    calc_weights
     """
     if not isinstance(df, pd.DataFrame):
         raise TypeError("Input df must be a %s, but it is %s" % (pd.Dfun.__name__, df.__class__.__name__))
@@ -751,8 +760,7 @@ def fit_model(df, ax=None, param_guess=None, param_min=None, param_max=None, par
         param_fix = set()
 
     time, OD = unpack_df(df)
-    #_df = df.groupby('Time')['OD'].agg([np.mean, np.std]).reset_index().rename(columns={'mean':'OD'})    
-    weights =  _calc_weights(df) if use_weights else None
+    weights =  calc_weights(df) if use_weights else None
     results = []
     
     for model_name, model_class in get_models(curveball.baranyi_roberts_model).items():        
