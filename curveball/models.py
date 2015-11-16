@@ -189,8 +189,8 @@ def lrtest(m0, m1, alfa=0.05):
     k1 = m1.nvarys
     chisqr1 = m1.chisqr
     assert chisqr1 > 0, chisqr1
-    Lambda = (old_div(m1.chisqr, m0.chisqr))**(old_div(n0, 2.))
-    D = -2 * np.log( Lambda )
+    lam = (old_div(m1.chisqr, m0.chisqr))**(old_div(n0, 2.))
+    D = -2 * np.log( lam )
     assert D > 0, D
     ddf = k1 - k0
     assert ddf > 0, ddf
@@ -258,7 +258,8 @@ def find_max_growth(model_fit, after_lag=True):
     t0 = find_lag(model_fit) if after_lag else 0
     t1 = model_fit.userkws['t'].max()
     t = np.linspace(t0, t1)     
-    f = lambda t: model_fit.eval(t=t)
+    def f(t): 
+        return model_fit.eval(t=t)
     y = f(t)
     dfdt = derivative(f, t)
 
@@ -312,7 +313,8 @@ def find_lag(model_fit, params=None):
 
     t = model_fit.userkws['t']
     t = np.linspace(t.min(), t.max())
-    f = lambda t: model_fit.model.eval(t=t, params=params)
+    def f(t): 
+        return model_fit.model.eval(t=t, params=params)
     y = f(t)    
     dfdt = derivative(f, t)
     idx = y > K/np.exp(1)

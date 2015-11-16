@@ -124,7 +124,8 @@ class FitnessTestCase(TestCase):
 
 	def test_fitness_LTEE_ci(self):
 		nsamples = 100
-		rand = lambda: np.random.normal(0, 0.01)
+		def rand(): 
+			return np.random.normal(0, 0.01)
 		t = np.linspace(0, 24)
 		y = np.zeros((len(t), 2, nsamples))
 		for i in range(nsamples):

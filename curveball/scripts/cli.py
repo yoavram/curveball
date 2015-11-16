@@ -266,7 +266,7 @@ def _process_file(filepath, plate, blank_strain, ref_strain, max_time, guess, pa
 	fn,ext = os.path.splitext(filepath)
 	echo_info("\tHandler: {1}\n".format(filepath, ext))
 	handler = file_extension_handlers.get(ext)
-	if  handler == None:
+	if handler is None:
 		echo_info("No handler found for file {0}".format(click.format_filename(filepath)))
 		return results
 	try: 
@@ -281,7 +281,7 @@ def _process_file(filepath, plate, blank_strain, ref_strain, max_time, guess, pa
 
 	strains = plate.Strain.unique().tolist()
 
-	if not blank_strain is None: 
+	if blank_strain is not None: 
 		if blank_strain in strains:
 			bg = df[(df.Strain == blank_strain) & (df.Time == df.Time.min())]		
 			bg = bg.OD.mean()

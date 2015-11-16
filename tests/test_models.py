@@ -415,7 +415,8 @@ class LRTestTestCase(TestCase):
 		alfa = 0.05
 		noise = 0.03
 		t = np.linspace(0,12)
-		f = lambda t, a, b: b + np.exp(-a * t)
+		def f(t, a, b): 
+			return b + np.exp(-a * t)
 		y = f(t,a,b) + rng.normal(0, noise, len(t))
 		model = Model(f)
 		params = model.make_params(a=a_init, b=b_init)

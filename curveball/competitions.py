@@ -253,7 +253,7 @@ def compete(m1, m2, y0=None, hours=24, nsamples=1, lag_phase=True, ode=double_ba
 			_df['Strain'] = i
 			df = pd.concat((df, _df))
 		
-		if not colors is None:
+		if colors is not None:
 			colors = {i:c for i,c in enumerate(colors)}
 		sns.tsplot(df, time='Time', unit='Replicate', condition='Strain', value='y', 
 						ci=ci, color=colors, ax=ax)
