@@ -30,14 +30,12 @@ MIN_VALUES = {
 	'q0': 1e-4,
 	'v': 1e-4
 }
-STEP_RATIO = 0.1
-USE_STEP_FUNC = False
 
 
 def _lag(model_result=None, q0=None, v=None):
 	if model_result is not None:
-		q0 = model_result.best_values['q0']
-		v = model_result.best_values['v']
+		q0 = model_result.best_values.get('q0', np.inf)
+		v = model_result.best_values.get('v', model_result.best_values['r'])
 	elif q0 is None or v is None:
 		raise ValueError("Either model_result or q0 and v should be given")
 	if np.isinf(q0) or np.isinf(v):
@@ -103,7 +101,7 @@ def baranyi_roberts_function(t, y0, K, r, nu, q0, v):
 def baranyi_roberts_step_function(t, y0, K, r, nu, q0, v):
 	r"""TODO
 	"""
-	S = STEP_RATIO
+	S = 0.1
 	if np.isposinf(q0) or np.isposinf(v):
 		# without lag
 		return K / ((1 - (1 - (K / y0)**nu) * np.exp(-r * nu * t))**(1.0/nu))
@@ -142,7 +140,9 @@ def smooth(x, y, PLOT=False, **kwargs):
 		if the argument `PLOT` was :py:const:`True`, the generated axis.		
 	"""
 	if 'return_sorted' not in kwargs:
-		kwargs['return_sorted'] = False	
+		kwargs['return_sorted'] = False
+	if 'missing' not in kwargs:
+		kwargs['missing'] = 'raise'
 	yhat = lowess(y, x, **kwargs)
 	if PLOT:
 		fig, ax = plt.subplots(1, 1)
@@ -195,28 +195,36 @@ def guess_nu(t, N, K=None, frac=0.1, PLOT=False, PRINT=False):
 	----------
 	.. [4] Richards, F. J. 1959. `A Flexible Growth Function for Empirical Use <http://dx.doi.org/10.1093/jxb/10.2.290>`_. Journal of Experimental Botany
 	"""
+	t, N = np.array(t), np.array(N)
 	if K is None:
 		K = N.max()
 	# only use the second part of the curve starting from N=K/e (inflexion point for nu=0)
 	idx = N >= K * np.exp(-1)
-	assert idx.any()
-	t = t[idx]
-	N = N[idx]
-	## smooth and calculate derivative
-	N_smooth = smooth(t, N) 
-	# remove replicates
-	N_smooth = np.unique(N_smooth)
-	t = np.unique(t)
+	if idx.sum() < 10:
+		warn('Less than 10 data points above K/e!')	
+	t, N = t[idx], N[idx]	
+	# smooth and calculate derivative
+	N_smooth = smooth(t, N) 	
 	# calculate gradient
 	dt = np.gradient(t)[0]
 	dNdt = np.gradient(N_smooth, dt)
+	# set nan to zero
+	dNdt[np.isnan(dNdt)] = 0
+	# remove *infinite* values
+	idx = np.isfinite(dNdt)
+	t = t[idx]
+	dNdt = dNdt[idx]
+	assert np.isfinite(dNdt).all()
+	assert len(t) == len(dNdt)
+	assert len(t) > 0
+	# smooth derivative
 	dNdt_smooth = smooth(t, dNdt, frac=frac)
-	# find inflexion point
+	# find N at inflexion point
 	i = dNdt_smooth.argmax()
-	Nmax = N_smooth[i]
-	# find nu that gives Nmax at the inflexion point
+	Ninf = N_smooth[i]
+	# find nu that gives Ninf at inflexion point
 	def target(nu):
-		return np.abs(K * (1 + nu)**(-1.0 / nu)  - Nmax)
+		return np.abs(K * (1 + nu)**(-1.0 / nu)  - Ninf)
 	opt_res = minimize(target, x0=1, bounds=[(0, None)])
 	x = opt_res.x
 	y = target(x)
@@ -327,6 +335,8 @@ class BaranyiRoberts(lmfit.model.Model):
 	def __init__(self, *args, **kwargs):
 		if args:
 			func, args = args[0], args[1:]
+		elif kwargs.get('use_step_func', False):
+			func = baranyi_roberts_step_function
 		else:
 			func = baranyi_roberts_function
 		super(BaranyiRoberts, self).__init__(func, *args, **kwargs)
@@ -432,7 +442,9 @@ class BaranyiRoberts(lmfit.model.Model):
 
 class Richards(BaranyiRoberts):
 	def __init__(self, *args, **kwargs):
-		def func(t, y0, K, r, nu): 
+		def func(t, y0, K, r, nu):
+			if kwargs.get('use_step_func', False):
+				return baranyi_roberts_step_function(t, y0, K, r, nu, np.inf, np.inf)
 			return baranyi_roberts_function(t, y0, K, r, nu, np.inf, np.inf)
 		super(Richards, self).__init__(func, *args, **kwargs)
 		self.nested_models = {
@@ -442,6 +454,8 @@ class Richards(BaranyiRoberts):
 class RichardsLag1(BaranyiRoberts):
 	def __init__(self, *args, **kwargs):
 		def func(t, y0, K, r, nu, q0): 
+			if kwargs.get('use_step_func', False):
+				return baranyi_roberts_step_function(t, y0, K, r, nu, q0, r)
 			return baranyi_roberts_function(t, y0, K, r, nu, q0, r)
 		super(RichardsLag1, self).__init__(func, *args, **kwargs)
 		self.nested_models = {
@@ -452,6 +466,8 @@ class RichardsLag1(BaranyiRoberts):
 class LogisticLag2(BaranyiRoberts):
 	def __init__(self, *args, **kwargs):
 		def func(t, y0, K, r, q0, v): 
+			if kwargs.get('use_step_func', False):
+				return baranyi_roberts_step_function(t, y0, K, r, 1.0, q0, v)
 			return baranyi_roberts_function(t, y0, K, r, 1.0, q0, v)
 		super(LogisticLag2, self).__init__(func, *args, **kwargs)
 		self.nested_models = {
@@ -460,7 +476,9 @@ class LogisticLag2(BaranyiRoberts):
 
 class LogisticLag1(BaranyiRoberts):
 	def __init__(self, *args, **kwargs):
-		def func(t, y0, K, r, q0): 
+		def func(t, y0, K, r, q0):
+			if kwargs.get('use_step_func', False):
+				return baranyi_roberts_step_function(t, y0, K, r, 1.0, q0, r)
 			return baranyi_roberts_function(t, y0, K, r, 1.0, q0, r)
 		super(LogisticLag1, self).__init__(func, *args, **kwargs)
 		self.nested_models = {
@@ -469,28 +487,12 @@ class LogisticLag1(BaranyiRoberts):
 
 class Logistic(BaranyiRoberts):
 	def __init__(self, *args, **kwargs):
-		def func(t, y0, K, r): 
+		def func(t, y0, K, r):
+			if kwargs.get('use_step_func', False):
+				return baranyi_roberts_step_function(t, y0, K, r, 1.0, np.inf, np.inf)
 			return baranyi_roberts_function(t, y0, K, r, 1.0, np.inf, np.inf)
 		super(Logistic, self).__init__(func, *args, **kwargs)
 		self.nested_models = {}
-
-
-# class Exponential(BaranyiRoberts):
-# 	def __init__(self, *args, **kwargs):
-# 		func = lambda t, y0, r: baranyi_roberts_function(t, y0, np.inf, r, 1.0, np.inf, np.inf)
-# 		super(Exponential, self).__init__(func, *args, **kwargs)
-
-
-# class ExponentialLag2(BaranyiRoberts):
-# 	def __init__(self, *args, **kwargs):
-# 		func = lambda t, y0, r, q0, v: baranyi_roberts_function(t, y0, np.inf, r, 1.0, q0, v)
-# 		super(ExponentialLag2, self).__init__(func, *args, **kwargs)
-
-
-# class ExponentialLag1(BaranyiRoberts):
-# 	def __init__(self, *args, **kwargs):
-# 		func = lambda t, y0, r, q0: baranyi_roberts_function(t, y0, np.inf, r, 1.0, np.inf, r)
-# 		super(ExponentialLag1, self).__init__(func, *args, **kwargs)
 
 
 if __name__ == '__main__':
