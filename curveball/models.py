@@ -251,14 +251,15 @@ def find_max_growth(model_fit, after_lag=True):
     mu : float
         the the maximum per capita growth rate.
     """
-    y0 = model_fit.params['y0'].value
-    K  = model_fit.params['K'].value
+    params = model_fit.params
+    y0 = params['y0'].value
+    K  = params['K'].value
 
     t0 = find_lag(model_fit) if after_lag else 0
     t1 = model_fit.userkws['t'].max()
     t = np.linspace(t0, t1)     
     def f(t): 
-        return model_fit.eval(t=t)
+        return model_fit.model.eval(t=t, params=params)
     y = f(t)
     dfdt = derivative(f, t)
 
@@ -267,13 +268,13 @@ def find_max_growth(model_fit, after_lag=True):
     t1 = t[i]
     y1 = y[i]
 
-    dfdt_y = old_div(dfdt, y)
+    dfdt_y = dfdt / y
     mu = dfdt_y.max()
     i = dfdt_y.argmax()
     t2 = t[i]
     y2 = y[i]
     
-    return t1,y1,a,t2,y2,mu
+    return t1, y1, a, t2, y2, mu
 
 
 def find_lag(model_fit, params=None):
@@ -316,7 +317,7 @@ def find_lag(model_fit, params=None):
         return model_fit.model.eval(t=t, params=params)
     y = f(t)    
     dfdt = derivative(f, t)
-    idx = y > K/np.exp(1)
+    idx = y > K / np.e
     assert idx.sum() > 0
     t = t[idx]
     y = y[idx]
@@ -691,7 +692,7 @@ def unpack_df(df):
     return t, y
 
 
-def fit_model(df, ax=None, param_guess=None, param_min=None, param_max=None, param_fix=None, use_weights=True, use_Dfun=False, PLOT=True, PRINT=True):
+def fit_model(df, ax=None, param_guess=None, param_min=None, param_max=None, param_fix=None, use_weights=True, use_Dfun=False, use_step_func=False, PLOT=True, PRINT=True):
     r"""Fit and select a growth model to growth curve data.
 
     This function fits several growth models to growth curve data (``OD`` as a function of ``Time``).
@@ -750,7 +751,7 @@ def fit_model(df, ax=None, param_guess=None, param_min=None, param_max=None, par
     calc_weights
     """
     if not isinstance(df, pd.DataFrame):
-        raise TypeError("Input df must be a %s, but it is %s" % (pd.Dfun.__name__, df.__class__.__name__))
+        raise TypeError("Input df must be a %s, but it is %s" % (pd.DataFrame.__name__, df.__class__.__name__))
     if df.shape[0] == 0:
         raise ValueError("No rows in input df")
     
@@ -761,10 +762,12 @@ def fit_model(df, ax=None, param_guess=None, param_min=None, param_max=None, par
 
     time, OD = unpack_df(df)
     weights =  calc_weights(df) if use_weights else None
+    ODerr = df.groupby('Time').OD.transform(lambda x: np.repeat(x.std(), len(x))).as_matrix()
     results = []
     
-    for model_name, model_class in get_models(curveball.baranyi_roberts_model).items():        
-        model = model_class()
+    for model_name, model_class in get_models(curveball.baranyi_roberts_model).items():
+        #print(model_name)
+        model = model_class(use_step_func=use_step_func)
         params = model.guess(data=OD, t=time, param_guess=param_guess, param_min=param_min, param_max=param_max, param_fix=param_fix)    
         fit_kws = {'Dfun': make_Dfun(model, params), "col_deriv":True} if use_Dfun else {}        
         result = model.fit(data=OD, t=time, params=params, weights=weights, fit_kws=fit_kws)
@@ -786,7 +789,7 @@ def fit_model(df, ax=None, param_guess=None, param_min=None, param_max=None, par
             col = i % columns
             _ax = ax[row, col]
             vals = fit.best_values
-            fit.plot_fit(ax=_ax, datafmt='.', fit_kws={'lw': 4})
+            fit.plot_fit(ax=_ax, datafmt='.', fit_kws={'lw': 4}, yerr=ODerr)
             _ax.axhline(y=vals.get('y0', 0), color='k', ls='--')
             _ax.axhline(y=vals.get('K', 0), color='k', ls='--')          
             title = '%s %dp\nBIC: %.3f\ny0=%.2f, K=%.2f, r=%.2g\n' + r'$\nu$=%.2g, $q_0$=%.2g, v=%.2g'
