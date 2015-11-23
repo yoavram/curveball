@@ -104,6 +104,103 @@ def double_baranyi_roberts_ode2(y, t, r, K, nu, q0, v):
 	return dydt
 
 
+def double_baranyi_roberts_ode3(y, t, r, K, nu, q0, v):
+	r"""A two species Baranyi-Roberts model. The function calculates the population growth rate at given time points.
+
+	.. math::
+
+		\frac{dN_i}{dt} = r_i \alpha_i(t) N_i \Big(1 - \Big(\frac{\sum_j{N_j}}{\bar{K}}\Big)\Big)^{\nu_i}
+
+	See also
+	--------
+	curveball.competitions.double_baranyi_roberts_ode0
+	"""
+	alfa = _alfa(t, q0[0], v[0]), _alfa(t, q0[1], v[1])
+	Kmean = (K[0] * y[0] + K[1] * y[1]) / (y[0] + y[1])
+	dydt = alfa[0] * r[0] * y[0] * (1 - ((y[0] + y[1]) / Kmean)**nu[0]), alfa[1] * r[1] * y[1] * (1 - ((y[0] + y[1]) / Kmean)**nu[1])
+	return dydt
+
+def double_baranyi_roberts_ode4(y, t, r, K, nu, q0, v):
+	r"""A two species Baranyi-Roberts model. The function calculates the population growth rate at given time points.
+
+	.. math::
+
+		\frac{dN_i}{dt} = r_i \alpha_i(t) N_i 
+
+	See also
+	--------
+	curveball.competitions.double_baranyi_roberts_ode0
+	"""
+	alfa = _alfa(t, q0[0], v[0]), _alfa(t, q0[1], v[1])
+	dydt = alfa[0] * r[0] * y[0], alfa[1] * r[1] * y[1]
+	return dydt
+
+
+def double_baranyi_roberts_ode5(y, t, r, K, nu, q0, v):
+	r"""A two species Baranyi-Roberts model. The function calculates the population growth rate at given time points.
+
+	.. math::
+
+		\frac{dN_i}{dt} = r_i \alpha_i(t) N_i \Big( 1 - \Big(\frac{N_i}{K_i}\Big)^{\nu_i}\Big)
+
+	See also
+	--------
+	curveball.competitions.double_baranyi_roberts_ode0
+	"""
+	alfa = _alfa(t, q0[0], v[0]), _alfa(t, q0[1], v[1])
+	dydt = alfa[0] * r[0] * y[0] * (1 - (y[0]/K[0])**nu[0]), alfa[1] * r[1] * y[1] * (1 - (y[1]/K[1])**nu[1])
+	return dydt
+
+
+def double_baranyi_roberts_ode6(y, t, r, K, nu, q0, v):
+	r"""A two species Baranyi-Roberts model. The function calculates the population growth rate at given time points.
+
+	.. math::
+
+		\frac{dN_i}{dt} = r_i \alpha_i(t) N_i \Big(1 - \Big(\frac{\sum_j{N_j}}{K_i}\Big)^{\bar{\nu}}\Big)
+
+	See also
+	--------
+	curveball.competitions.double_baranyi_roberts_ode0
+	"""
+	alfa = _alfa(t, q0[0], v[0]), _alfa(t, q0[1], v[1])
+	numean = (nu[0]*y[0] + nu[1]*y[1]) / (y[0] + y[1])
+	dydt = alfa[0] * r[0] * y[0] * (1 - ((y[0]+y[1])/K[0])**numean), alfa[1] * r[1] * y[1] * (1 - ((y[0]+y[1])/K[1])**numean)
+	return dydt
+
+
+def double_baranyi_roberts_ode7(y, t, r, K, nu, q0, v):
+	r"""A two species Baranyi-Roberts model. The function calculates the population growth rate at given time points.
+
+	.. math::
+
+		\frac{dN_1}{dt} = 0 \;\;\; \frac{dN_2}{dt} = r_2 \alpha_2(t) N_2 \Big(1 - \Big(\frac{N_2}{K_2}\Big)^{\bar{\nu}}\Big)
+
+	See also
+	--------
+	curveball.competitions.double_baranyi_roberts_ode0
+	"""
+	alfa = _alfa(t, q0[0], v[0]), _alfa(t, q0[1], v[1])
+	numean = (nu[0]*y[0] + nu[1]*y[1]) / (y[0] + y[1])
+	dydt = 0, alfa[1] * r[1] * y[1] * (1 - (y[1]/K[1])**nu[1])
+	return dydt
+
+
+def double_baranyi_roberts_ode8(y, t, r, K, nu, q0, v):
+	r"""A two species Baranyi-Roberts model. The function calculates the population growth rate at given time points.
+
+	.. math::
+
+		\frac{dN_i}{dt} = r_i N_i \Big(1 - \Big(\frac{\sum_{j}{N_j}}{K_i}\Big)^{\nu_i}\Big)
+
+	See also
+	--------
+	curveball.competitions.double_baranyi_roberts_ode0
+	"""
+	dydt = r[0] * y[0] * (1 - ((y[0] + y[1]) / K[0])**nu[0]), r[1] * y[1] * (1 - ((y[0] + y[1]) / K[1])**nu[1])
+	return dydt
+
+
 def compete(m1, m2, y0=None, hours=24, nsamples=1, lag_phase=True, ode=double_baranyi_roberts_ode1, params1=None, params2=None, num_of_points=100, ci=95, colors=None, ax=None, PLOT=False):
 	"""Simulate competitions between two strains using growth parameters estimated
 	by fitting growth models to growth curves data.
