@@ -33,7 +33,7 @@ from warnings import warn
 MAT_VERSION = u'1.0'
 
 
-def read_tecan_xlsx(filename, label=u'OD', sheets=None, max_time=None, plate=None):
+def read_tecan_xlsx(filename, label=u'OD', sheets=None, max_time=None, plate=None, PRINT=False):
     """Reads growth measurements from a Tecan Infinity Excel output file.
 
     Parameters
@@ -85,7 +85,7 @@ def read_tecan_xlsx(filename, label=u'OD', sheets=None, max_time=None, plate=Non
         label = [label]
     if sheets is None:
             sheets = range(wb.nsheets)
-
+    if PRINT: print("Reading {0} worksheets from workbook {1}".format(len(sheets), filename))
     label_dataframes = []
     for lbl in label:
         sheet_dataframes = []        
@@ -132,7 +132,7 @@ def read_tecan_xlsx(filename, label=u'OD', sheets=None, max_time=None, plate=Non
                 ## FOR row ENDS
 
             if not data:
-                raise ValueError("No data found in file {0}".format(filename))
+                raise ValueError("No data found in sheet {1} of workbook {0}".format(filename, sh_i))
 
             min_length = min(map(len, data.values()))
             for k,v in data.items():
@@ -156,6 +156,8 @@ def read_tecan_xlsx(filename, label=u'OD', sheets=None, max_time=None, plate=Non
             df = pd.concat(sheet_dataframes)
 
         min_time = df.Time.min()
+        if PRINT:
+            print("Starting time", min_time)
         df.Time = [(t - min_time).total_seconds() / 3600.0 for t in df.Time]
         if max_time is not None:
             df = df[df.Time <= max_time]
@@ -179,6 +181,7 @@ def read_tecan_xlsx(filename, label=u'OD', sheets=None, max_time=None, plate=Non
         df[u'Color'] = u'#000000'
     else:
         df = pd.merge(df, plate, on=(u'Row', u'Col'))
+    if PRINT: print("Read {0} records from workbook".format(df.shape[0]))
     return df
 
 
