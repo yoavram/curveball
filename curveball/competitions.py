@@ -201,7 +201,7 @@ def double_baranyi_roberts_ode8(y, t, r, K, nu, q0, v):
 	return dydt
 
 
-def compete(m1, m2, y0=None, hours=24, nsamples=1, lag_phase=True, ode=double_baranyi_roberts_ode1, params1=None, params2=None, num_of_points=100, ci=95, colors=None, ax=None, PLOT=False):
+def compete(m1, m2, y0=None, p0=(0.5, 0.5), hours=24, nsamples=1, lag_phase=True, ode=double_baranyi_roberts_ode1, params1=None, params2=None, num_of_points=100, ci=95, colors=None, ax=None, PLOT=False):
 	"""Simulate competitions between two strains using growth parameters estimated
 	by fitting growth models to growth curves data.
 
@@ -281,12 +281,6 @@ def compete(m1, m2, y0=None, hours=24, nsamples=1, lag_phase=True, ode=double_ba
 		raise TypeError("m2 must be %s, instead it is %s", lmfit.model.ModelResult, type(m2))
 
 	t = np.linspace(0, hours, num_of_points)
-	if y0 is None:		
-		y0 = np.array([m1.best_values['y0'], m2.best_values['y0']])
-		if params1 and 'y0' in params1: y0[0] = params1['y0']
-		if params2 and 'y0' in params2: y0[1] = params2['y0']
-		y0 = y0.mean()/2.0, y0.mean()/2.0
-		assert y0[0] == y0[1]
 
 	if nsamples > 1:
 		# draw random params from a distribution based on param estimates
@@ -319,8 +313,11 @@ def compete(m1, m2, y0=None, hours=24, nsamples=1, lag_phase=True, ode=double_ba
 	y = np.empty((num_of_points, 2, nsamples))
 	#infodict = [None]*nsamples # DEBUG
 	
-	# simulate the ode for each param sample
+	# simulate the ode for each param sample	
 	for i in range(nsamples):
+		if y0 is None:
+			p0 = p0[0] / (p0[0] + p0[1]), p0[1] / (p0[0] + p0[1])
+			y0 = m1_samples.iloc[i]['y0'] * p0[0], m2_samples.iloc[i]['y0'] * p0[1]
 		r = m1_samples.iloc[i]['r'], m2_samples.iloc[i]['r']
 		K = m1_samples.iloc[i]['K'], m2_samples.iloc[i]['K']
 		nu = m1_samples.iloc[i].get('nu', 1.0), m2_samples.iloc[i].get('nu', 1.0)		
