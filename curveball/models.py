@@ -432,16 +432,18 @@ def has_lag(model_fits, alfa=0.05, PRINT=False):
     """
     m1 = model_fits[0]
     if np.isposinf(m1.best_values.get('q0', np.inf)) and np.isposinf(m1.best_values.get('v', np.inf)):
+        if PRINT:
+            print('H1 model has no lag')
         return False
         
     try:
         m0_model_class = m1.model.nested_models['lag']
     except KeyError:
-        raise ValueError("The best fit model {} has no nested model for testing lag".format(m1.model.name))
+        raise ValueError("The best fit model {0} has no nested model for testing lag".format(m1.model.name))
     try:
         m0 = [m for m in model_fits if isinstance(m.model, m0_model_class)][0]
     except IndexError:
-        raise ValueError("No {} in model results.".format(m0_model_class.name))
+        raise ValueError("No {0} in model results.".format(m0_model_class.name))
     
     prefer_m1, pval, D, ddf = lrtest(m0, m1, alfa=alfa)
     if PRINT:
@@ -545,10 +547,11 @@ def cooks_distance(df, model_fit, use_weights=True):
     
     for well in wells:    
         _df = df[df.Well != well]
-        time = df.Time.as_matrix()
-        OD = df.OD.as_matrix()
+        time = _df.Time.as_matrix()
+        OD = _df.OD.as_matrix()
         weights =  calc_weights(_df) if use_weights else None
         model_fit_i = copy.deepcopy(model_fit)
+        print("**", len(OD), len(time), len(weights))
         model_fit_i.fit(data=OD, t=time, weights=weights)
         D[well] = model_fit_i.chisqr / (p * MSE)
     return D
