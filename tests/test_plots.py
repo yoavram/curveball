@@ -88,7 +88,7 @@ class PlotsTestCase(TestCase):
 		self.assertIsInstance(g, sns.Grid)
 
 	
-	def test_plot_model_residuals(self):
+	def test_plot_residuals(self):
 		def f(t, a, b, c):
 			return a + b * t + c * t**2
 		t = np.linspace(0, 100)

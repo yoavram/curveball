@@ -129,7 +129,7 @@ def plot_strains(df, x='Time', y='OD', plot_func=plt.plot, by=None, agg_func=np.
 	return g
 
 
-def tsplot(df, x='Time', y='OD', ci_level=95, output_filename=None):
+def tsplot(df, x='Time', y='OD', ci_level=95, ax=None, output_filename=None):
 	"""Time series plot of the data by strain (if applicable) or well.
 
 	The grouping of the data is done by the value of `x` and ``Strain``, if such a column exists in `df`; 
@@ -151,7 +151,8 @@ def tsplot(df, x='Time', y='OD', ci_level=95, output_filename=None):
 		confidence interval width in precent (0-100), defaults to 95.	
 	output_filename : str, optional 
 		filename to save the resulting figure; if not given, figure is not saved.
-	
+	ax : axis object, optional
+    	plot in given axis; if None creates a new figure.
 
 	Returns
 	-------
@@ -166,7 +167,7 @@ def tsplot(df, x='Time', y='OD', ci_level=95, output_filename=None):
 		condition = 'Well'
 		palette = sns.color_palette()
 	g = sns.tsplot(df, time=x, unit='Well', condition=condition, value=y,
-					err_style='ci_band', ci=ci_level, color=palette)
+					err_style='ci_band', ci=ci_level, color=palette, ax=ax)
 	sns.despine()
 	if output_filename:
 		g.figure.savefig(output_filename, bbox_inches='tight', pad_inches=1)
@@ -227,7 +228,7 @@ def plot_plate(df, edge_color='#888888', output_filename=None):
 	return fig, ax
 
 
-def plot_params_distribution(param_samples, alpha=None):
+def plot_params_distribution(param_samples, color='k', cmap="viridis", alpha=None):
 	"""Plots a distribution of model parameter samples generated with :py:func:`curveball.models.sample_params`.
 
 	Parameters
@@ -245,14 +246,17 @@ def plot_params_distribution(param_samples, alpha=None):
 	nsamples = param_samples.shape[0]
 	g = sns.PairGrid(param_samples)
 	if alpha is None:
-		alpha = old_div(1,np.power(nsamples, old_div(1.,4)))
-	g.map_upper(plt.scatter, alpha=alpha)
-	g.map_lower(sns.kdeplot, cmap="Blues_d", legend=False)
-	g.map_diag(plt.hist)
+		alpha = 1.0 / np.power(nsamples, 1.0 / 4.0)
+	g.map_upper(plt.scatter, alpha=alpha, color=color)
+	g.map_lower(sns.kdeplot, cmap=cmap, legend=False, shade=True, shade_lowest=False)
+	g.map_diag(plt.hist, facecolor=color) # https://github.com/mwaskom/seaborn/pull/788
 	return g
 
 
-def _plot_fitted_histogram(data, rv=scipy.stats.norm, color='k', alpha=0.5, ax=None):
+def _plot_fitted_histogram(data, rv=scipy.stats.norm, color='k', label=None, alpha=0.5, ax=None):
+	"""This is basically `sns.distplot(fit=rv)`.
+	TODO: `low,high = np.percentile(x, 2.5), np.percentile(x, 97.5)`
+	"""
 	if ax is None:
 		fig, ax = plt.subplots(1, 1)
 	else:
