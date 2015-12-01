@@ -446,18 +446,6 @@ class LRTestTestCase(TestCase):
 		self.assertFalse(lag)
 
 
-	def test_has_lag_logistic_lag(self):		
-		df = curveball.models.randomize(t=36, y0=0.1, K=1, r=0.75, nu=1, q0=0.1, v=0.1, reps=REPS, noise_std=NOISE_STD, random_seed=RANDOM_SEED)
-		
-		models,fig,ax = curveball.models.fit_model(df, PLOT=True, PRINT=True)
-		self.assertIsInstance(fig, matplotlib.figure.Figure)
-		filename = sys._getframe().f_code.co_name + ".png"
-		fig.savefig(filename)
-		self.assertTrue(check_image(filename))   
-		lag = curveball.models.has_lag(models)
-		self.assertTrue(lag)
- 
-
 	def test_has_lag_baranyi_roberts(self):
 		df = curveball.models.randomize(t=24, y0=0.1, K=1, r=0.75, nu=5.0, q0=0.1, v=0.1, reps=REPS, noise_std=NOISE_STD, random_seed=RANDOM_SEED)
 		
@@ -718,7 +706,7 @@ class IssuesTestCase(TestCase):
 
 	def test_Dfun_works(self):
 		t, y = curveball.models.randomize(as_df=False)
-		for model_class in curveball.models.get_models(curveball.baranyi_roberts_model).values():
+		for model_class in curveball.models.get_models(curveball.baranyi_roberts_model):
 			model = model_class()
 			params = model.guess(data=y, t=t)
 			dfun = curveball.models.make_Dfun(model, params)
