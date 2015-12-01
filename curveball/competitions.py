@@ -109,7 +109,7 @@ def double_baranyi_roberts_ode3(y, t, r, K, nu, q0, v):
 
 	.. math::
 
-		\frac{dN_i}{dt} = r_i \alpha_i(t) N_i \Big(1 - \Big(\frac{\sum_j{N_j}}{\bar{K}}\Big)\Big)^{\nu_i}
+		\frac{dN_i}{dt} = r_i \alpha_i(t) N_i \Big( 1 - \Big(\frac{\sum_j{N_j}}{\bar{K}}\Big)^{\nu_i} \Big)
 
 	See also
 	--------
@@ -201,7 +201,8 @@ def double_baranyi_roberts_ode8(y, t, r, K, nu, q0, v):
 	return dydt
 
 
-def compete(m1, m2, y0=None, p0=(0.5, 0.5), hours=24, nsamples=1, lag_phase=True, ode=double_baranyi_roberts_ode1, params1=None, params2=None, num_of_points=100, ci=95, colors=None, ax=None, PLOT=False):
+def compete(m1, m2, y0=None, p0=(0.5, 0.5), t=None, hours=24, num_of_points=100, nsamples=1, lag_phase=True, ode=double_baranyi_roberts_ode1, 
+	params1=None, params2=None, ci=95, colors=None, ax=None, PLOT=False, sampler='covar', df1=None, df2=None):
 	"""Simulate competitions between two strains using growth parameters estimated
 	by fitting growth models to growth curves data.
 
@@ -280,12 +281,24 @@ def compete(m1, m2, y0=None, p0=(0.5, 0.5), hours=24, nsamples=1, lag_phase=True
 	if not isinstance(m2, lmfit.model.ModelResult):
 		raise TypeError("m2 must be %s, instead it is %s", lmfit.model.ModelResult, type(m2))
 
-	t = np.linspace(0, hours, num_of_points)
+	if t is None:
+		t = np.linspace(0, hours, num_of_points)
 
 	if nsamples > 1:
-		# draw random params from a distribution based on param estimates
-		m1_samples = curveball.models.sample_params(m1, nsamples, params=params1)
-		m2_samples = curveball.models.sample_params(m2, nsamples, params=params2)
+		# draw random params
+		sampler = sampler.lower()
+		if sampler == 'covar':
+			m1_samples = curveball.models.sample_params(m1, nsamples, params=params1)
+			m2_samples = curveball.models.sample_params(m2, nsamples, params=params2)
+		elif sampler == 'bootstrap':
+			if params1 or params2:
+				warnings.warn("Bootstrap sampling doesn't support params1 and params2 arguments")
+			if df1 is None or df2 is None:
+				raise ValueError("Bootstrap sampling requires kwargs df1 and df2")
+			m1_samples = curveball.models.bootstrap_params(df1, m1.model.__class__, nsamples)
+			m2_samples = curveball.models.bootstrap_params(df2, m2.model.__class__, nsamples)
+		else:
+			raise ValueError("Unknow sampler method: {0}".format(sampler))
 		min_nsamples = min(len(m1_samples), len(m2_samples))
 		if nsamples > min_nsamples:
 			warnings.warn("{0} resamples lost".format(nsamples - min_nsamples))
@@ -310,7 +323,7 @@ def compete(m1, m2, y0=None, p0=(0.5, 0.5), hours=24, nsamples=1, lag_phase=True
 		m2_samples = pd.DataFrame([params2])
 		assert len(m1_samples) == len(m2_samples)
 
-	y = np.empty((num_of_points, 2, nsamples))
+	y = np.empty((len(t), 2, nsamples))
 	#infodict = [None]*nsamples # DEBUG
 	
 	# simulate the ode for each param sample	

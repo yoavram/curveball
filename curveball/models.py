@@ -37,7 +37,19 @@ def is_model(cls):
 
 
 def get_models(module):
-    return dict(inspect.getmembers(module, is_model))
+    return [m[1] for m in inspect.getmembers(module, curveball.models.is_model)]
+
+
+def bootstrap_params(df, model_class, nsamples):
+    unique_wells = df.Well.unique()
+    results = [None] * nsamples
+    for i in range(nsamples):
+        wells = pd.Series(unique_wells).sample(frac=1, replace=True)
+        _df = df[df.Well.isin(wells)]
+        results[i] = fit_model(_df, models=model_class, PLOT=False, PRINT=False)[0]
+    param_samples = [m.best_values for m in results]
+    param_samples = pd.DataFrame(param_samples)
+    return param_samples
 
 
 def sample_params(model_fit, nsamples, params=None, covar=None):
@@ -533,7 +545,8 @@ def cooks_distance(df, model_fit, use_weights=True):
     
     for well in wells:    
         _df = df[df.Well != well]
-        time, OD = unpack_df(_df)
+        time = df.Time.as_matrix()
+        OD = df.OD.as_matrix()
         weights =  calc_weights(_df) if use_weights else None
         model_fit_i = copy.deepcopy(model_fit)
         model_fit_i.fit(data=OD, t=time, weights=weights)
@@ -656,9 +669,9 @@ def calc_weights(df, PLOT=False):
     """If there is more than one replicate, use the standard deviations as weight.
     Warn about NaN and infinite values.
     """
-    deviations = df.groupby('Time').OD.transform(lambda x: np.repeat(np.log(x).std(), len(x))).as_matrix()
+    deviations = df.groupby('Time').OD.transform(lambda x: np.repeat(x.std(), len(x))).as_matrix()
     if np.isnan(deviations).any():
-        warn("Warning: NaN in deviations, can't use weights")
+        warn("NaN in deviations, can't use weights")
         weights = None
     else:
         weights = 1.0 / deviations
@@ -669,7 +682,7 @@ def calc_weights(df, PLOT=False):
         # if any weight is infinite, change to the max
         idx = np.isinf(weights)
         if idx.any():
-            warn("Warning: found infinite weight, changing to maximum ({0} occurences)".format(idx.sum()))
+            warn("Found infinite weight, changing to maximum ({0} occurences)".format(idx.sum()))
             weights[idx] = weights[~idx].max()
     if PLOT:
         fig, ax = plt.subplots(1, 1)
@@ -685,14 +698,7 @@ def nvarys(params):
     return len([p for p in params.values() if p.vary])
 
 
-def unpack_df(df):
-    sorted_df = df.sort_values(by=['Time', 'OD'])
-    t = sorted_df.Time.as_matrix()
-    y = sorted_df.OD.as_matrix()
-    return t, y
-
-
-def fit_model(df, ax=None, param_guess=None, param_min=None, param_max=None, param_fix=None, use_weights=True, use_Dfun=False, use_step_func=False, PLOT=True, PRINT=True):
+def fit_model(df, ax=None, param_guess=None, param_min=None, param_max=None, param_fix=None, models=None, use_weights=False, use_Dfun=False, method='leastsq', PLOT=True, PRINT=True):
     r"""Fit and select a growth model to growth curve data.
 
     This function fits several growth models to growth curve data (``OD`` as a function of ``Time``).
@@ -712,9 +718,12 @@ def fit_model(df, ax=None, param_guess=None, param_min=None, param_max=None, par
     param_fix : set, optional
         a set of names (:py:class:`str`) of parameters to fix rather then vary, while fitting the models.
     use_weights : bool, optional
-        should the function use the deviation across replicates as weights for the fitting procedure, defaults to :py:const:`True`.
+        should the function use the deviation across replicates as weights for the fitting procedure, defaults to :py:const:`False`.
     use_Dfun : bool, optional
         should the function calculate the partial derivatives of the model functions to be used in the fitting procedure, defaults to :py:const:`False`.
+    method : str, optional
+        the minimization method to use, defaults to `leastsq`, 
+        can be anything accepted by :py:func:`lmfit.minimizer.Minimizer.minimize` or :py:func:`lmfit.minimizer.Minimizer.scalar_minimize`.
     PLOT : bool, optional
         if :py:const:`True`, the function will plot the all model fitting results.
     PRINT : bool, optional
@@ -760,18 +769,23 @@ def fit_model(df, ax=None, param_guess=None, param_min=None, param_max=None, par
     if param_fix is None:
         param_fix = set()
 
-    time, OD = unpack_df(df)
+    df = df.sort_values(by=['Time', 'OD'])
+    time = df.Time.as_matrix()
+    OD = df.OD.as_matrix()
     weights =  calc_weights(df) if use_weights else None
     ODerr = df.groupby('Time').OD.transform(lambda x: np.repeat(x.std(), len(x))).as_matrix()
-    results = []
-    
-    for model_name, model_class in get_models(curveball.baranyi_roberts_model).items():
-        #print(model_name)
-        model = model_class(use_step_func=use_step_func)
+   
+    if models is None:
+        models = get_models(curveball.baranyi_roberts_model)
+    elif is_model(models):
+        models = [models]
+    results = [None] * len(models)
+    for i, model_class in enumerate(models):
+        model = model_class()
         params = model.guess(data=OD, t=time, param_guess=param_guess, param_min=param_min, param_max=param_max, param_fix=param_fix)    
         fit_kws = {'Dfun': make_Dfun(model, params), "col_deriv":True} if use_Dfun else {}        
-        result = model.fit(data=OD, t=time, params=params, weights=weights, fit_kws=fit_kws)
-        results.append(result)
+        model_result = model.fit(data=OD, t=time, params=params, weights=weights, fit_kws=fit_kws, method=method)
+        results[i] = model_result
 
     # sort by increasing BIC
     results.sort(key=lambda m: m.bic)
@@ -781,15 +795,17 @@ def fit_model(df, ax=None, param_guess=None, param_min=None, param_max=None, par
     if PLOT:        
         dy = df.OD.max() / 50.0
         dx = df.Time.max() / 25.0
-        columns = 3
+        columns = min(3, len(results))
         rows = int(np.ceil(len(results) / columns))
         fig, ax = plt.subplots(rows, columns, sharex=True, sharey=True, figsize=(16, 6))
+        if not hasattr(ax, '__iter__'):
+            ax = np.array(ax, ndmin=2)
         for i,fit in enumerate(results):
             row = i // columns
             col = i % columns
             _ax = ax[row, col]
             vals = fit.best_values
-            fit.plot_fit(ax=_ax, datafmt='.', fit_kws={'lw': 4}, yerr=ODerr)
+            fit.plot_fit(ax=_ax, datafmt='.', data_kws={'alpha':0.3}, fit_kws={'lw': 4}, yerr=ODerr)
             _ax.axhline(y=vals.get('y0', 0), color='k', ls='--')
             _ax.axhline(y=vals.get('K', 0), color='k', ls='--')          
             title = '%s %dp\nBIC: %.3f\ny0=%.2f, K=%.2f, r=%.2g\n' + r'$\nu$=%.2g, $q_0$=%.2g, v=%.2g'
