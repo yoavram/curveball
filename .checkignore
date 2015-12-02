@@ -1,0 +1,4 @@
+curveball/_version.py
+versioneer.py
+docs/_ext/edit_on_github.py
+ez_setup.py

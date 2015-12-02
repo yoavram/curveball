@@ -22,7 +22,7 @@ import seaborn as sns
 sns.set_style("ticks")
 
 def _alfa(t, q0, v):
-	if np.isinf(v):
+	if np.isinf(q0) or np.isinf(v):
 		return 1.0
 	return q0 / (q0 + np.exp(-v * t))
 
@@ -68,7 +68,7 @@ def double_baranyi_roberts_ode0(y, t, r, K, nu, q0, v):
 	.. [1] Baranyi, J., Roberts, T. A., 1994. `A dynamic approach to predicting bacterial growth in food <www.ncbi.nlm.nih.gov/pubmed/7873331>`_. Int. J. Food Microbiol.
 	"""
 	alfa = _alfa(t, q0[0], v[0]), _alfa(t, q0[1], v[1])
-	dydt = alfa[0] * r[0] * y[0] * (1 - (old_div((y[0] + y[1]), K[0]))**nu[0]), alfa[1] * r[1] * y[1] * (1 - (old_div((y[0] + y[1]), K[1]))**nu[1])
+	dydt = alfa[0] * r[0] * y[0] * (1 - ((y[0] + y[1]) / K[0])**nu[0]), alfa[1] * r[1] * y[1] * (1 - ((y[0] + y[1]) / K[1])**nu[1])
 	return dydt
 
 
@@ -84,7 +84,7 @@ def double_baranyi_roberts_ode1(y, t, r, K, nu, q0, v):
 	curveball.competitions.double_baranyi_roberts_ode0
 	"""
 	alfa = _alfa(t, q0[0], v[0]), _alfa(t, q0[1], v[1])
-	dydt = alfa[0] * r[0] * y[0] * (1 - (old_div(y[0], K[0]) + old_div(y[1], K[1]))**nu[0]), alfa[1] * r[1] * y[1] * (1 - (old_div(y[0], K[0]) + old_div(y[1], K[1]))**nu[1])
+	dydt = alfa[0] * r[0] * y[0] * (1 - (y[0] / K[0] + y[1] / K[1])**nu[0]), alfa[1] * r[1] * y[1] * (1 - (y[0] / K[0] + y[1]/K[1])**nu[1])
 	return dydt
 
 
@@ -100,11 +100,109 @@ def double_baranyi_roberts_ode2(y, t, r, K, nu, q0, v):
 	curveball.competitions.double_baranyi_roberts_ode0
 	"""
 	alfa = _alfa(t, q0[0], v[0]), _alfa(t, q0[1], v[1])
-	dydt = alfa[0] * r[0] * y[0] * (1 - (old_div(y[0], K[0]))**nu[0] - (old_div(y[1], K[1]))**nu[1]), alfa[1] * r[1] * y[1] * (1 - (old_div(y[0], K[0]))**nu[0] - (old_div(y[1], K[1]))**nu[1])
+	dydt = alfa[0] * r[0] * y[0] * (1 - (y[0] / K[0])**nu[0] - (y[1] / K[1])**nu[1]), alfa[1] * r[1] * y[1] * (1 - (y[0] / K[0])**nu[0] - (y[1] / K[1])**nu[1])
 	return dydt
 
 
-def compete(m1, m2, y0=None, hours=24, nsamples=1, lag_phase=True, ode=double_baranyi_roberts_ode1, params1=None, params2=None, num_of_points=100, ci=95, colors=None, ax=None, PLOT=False):
+def double_baranyi_roberts_ode3(y, t, r, K, nu, q0, v):
+	r"""A two species Baranyi-Roberts model. The function calculates the population growth rate at given time points.
+
+	.. math::
+
+		\frac{dN_i}{dt} = r_i \alpha_i(t) N_i \Big( 1 - \Big(\frac{\sum_j{N_j}}{\bar{K}}\Big)^{\nu_i} \Big)
+
+	See also
+	--------
+	curveball.competitions.double_baranyi_roberts_ode0
+	"""
+	alfa = _alfa(t, q0[0], v[0]), _alfa(t, q0[1], v[1])
+	Kmean = (K[0] * y[0] + K[1] * y[1]) / (y[0] + y[1])
+	dydt = alfa[0] * r[0] * y[0] * (1 - ((y[0] + y[1]) / Kmean)**nu[0]), alfa[1] * r[1] * y[1] * (1 - ((y[0] + y[1]) / Kmean)**nu[1])
+	return dydt
+
+def double_baranyi_roberts_ode4(y, t, r, K, nu, q0, v):
+	r"""A two species Baranyi-Roberts model. The function calculates the population growth rate at given time points.
+
+	.. math::
+
+		\frac{dN_i}{dt} = r_i \alpha_i(t) N_i 
+
+	See also
+	--------
+	curveball.competitions.double_baranyi_roberts_ode0
+	"""
+	alfa = _alfa(t, q0[0], v[0]), _alfa(t, q0[1], v[1])
+	dydt = alfa[0] * r[0] * y[0], alfa[1] * r[1] * y[1]
+	return dydt
+
+
+def double_baranyi_roberts_ode5(y, t, r, K, nu, q0, v):
+	r"""A two species Baranyi-Roberts model. The function calculates the population growth rate at given time points.
+
+	.. math::
+
+		\frac{dN_i}{dt} = r_i \alpha_i(t) N_i \Big( 1 - \Big(\frac{N_i}{K_i}\Big)^{\nu_i}\Big)
+
+	See also
+	--------
+	curveball.competitions.double_baranyi_roberts_ode0
+	"""
+	alfa = _alfa(t, q0[0], v[0]), _alfa(t, q0[1], v[1])
+	dydt = alfa[0] * r[0] * y[0] * (1 - (y[0]/K[0])**nu[0]), alfa[1] * r[1] * y[1] * (1 - (y[1]/K[1])**nu[1])
+	return dydt
+
+
+def double_baranyi_roberts_ode6(y, t, r, K, nu, q0, v):
+	r"""A two species Baranyi-Roberts model. The function calculates the population growth rate at given time points.
+
+	.. math::
+
+		\frac{dN_i}{dt} = r_i \alpha_i(t) N_i \Big(1 - \Big(\frac{\sum_j{N_j}}{K_i}\Big)^{\bar{\nu}}\Big)
+
+	See also
+	--------
+	curveball.competitions.double_baranyi_roberts_ode0
+	"""
+	alfa = _alfa(t, q0[0], v[0]), _alfa(t, q0[1], v[1])
+	numean = (nu[0]*y[0] + nu[1]*y[1]) / (y[0] + y[1])
+	dydt = alfa[0] * r[0] * y[0] * (1 - ((y[0]+y[1])/K[0])**numean), alfa[1] * r[1] * y[1] * (1 - ((y[0]+y[1])/K[1])**numean)
+	return dydt
+
+
+def double_baranyi_roberts_ode7(y, t, r, K, nu, q0, v):
+	r"""A two species Baranyi-Roberts model. The function calculates the population growth rate at given time points.
+
+	.. math::
+
+		\frac{dN_1}{dt} = 0 \;\;\; \frac{dN_2}{dt} = r_2 \alpha_2(t) N_2 \Big(1 - \Big(\frac{N_2}{K_2}\Big)^{\bar{\nu}}\Big)
+
+	See also
+	--------
+	curveball.competitions.double_baranyi_roberts_ode0
+	"""
+	alfa = _alfa(t, q0[0], v[0]), _alfa(t, q0[1], v[1])
+	numean = (nu[0]*y[0] + nu[1]*y[1]) / (y[0] + y[1])
+	dydt = 0, alfa[1] * r[1] * y[1] * (1 - (y[1]/K[1])**nu[1])
+	return dydt
+
+
+def double_baranyi_roberts_ode8(y, t, r, K, nu, q0, v):
+	r"""A two species Baranyi-Roberts model. The function calculates the population growth rate at given time points.
+
+	.. math::
+
+		\frac{dN_i}{dt} = r_i N_i \Big(1 - \Big(\frac{\sum_{j}{N_j}}{K_i}\Big)^{\nu_i}\Big)
+
+	See also
+	--------
+	curveball.competitions.double_baranyi_roberts_ode0
+	"""
+	dydt = r[0] * y[0] * (1 - ((y[0] + y[1]) / K[0])**nu[0]), r[1] * y[1] * (1 - ((y[0] + y[1]) / K[1])**nu[1])
+	return dydt
+
+
+def compete(m1, m2, y0=None, p0=(0.5, 0.5), t=None, hours=24, num_of_points=100, nsamples=1, lag_phase=True, ode=double_baranyi_roberts_ode1, 
+	params1=None, params2=None, ci=95, colors=None, ax=None, PLOT=False, sampler='covar', df1=None, df2=None):
 	"""Simulate competitions between two strains using growth parameters estimated
 	by fitting growth models to growth curves data.
 
@@ -183,22 +281,31 @@ def compete(m1, m2, y0=None, hours=24, nsamples=1, lag_phase=True, ode=double_ba
 	if not isinstance(m2, lmfit.model.ModelResult):
 		raise TypeError("m2 must be %s, instead it is %s", lmfit.model.ModelResult, type(m2))
 
-	t = np.linspace(0, hours, num_of_points)
-	if y0 is None:		
-		y0 = np.array([m1.best_values['y0'], m2.best_values['y0']])
-		if params1: y0[0] = params1.get('y0', y0[0])
-		if params2: y0[1] = params2.get('y0', y0[1])
-		y0 = y0.mean()/2.0, y0.mean()/2.0
-		assert y0[0] == y0[1]		
+	if t is None:
+		t = np.linspace(0, hours, num_of_points)
+
 	if nsamples > 1:
-		m1_samples = curveball.models.sample_params(m1, nsamples, params=params1)
-		m2_samples = curveball.models.sample_params(m2, nsamples, params=params2)
+		# draw random params
+		sampler = sampler.lower()
+		if sampler == 'covar':
+			m1_samples = curveball.models.sample_params(m1, nsamples, params=params1)
+			m2_samples = curveball.models.sample_params(m2, nsamples, params=params2)
+		elif sampler == 'bootstrap':
+			if params1 or params2:
+				warnings.warn("Bootstrap sampling doesn't support params1 and params2 arguments")
+			if df1 is None or df2 is None:
+				raise ValueError("Bootstrap sampling requires kwargs df1 and df2")
+			m1_samples = curveball.models.bootstrap_params(df1, m1.model.__class__, nsamples)
+			m2_samples = curveball.models.bootstrap_params(df2, m2.model.__class__, nsamples)
+		else:
+			raise ValueError("Unknow sampler method: {0}".format(sampler))
 		min_nsamples = min(len(m1_samples), len(m2_samples))
 		if nsamples > min_nsamples:
 			warnings.warn("{0} resamples lost".format(nsamples - min_nsamples))
 			nsamples = min_nsamples
 	else:
 		nsamples = 1
+		# override model result params with arguments params1 and params2
 		if params1:
 			_params = copy.copy(m1.best_values)
 			_params.update(params1)
@@ -211,26 +318,31 @@ def compete(m1, m2, y0=None, hours=24, nsamples=1, lag_phase=True, ode=double_ba
 			params2 = _params
 		else:
 			params2 = m2.best_values
+		# param samples contain the model fit estimated params
 		m1_samples = pd.DataFrame([params1])
 		m2_samples = pd.DataFrame([params2])
 		assert len(m1_samples) == len(m2_samples)
 
-	y = np.zeros((num_of_points, 2, nsamples))
+	y = np.empty((len(t), 2, nsamples))
 	#infodict = [None]*nsamples # DEBUG
 	
+	# simulate the ode for each param sample	
 	for i in range(nsamples):
+		if y0 is None:
+			p0 = p0[0] / (p0[0] + p0[1]), p0[1] / (p0[0] + p0[1])
+			y0 = m1_samples.iloc[i]['y0'] * p0[0], m2_samples.iloc[i]['y0'] * p0[1]
 		r = m1_samples.iloc[i]['r'], m2_samples.iloc[i]['r']
 		K = m1_samples.iloc[i]['K'], m2_samples.iloc[i]['K']
 		nu = m1_samples.iloc[i].get('nu', 1.0), m2_samples.iloc[i].get('nu', 1.0)		
 		if lag_phase:
-			q0 = m1_samples.iloc[i].get('q0', 1.0), m2_samples.iloc[i].get('q0', 1.0)
-			v = m1_samples.iloc[i].get('v', np.inf), m2_samples.iloc[i].get('v', np.inf)
+			q0 = m1_samples.iloc[i].get('q0', np.inf), m2_samples.iloc[i].get('q0', np.inf)
+			v = m1_samples.iloc[i].get('v', r[0]), m2_samples.iloc[i].get('v', r[1])
 		else:
-			q0 = 1.0, 1.0
+			q0 = np.inf, np.inf
 			v = np.inf, np.inf
+
 		args = (r, K, nu, q0, v)
-		
-		y[:,:,i] = odeint(ode, y0, t, args=args)
+		y[:,:,i] = odeint(ode, y0=y0, t=t, args=args)
 
 		# DEBUG
 		# _y_,info = odeint(double_baranyi_roberts_ode, y0, t, args=args, full_output=1)        
@@ -253,7 +365,7 @@ def compete(m1, m2, y0=None, hours=24, nsamples=1, lag_phase=True, ode=double_ba
 			_df['Strain'] = i
 			df = pd.concat((df, _df))
 		
-		if not colors is None:
+		if colors is not None:
 			colors = {i:c for i,c in enumerate(colors)}
 		sns.tsplot(df, time='Time', unit='Replicate', condition='Strain', value='y', 
 						ci=ci, color=colors, ax=ax)
@@ -381,3 +493,4 @@ def fitness_LTEE(y, ref_strain=0, assay_strain=1, t0=0, t1=-1, ci=0):
 	else:
 		margin = (1 - ci) * 50
 		return w.mean(), np.percentile(w, margin), np.percentile(w, ci * 100 + margin)
+

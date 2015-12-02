@@ -87,8 +87,19 @@ class PlotsTestCase(TestCase):
 		g = curveball.plots.plot_params_distribution(df)
 		self.assertIsInstance(g, sns.Grid)
 
-
+	
 	def test_plot_residuals(self):
+		def f(t, a, b, c):
+			return a + b * t + c * t**2
+		t = np.linspace(0, 100)
+		a, b, c = 1, 2, 3		
+		y = f(t, a, b, c) + np.random.normal(0, 0.01)
+		data = pd.DataFrame({'Time': t, 'OD': y})
+		fig, ax = curveball.plots.plot_residuals(data)
+		self.assertIsInstance(fig, matplotlib.figure.Figure)	
+
+
+	def test_plot_model_residuals(self):
 		def f(t, a, b, c):
 			return a + b * t + c * t**2
 		t = np.linspace(0, 100)
@@ -97,7 +108,7 @@ class PlotsTestCase(TestCase):
 		model = lmfit.model.Model(f)
 		params = model.make_params(a=1, b=1, c=1)
 		result = model.fit(data=y, t=t, params=params)
-		fig, ax = curveball.plots.plot_residuals(result)		
+		fig, ax = curveball.plots.plot_model_residuals(result)		
 		self.assertIsInstance(fig, matplotlib.figure.Figure)	
 
 

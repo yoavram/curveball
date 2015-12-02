@@ -11,7 +11,10 @@ from __future__ import division
 from builtins import range
 from past.utils import old_div
 import numpy as np
+import scipy.stats
+import matplotlib as mpl
 import matplotlib.pyplot as plt
+from pandas.tools.plotting import lag_plot
 import seaborn as sns
 sns.set_style("ticks")
 
@@ -126,7 +129,7 @@ def plot_strains(df, x='Time', y='OD', plot_func=plt.plot, by=None, agg_func=np.
 	return g
 
 
-def tsplot(df, x='Time', y='OD', ci_level=95, output_filename=None):
+def tsplot(df, x='Time', y='OD', ci_level=95, ax=None, output_filename=None):
 	"""Time series plot of the data by strain (if applicable) or well.
 
 	The grouping of the data is done by the value of `x` and ``Strain``, if such a column exists in `df`; 
@@ -148,7 +151,8 @@ def tsplot(df, x='Time', y='OD', ci_level=95, output_filename=None):
 		confidence interval width in precent (0-100), defaults to 95.	
 	output_filename : str, optional 
 		filename to save the resulting figure; if not given, figure is not saved.
-	
+	ax : axis object, optional
+    	plot in given axis; if None creates a new figure.
 
 	Returns
 	-------
@@ -163,7 +167,7 @@ def tsplot(df, x='Time', y='OD', ci_level=95, output_filename=None):
 		condition = 'Well'
 		palette = sns.color_palette()
 	g = sns.tsplot(df, time=x, unit='Well', condition=condition, value=y,
-					err_style='ci_band', ci=ci_level, color=palette)
+					err_style='ci_band', ci=ci_level, color=palette, ax=ax)
 	sns.despine()
 	if output_filename:
 		g.figure.savefig(output_filename, bbox_inches='tight', pad_inches=1)
@@ -224,7 +228,7 @@ def plot_plate(df, edge_color='#888888', output_filename=None):
 	return fig, ax
 
 
-def plot_params_distribution(param_samples, alpha=None):
+def plot_params_distribution(param_samples, color='k', cmap="viridis", alpha=None):
 	"""Plots a distribution of model parameter samples generated with :py:func:`curveball.models.sample_params`.
 
 	Parameters
@@ -242,14 +246,32 @@ def plot_params_distribution(param_samples, alpha=None):
 	nsamples = param_samples.shape[0]
 	g = sns.PairGrid(param_samples)
 	if alpha is None:
-		alpha = old_div(1,np.power(nsamples, old_div(1.,4)))
-	g.map_upper(plt.scatter, alpha=alpha)
-	g.map_lower(sns.kdeplot, cmap="Blues_d", legend=False)
-	g.map_diag(plt.hist)
+		alpha = 1.0 / np.power(nsamples, 1.0 / 4.0)
+	g.map_upper(plt.scatter, alpha=alpha, color=color)
+	g.map_lower(sns.kdeplot, cmap=cmap, legend=False, shade=True, shade_lowest=False)
+	g.map_diag(plt.hist, facecolor=color) # https://github.com/mwaskom/seaborn/pull/788
 	return g
 
 
-def plot_residuals(model_fit, color='k'):
+def _plot_fitted_histogram(data, rv=scipy.stats.norm, color='k', label=None, alpha=0.5, ax=None):
+	"""This is basically `sns.distplot(fit=rv)`.
+	TODO: `low,high = np.percentile(x, 2.5), np.percentile(x, 97.5)`
+	"""
+	if ax is None:
+		fig, ax = plt.subplots(1, 1)
+	else:
+		fig = ax.figure
+	rv_params = rv.fit(data)
+	rv_inst = rv(*rv_params)	
+	nbins = min(100, len(data))
+	n, bins, patches = ax.hist(data, bins=nbins, color=color, alpha=alpha, normed=1)
+	ax.plot(bins, rv_inst.pdf(bins), color='k', lw=2)
+	ax.annotate(r'$\mu={:.2g}, \sigma={:.2g}$'.format(rv_inst.mean(), rv_inst.std()), 
+		xy=(bins[len(bins)/2], np.max(n)), xycoords="data", horizontalalignment='center', fontsize=plt.rcParams['axes.labelsize'])
+	return fig, ax
+
+
+def plot_model_residuals(model_fit, rv=scipy.stats.norm, color='k'):
 	"""Plot of the residuals of a model fit.
 
 	The function will plot the residuals - the difference between data and model - for a given model fit.
@@ -257,8 +279,11 @@ def plot_residuals(model_fit, color='k'):
 
 	Parameters
 	----------
-	df : lmfit.model.ModelResult
+	model_fit : lmfit.model.ModelResult
 		the result of a model fitting procedure.
+	rv : scipy.stats.rv_continuous, optional
+		:py:class:`scipy.stats.rv_continuous` random variable whose probability density function (pdf)
+		will be fitted to the histogram. Defaults the normal distribution (:py:class:`scipy.stats.norm`).
 	color : str, optional
 		color string for the plot, defaults to `k` for black.
 
@@ -278,9 +303,67 @@ def plot_residuals(model_fit, color='k'):
 	ax[0].legend().set_visible(False)
 	ax[0].set_title('')
 
-	sns.distplot(model_fit.residual, ax=ax[1], color=color)
-	ax[1].set_xlabel('Residuals')
-	ax[1].set_ylabel('Frequency')
+	_plot_fitted_histogram(model_fit.residual, rv=rv, color=color, ax=ax[1])
+	ax[1].set(xlabel='Residuals', ylabel='Frequency')
+
+	fig.tight_layout()
+	sns.despine()	
+	return fig, ax
+
+
+def plot_residuals(df, time='Time', value='OD', resid_func=lambda x: x - x.mean(), rv=scipy.stats.norm, 
+	color='k', ax=None):
+	"""Plot of the residuals of in the data.
+
+	The function will plot the residuals - the difference between data and average at each time point.
+	The left panel shows the residuals over time.
+	The middle panel shows the histogram of the residuals with a fitted distribution (defaults to Gaussian).
+	The right panel shows the regression between the standard deviation at time `t+1` and `t` to identify autocorrelation.
+
+
+	Parameters
+	----------
+	df : pandas.DataFrame
+		a data frame with columns `Time` and `OD`.
+	time : str, optional
+		name of column over which to group and plot the residuals. Defaults to ``Time``.
+	value : str, optional
+		name of column in `df` of the value on which to compute the residuals. Defaults to ``OD``.
+	resid_func : function, optional
+		function to calculate residuals. Defaults to ``x - x.mean()``.
+	rv : scipy.stats.rv_continuous, optional
+		:py:class:`scipy.stats.rv_continuous` random variable whose probability density function (pdf)
+		will be fitted to the histogram. Defaults the normal distribution (:py:class:`scipy.stats.norm`).
+	color : str, optional
+		color string for the plot, defaults to `k` for black.
+
+	Returns
+	-------
+	fig : matplotlib.figure.Figure
+		figure object
+	ax : numpy.ndarray
+		array of axis objects.
+	"""
+	w, h= plt.rcParams['figure.figsize']
+	fig,ax = plt.subplots(1, 3, figsize=(w * 3, h))
+
+	residuals = df.groupby(time)[value].transform(resid_func).as_matrix()
+
+	ax[0].plot(df[time], residuals, ls='', marker='o', color=color)
+	ax[0].set(xlabel=time, ylabel='Residuals')	
+	
+	_plot_fitted_histogram(residuals, rv=rv, color=color, ax=ax[1])
+	ax[1].set(xlabel='Residuals', ylabel='Frequency')
+	
+	sigmas = df.groupby(time)[value].std()	
+	linreg = scipy.stats.linregress(sigmas.as_matrix()[:-1], sigmas.as_matrix()[1:])
+	eq = r'$\sigma_{{t+1}} = {:.2g} + {:.2g} \sigma_{{t}}$'.format(linreg.intercept, linreg.slope)
+	sigma_range = np.linspace(sigmas.min(), sigmas.max())
+	ax[2].plot(sigma_range, sigma_range, color='k', ls='--', label=r'$\sigma_{t+1}=\sigma_{t}$')
+	ax[2].plot(sigma_range, linreg.intercept + linreg.slope * sigma_range, color=color, label=eq)
+	lag_plot(sigmas, c='k', ax=ax[2])
+	ax[2].set(xlabel=r'$\sigma_{t}$', ylabel=r'$\sigma_{t+1}$')
+	ax[2].legend(loc='upper left')
 
 	fig.tight_layout()
 	sns.despine()	
