@@ -30,8 +30,11 @@ PLOT = True
 PROMPT = True
 ERROR_COLOR = 'red'
 INFO_COLOR = 'white'
-file_extension_handlers = {'.mat': curveball.ioutils.read_tecan_mat, 
-						   '.xlsx': curveball.ioutils.read_tecan_xlsx}
+file_extension_handlers = {
+							'.mat': curveball.ioutils.read_tecan_mat, 
+							'.xlsx': curveball.ioutils.read_tecan_xlsx,
+							'.csv': curveball.ioutils.read_csv,
+						  }
 
 
 def echo_error(message):
@@ -199,8 +202,8 @@ def plate(plate_folder, plate_file, output_file, list, show):
 @click.option('--plate_folder', default='plate_templates', help='plate templates default folder', type=click.Path())
 @click.option('--plate_file', default='checkerboard.csv', help='plate templates csv file')
 @click.option('-o', '--output_file', default='-', help='output csv file path', type=click.File(mode='w', lazy=True))
-@click.option('--blank_strain', default='0', help='blank strain for background calibration')
-@click.option('--ref_strain', default='1',  help='reference strain for competitions')
+@click.option('--blank_strain', default='0', type=str, help='blank strain for background calibration')
+@click.option('--ref_strain', default='1',  type=str, help='reference strain for competitions')
 @click.option('--max_time', default=np.inf, help='omit data after max_time hours')
 @click.option('--guess', type=(str, float), multiple=True, callback=to_dict, help='set the initial guess for a parameter')
 @click.option('--param_min', type=(str, float), multiple=True, callback=to_dict, help='set the minimum allowed value for a parameter')
@@ -281,9 +284,9 @@ def _process_file(filepath, plate, blank_strain, ref_strain, max_time, guess, pa
 
 	strains = plate.Strain.unique().tolist()
 
-	if blank_strain is not None: 
+	if blank_strain is not None and blank_strain != 'none': 
 		if blank_strain in strains:
-			bg = df[(df.Strain == blank_strain) & (df.Time == df.Time.min())]		
+			bg = df[(df.Strain == blank_strain) & (df.Time == df.Time.min())]
 			bg = bg.OD.mean()
 			df.OD -= bg
 			df.loc[df.OD < 0, 'OD'] = 0

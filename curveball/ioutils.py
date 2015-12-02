@@ -33,6 +33,16 @@ from warnings import warn
 MAT_VERSION = u'1.0'
 
 
+def read_csv(filename, plate=None):
+    df = pd.read_csv(filename)
+    if plate is None and 'Strain' not in df.columns:
+        df[u'Strain'] = u'0'
+    if plate is None and 'Color' not in df.columns:
+        df[u'Color'] = u'#000000'
+    df.Strain = df.Strain.astype(str) # make sure it's not read as int
+    return df
+
+
 def read_tecan_xlsx(filename, label=u'OD', sheets=None, max_time=None, plate=None, PRINT=False):
     """Reads growth measurements from a Tecan Infinity Excel output file.
 
@@ -177,7 +187,7 @@ def read_tecan_xlsx(filename, label=u'OD', sheets=None, max_time=None, plate=Non
             lbli = '_' + lbli
             df = pd.merge(df, dfi, on=(u'Cycle Nr.', u'Well', u'Row', u'Col'), suffixes=(lbl,lbli))
     if plate is None:
-        df[u'Strain'] = 0
+        df[u'Strain'] = u'0'
         df[u'Color'] = u'#000000'
     else:
         df = pd.merge(df, plate, on=(u'Row', u'Col'))
@@ -234,7 +244,7 @@ def read_tecan_mat(filename, time_label=u'tps', value_label=u'plate_mat', value_
     df[u'Col'] = [int(w[1:]) for w in df[u'Well']]
     
     if plate is None:
-        df[u'Strain'] = 0
+        df[u'Strain'] = u'0'
         df[u'Color'] = u'#000000'
     else:
         df = pd.merge(df, plate, on=(u'Row', u'Col'))
@@ -327,7 +337,7 @@ def read_tecan_xml(filename, label=u'OD', max_time=None, plate=None):
     min_time = df.Time.min()
     df.Time = [(t - min_time).total_seconds() / 3600.0 for t in df.Time]
     if plate is None:
-        df[u'Strain'] = 0
+        df[u'Strain'] = u'0'
         df[u'Color'] = u'#000000'
     else:
         df = pd.merge(df, plate, on=(u'Row', u'Col'))
@@ -409,7 +419,7 @@ def read_sunrise_xlsx(filename, label=u'OD', max_time=None, plate=None):
     min_time = df.Time.min()
     df.Time = [(t - min_time).total_seconds() / 3600.0 for t in df.Time]
     if plate is None:
-        df[u'Strain'] = 0
+        df[u'Strain'] = u'0'
         df[u'Color'] = u'#000000'
     else:
         df = pd.merge(df, plate, on=(u'Row', u'Col'))
