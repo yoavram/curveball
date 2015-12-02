@@ -82,3 +82,7 @@ notebooks/Untitled*.ipynb
 
 # divshot
 .divshot-cache
+
+#asv benchmarks
+env
+benchmarks_results
