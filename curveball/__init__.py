@@ -22,6 +22,7 @@ from . import ioutils
 from . import plots
 from . import models
 from . import competitions
+from . import likelihood
 
 __citation_bibtex__ = u"""@article{
 Ram2015,

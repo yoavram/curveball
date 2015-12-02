@@ -635,6 +635,15 @@ class SamplingTestCase(TestCase):
 		self.assertEquals(sample_params.shape, (100, 3))
 
 
+	def test_bootstrap_params(self):
+		plate = pd.read_csv('plate_templates/G-RG-R.csv')
+		df = curveball.ioutils.read_tecan_xlsx('data/Tecan_280715.xlsx', plate=plate)
+		model = curveball.baranyi_roberts_model.BaranyiRoberts
+		sample_params = curveball.models.bootstrap_params(df, model, 10)
+		self.assertIsInstance(sample_params, pd.DataFrame)
+		self.assertEquals(sample_params.shape, (10, 6))
+
+
 class GuessTestCase(TestCase):
 	_multiprocess_can_split_ = True
 
@@ -714,6 +723,10 @@ class IssuesTestCase(TestCase):
 			result = model.fit(data=y, t=t, params=params, fit_kws={'Dfun': dfun, 'col_deriv':True})
 			self.assertIsInstance(result, ModelResult)
 
+
+	def test_is_model(self):
+		for model in curveball.models.get_models(curveball.baranyi_roberts_model):
+			self.assertTrue(curveball.models.is_model(model))
 
 if __name__ == '__main__':
 	main()

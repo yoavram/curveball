@@ -40,8 +40,11 @@ def get_models(module):
     return [m[1] for m in inspect.getmembers(module, curveball.models.is_model)]
 
 
-def bootstrap_params(df, model_class, nsamples):
-    unique_wells = df.Well.unique()
+def bootstrap_params(df, model_class, nsamples, unit='Well'):
+    if not is_model(model_class):
+        raise TypeError("Input model_class must be a {0}, but it is {1}".format(lmfit.Model.__name__, 
+                                                                                model_class.__class__.__name__))
+    unique_wells = df[unit].unique()
     results = [None] * nsamples
     for i in range(nsamples):
         wells = pd.Series(unique_wells).sample(frac=1, replace=True)
@@ -330,7 +333,9 @@ def find_lag(model_fit, params=None):
     y = f(t)    
     dfdt = derivative(f, t)
     idx = y > K / np.e
-    assert idx.sum() > 0
+    if idx.sum() == 0:
+        warn("All values are below K/e")
+        return np.nan
     t = t[idx]
     y = y[idx]
     dfdt = dfdt[idx]

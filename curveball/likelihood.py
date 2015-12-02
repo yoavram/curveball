@@ -36,7 +36,7 @@ def ridge_regularization(lam, **center):
 
 
 def loglik_r_nu(r_range, nu_range, df, f=curveball.baranyi_roberts_model.baranyi_roberts_function, 
-    penalty=None, y0=0.1, K=1, q0=np.inf, v=np.inf):   
+    penalty=None, **params):
     t = df.Time.unique()
     y = df.groupby('Time').OD.mean().as_matrix()
     y_sig = df.groupby('Time').OD.std().as_matrix()
@@ -46,13 +46,13 @@ def loglik_r_nu(r_range, nu_range, df, f=curveball.baranyi_roberts_model.baranyi
         if np.isinf(v): 
             v = r
         for j, nu in enumerate(nu_range):                        
-            output[i,j] = loglik(t, y, y_sig, f, penalty, y0=y0, K=K, r=r, nu=nu, q0=q0, v=v)
+            output[i,j] = loglik(t, y, y_sig, f, penalty, **params)
     
     return output
 
 
 def loglik_r_q0(r_range, q0_range, df, f=curveball.baranyi_roberts_model.baranyi_roberts_function, 
-    penalty=None, y0=0.1, K=1, nu=1, v=np.inf):
+    penalty=None, **params):
     t = df.Time.unique()
     y = df.groupby('Time').OD.mean().as_matrix()
     y_sig = df.groupby('Time').OD.std().as_matrix()
@@ -62,7 +62,7 @@ def loglik_r_q0(r_range, q0_range, df, f=curveball.baranyi_roberts_model.baranyi
         for j, q0 in enumerate(q0_range):
             if np.isinf(v) and np.isfinite(q0): 
                 v = r
-            output[i,j] = loglik(t, y, y_sig, f, penalty, y0=y0, K=K, r=r, nu=nu, q0=q0, v=v)
+            output[i,j] = loglik(t, y, y_sig, f, penalty, **params)
     
     return output
 
@@ -79,6 +79,8 @@ def plot_loglik(Ls, xrange, yrange, xlabel=None, ylabel=None, columns=4, fig_tit
         fig = ax.figure
     if not hasattr(ax, '__iter__'):
         ax = np.array(ax, ndmin=2)
+    if ax.ndim == 1:
+        ax.resize((rows, columns))
     vmin = np.nanmin(Ls)
     vmax = np.nanmax(Ls)
     norm = mpl.colors.Normalize(vmin=vmin, vmax=vmax)
