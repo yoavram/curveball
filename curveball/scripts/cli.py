@@ -23,7 +23,6 @@ import xlrd
 import matplotlib.pyplot as plt
 import seaborn as sns
 sns.set_style("ticks")
-from memory_profiler import profile
 
 
 VERBOSE = False
@@ -260,7 +259,6 @@ def analyse(path, output_file, plate_folder, plate_file, blank_strain, ref_strai
 		click.secho("Wrote output to %s" % output_file.name, fg='green')
 
 
-@profile
 def _process_file(filepath, plate, blank_strain, ref_strain, max_time, guess, param_min, param_max, param_fix, weights):
 	"""Analyses a single growth curves file.
 

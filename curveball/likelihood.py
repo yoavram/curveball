@@ -22,6 +22,28 @@ import curveball.baranyi_roberts_model
 
 
 def loglik(t, y, y_sig, f, penalty=None, **params):
+    """Computes the log-likelihood of seeing the data given a model assuming normal distributed observation/measurement errors.
+
+    Parameters
+    ----------
+    t : np.ndarray
+        one dimensional array of time
+    y : np.ndarray
+        one dimensional array of the means of the observations 
+    y_sig : np.ndarray
+        one dimensional array of standrad deviations of the observations
+    f : callable
+        a function the calculates the expcted observations (`yhat`) from `t` and any parameters in `params`
+    penalty : callable
+        a function that calculates a scalar penalty from the parameters in `params` to be substracted from the log-likelihood
+    params : floats, optional
+        model parameters
+
+    Returns
+    -------
+    float
+        the log-likelihood result
+    """
     yhat = f(t, **params)
     val = -0.5 * np.sum(np.log(2 * np.pi * y_sig ** 2) + (y - yhat) ** 2 / y_sig ** 2)
     if penalty:
@@ -30,6 +52,35 @@ def loglik(t, y, y_sig, f, penalty=None, **params):
         
 
 def ridge_regularization(lam, **center):
+    """Create a penaly function that employs the ridge regularization method:
+
+    .. math::
+
+        P = \lambda ||\theta - \theta_0||_2
+
+    where :math:`\lambda` is the regularization scale, 
+    :math:`\theta` is the model parameters vector, 
+    and :math:`\theta_0` is the model parameters guess vector.
+    This is similar to using a multivariate Gaussian prior distribution on the model parameters 
+    with the Gaussian centerd at :math:`\theta_0` and scaled by :math:`\lambda`.
+
+    Parameters
+    ----------
+    lam : float
+        the penalty factor or regularization scale
+    center : floats, optional
+        guesses of model parameters
+
+    Returns
+    -------
+    callable
+        the penalty function, accepts model parameters as float keyword arguments and returns a float penalty to the log-likelihood
+
+    Example:
+    --------
+    >>> penalty = ridge_regularization(1, y=0.1, K=1, r=1)
+    >>> loglik(t, y, y_sig, logistic, penalty=penalty, y0=0.12, K=0.98, r=1.1)
+    """
     def _ridge_regularization(**params):
         return lam * np.linalg.norm([v - center.get(k, 0) for k, v in params.items() if np.isfinite(v)])
     return _ridge_regularization
@@ -37,6 +88,32 @@ def ridge_regularization(lam, **center):
 
 def loglik_r_nu(r_range, nu_range, df, f=curveball.baranyi_roberts_model.baranyi_roberts_function, 
                 penalty=None, **params):
+    r"""Estimates the log-likelihood plane for :math:`r` and :math:`\nu` given data and a model function.
+
+    Parameters
+    ----------
+    r_range, nu_range : numpy.ndarray
+        vectors of floats of :math:`r` and :math:`\nu` values on which to compute the log-likelihood
+    df : pandas.DataFrame
+        data frame with `Time` and `OD` columns
+    f : callable, optional
+        model function, defaults to :py:func:`curveball.baranyi_roberts_model.baranyi_roberts_function`
+    penalty : callable, optional
+        if given, the result of `penalty` will be substracted from the log-likelihood for each parameter set
+    params : floats
+        values for the model model parameters used by `f`
+
+    Returns
+    -------
+    np.ndarray
+        two-dimensional array of log-likelihood calculations;
+        value at index `i, j` will have the value for `r_range[i]` and `nu_range[j]`
+
+    See also
+    --------
+    loglik
+    loglik_r_q0
+    """
     if not params:
         params = dict()
     t = df.Time.unique()
@@ -55,6 +132,32 @@ def loglik_r_nu(r_range, nu_range, df, f=curveball.baranyi_roberts_model.baranyi
 
 def loglik_r_q0(r_range, q0_range, df, f=curveball.baranyi_roberts_model.baranyi_roberts_function, 
                 penalty=None, **params):
+    r"""Estimates the log-likelihood surface for :math:`r` and :math:`\nu` given data and a model function.
+
+    Parameters
+    ----------
+    r_range, q0_range : numpy.ndarray
+        vectors of floats of :math:`r` and :math:`q_0` values on which to compute the log-likelihood
+    df : pandas.DataFrame
+        data frame with `Time` and `OD` columns
+    f : callable, optional
+        model function, defaults to :py:func:`curveball.baranyi_roberts_model.baranyi_roberts_function`
+    penalty : callable, optional
+        if given, the result of `penalty` will be substracted from the log-likelihood for each parameter set
+    params : floats
+        values for the model model parameters used by `f`
+
+    Returns
+    -------
+    np.ndarray
+        two-dimensional array of log-likelihood calculations; 
+        value at index `i, j` will have the value for `r_range[i]` and `q0_range[j]`
+
+    See also
+    --------
+    loglik
+    loglik_r_nu
+    """
     if not params:
         params = dict()
     t = df.Time.unique()
@@ -73,6 +176,45 @@ def loglik_r_q0(r_range, q0_range, df, f=curveball.baranyi_roberts_model.baranyi
 
 def plot_loglik(Ls, xrange, yrange, xlabel=None, ylabel=None, columns=4, fig_title=None, normalize=True,
                 ax_titles=None, cmap='viridis', colorbar=True, ax_width=4, ax_height=4, ax=None):
+    r"""Plots one or more log-likelihood surfaces.
+
+    Parameters
+    ----------
+    Ls : sequence of numpy.ndarray
+        list or tuple of log-likelihood two-dimensional arrays; if one array is given it will be converted to a size 1 list
+    xrange, yrange : np.ndarray
+        values on x-axis and y-axis of the plot (rows and columns of `Ls`, respectively)
+    xlabel, ylabel : str, optional
+        strings for x and y labels
+    columns : int, optional
+        number of columns in case that `Ls` has more than one matrice
+    fig_title : str, optional
+        a title for the whole figure
+    normalize : bool, optional
+        if :py:const:`True`, all matrices will be plotted using a single color scale
+    ax_titles : list or tuple of str, optional
+        titles corresponding to the different matrices in `Ls`
+    cmap : str. optional
+        name of a matplotlib colormap (to see list, call :py:func:`matplotlib.pyplot.colormaps`), defaults to `viridis`
+    colorbar : bool, optional
+        if :py:const:`True` a colorbar will be added to the plot
+    ax_width, ax_height : int
+        width and height of each panel (one for each matrice in `Ls`)
+    ax : matplotlib axes or numpy.ndarray of axes
+        if given, will plot into `ax`, otherwise will create a new figure
+
+    Returns
+    -------
+    fig : matplotlib.figure.Figure
+        figure object
+    ax : numpy.ndarray
+        array of axis objects
+
+    Example
+    -------
+    >>> L = loglik_r_nu(rs, nus, df, y0=y0, K=K, q0=q0, v=v)
+    >>> plot_loglik(L0, rs, nus, normalize=False, fig_title=fig_title, xlabel=r'$r$', ylabel=r'$\nu$', colorbar=False)
+    """
     if not isinstance(Ls, (list, tuple)):
         Ls = [Ls]
     columns = min(columns, len(Ls))
@@ -134,6 +276,29 @@ def plot_loglik(Ls, xrange, yrange, xlabel=None, ylabel=None, columns=4, fig_tit
 
 
 def plot_model_loglik(m, df, fig_title=None):
+    """Plot the log-ikelihood surfaces for :math:`\nu` over :math:`r` and :math:`q_0` over :math:`r` for given data and model fitting result.
+
+    Parameters
+    ----------
+    m : lmfit.model.ModelResult
+        model for which to plot the log-likelihood surface
+    df : pandas.DataFrame
+        data frame with `Time` and `OD` columns used to fit the model
+    fig_title : str
+        title for the plot
+
+    Returns
+    -------
+    fig : matplotlib.figure.Figure
+        figure object
+    ax : numpy.ndarray
+        array of axis objects
+
+    Example
+    -------
+    >>> m = curveball.models.fit_model(df)
+    >>> curveball.likelihood.plot_model_loglik(m, df)
+    """
     K = m.best_values['K']
     y0 = m.best_values['y0']
     r = m.best_values['r']
