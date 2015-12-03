@@ -192,7 +192,6 @@ def plate(plate_folder, plate_file, output_file, list, show):
 			plt.show()
 		else:
 			fig.savefig(output_file.name)
-			fig.close()
 	else:
 		plate.to_csv(output_file, index=False)
 	if output_file.name != '-':
