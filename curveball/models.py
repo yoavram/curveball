@@ -69,13 +69,12 @@ def sample_params(model_fit, nsamples, params=None, covar=None):
         a dictionary of model parameter values; if given, overrides values from `model_fit`
     covar: numpy.ndarray, optional
         an array containing the parameters covariance matrix; if given, overrides values from `model_fit`
-    
 
     Returns
     -------
     pandas.DataFrame
         data frame of samples; each row is a sample, each column is a parameter.
-    """        
+    """
     if params is None:
         params = model_fit.params
     else:
@@ -100,11 +99,12 @@ def sample_params(model_fit, nsamples, params=None, covar=None):
     idx = np.zeros(nsamples) == 0
     for p in params.values():
         if not p.vary:
-            continue
+            param_samples[p.name] = p.value
         idx = idx & (param_samples[p.name] >= p.min) & (param_samples[p.name] <= p.max)
     if param_samples.shape[0] < nsamples:
         warn("Warning: truncated {0} parameter samples; please report at {1}, including the data and use case.".format(nsamples - param_samples.shape[0], "https://github.com/yoavram/curveball/issues"))
-    return param_samples[idx]
+    param_samples = param_samples[idx]
+    return param_samples
     
 
 
