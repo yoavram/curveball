@@ -36,32 +36,36 @@ def ridge_regularization(lam, **center):
 
 
 def loglik_r_nu(r_range, nu_range, df, f=curveball.baranyi_roberts_model.baranyi_roberts_function, 
-    penalty=None, **params):
+                penalty=None, **params):
+    if not params:
+        params = dict()
     t = df.Time.unique()
     y = df.groupby('Time').OD.mean().as_matrix()
     y_sig = df.groupby('Time').OD.std().as_matrix()
     
     output = np.empty((len(r_range), len(nu_range)))
     for i, r in enumerate(r_range):
-        if np.isinf(v): 
-            v = r
-        for j, nu in enumerate(nu_range):                        
+        params['r'] = r
+        for j, nu in enumerate(nu_range):
+            params['nu'] = nu
             output[i,j] = loglik(t, y, y_sig, f, penalty, **params)
     
     return output
 
 
 def loglik_r_q0(r_range, q0_range, df, f=curveball.baranyi_roberts_model.baranyi_roberts_function, 
-    penalty=None, **params):
+                penalty=None, **params):
+    if not params:
+        params = dict()
     t = df.Time.unique()
     y = df.groupby('Time').OD.mean().as_matrix()
     y_sig = df.groupby('Time').OD.std().as_matrix()
     
     output = np.empty((len(r_range), len(q0_range)))
     for i, r in enumerate(r_range):
+        params['r'] = r
         for j, q0 in enumerate(q0_range):
-            if np.isinf(v) and np.isfinite(q0): 
-                v = r
+            params['q0'] = q0
             output[i,j] = loglik(t, y, y_sig, f, penalty, **params)
     
     return output
