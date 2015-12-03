@@ -14,6 +14,7 @@ from unittest import TestCase, main
 from nose.plugins.skip import SkipTest
 import sys
 import os
+import types
 import shutil
 from scipy.integrate import odeint
 import numpy as np
@@ -94,7 +95,7 @@ class FunctionsTestCase(TestCase):
 		y_ode = odeint(baranyi_roberts_ode, y0, t, args=(r, K, nu, q0, v))
 		y_ode.resize((len(t),))
 		err = compare_curves(y_ode, y_curve)
-		self.assertTrue(err < 1e-6)  
+		self.assertTrue(err < 1e-6)
 
 
 class ModelSelectionTestCase(TestCase):
@@ -727,6 +728,19 @@ class IssuesTestCase(TestCase):
 	def test_is_model(self):
 		for model in curveball.models.get_models(curveball.baranyi_roberts_model):
 			self.assertTrue(curveball.models.is_model(model))
+
+
+	def test_make_Dfun(self):
+		model = curveball.baranyi_roberts_model.BaranyiRoberts()
+		params = model.make_params(y0=0.1, K=1, r=1, nu=1, v=1, q0=1)
+		Dfun = curveball.models.make_Dfun(model, params)
+		self.assertIsInstance(Dfun, types.FunctionType)
+
+		t, y = curveball.models.randomize(as_df=False)
+		res = Dfun(params, y, None, t)
+		self.assertIsInstance(res, np.ndarray)
+		self.assertEquals(res.shape, (len(params), len(t)))
+
 
 if __name__ == '__main__':
 	main()
