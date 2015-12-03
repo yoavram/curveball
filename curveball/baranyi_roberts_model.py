@@ -32,7 +32,28 @@ MIN_VALUES = {
 }
 
 
-def _lag(model_result=None, q0=None, v=None):
+def lag(model_result=None, q0=None, v=None):
+	r"""Calculate lag duration from model Parameters.
+
+	Lag duration :math:`\lambda` is calculated as:
+
+	.. math::
+
+		\lambda = \frac{1}{v} \log{\Big( 1 + \frac{1}{q_0} \Big)}
+
+	This definition follows from the Baranyi-Roberts model definition of :math:`A(t)`:
+
+		A(t) - t = \frac{1}{v} \log{\Big(\frac{e^{-vt} + q_0}{1 + q_0} \Big)} \to_{t \to \infty} t - \lambda
+
+	See also
+	--------
+	baranyi_roberts_function
+
+	References
+	----------
+	.. [1] Baranyi, J., Roberts, T. A., 1994. `A dynamic approach to predicting bacterial growth in food <www.ncbi.nlm.nih.gov/pubmed/7873331>`_. Int. J. Food Microbiol.
+
+	"""
 	if model_result is not None:
 		q0 = model_result.best_values.get('q0', np.inf)
 		v = model_result.best_values.get('v', model_result.best_values['r'])
@@ -44,7 +65,7 @@ def _lag(model_result=None, q0=None, v=None):
 
 
 def baranyi_roberts_function(t, y0, K, r, nu, q0, v):
-	r"""The Baranyi-Roberts growth model is an extension of the Richards model that adds a lag phase [1]_.
+	r"""The Baranyi-Roberts growth model is an extension of the logistic and Richards model that adds a lag phase [1]_.
 
 	.. math::
 
@@ -88,7 +109,9 @@ def baranyi_roberts_function(t, y0, K, r, nu, q0, v):
 	----------
 	.. [1] Baranyi, J., Roberts, T. A., 1994. `A dynamic approach to predicting bacterial growth in food <www.ncbi.nlm.nih.gov/pubmed/7873331>`_. Int. J. Food Microbiol.
 	"""
-	if np.isposinf(q0) or np.isposinf(v):
+	if np.isposinf(v):
+		v = r
+	if np.isposinf(q0):
 		At = t
 	else:
 		At = t + (1.0 / v) * np.log((np.exp(-v * t) + q0) / (1.0 + q0))
@@ -96,24 +119,6 @@ def baranyi_roberts_function(t, y0, K, r, nu, q0, v):
 		return y0 * np.exp(r * nu * At)
 	else:
 		return K / ((1 - (1 - (K / y0)**nu) * np.exp(-r * nu * At))**(1.0/nu))
-
-
-def baranyi_roberts_step_function(t, y0, K, r, nu, q0, v):
-	r"""TODO
-	"""
-	S = 0.1
-	if np.isposinf(q0) or np.isposinf(v):
-		# without lag
-		return K / ((1 - (1 - (K / y0)**nu) * np.exp(-r * nu * t))**(1.0/nu))
-	# with lag: find time where (y-y0)/(K-y0) = S
-	tS = (1.0/r) * np.log( ((S * (K - y0) / y0 + 1)*(1 + q0) - 1) / q0 )
-	y = np.zeros(len(t))
-	# small population, no logistic term (1-(N/K)**nu)
-	y[t < tS] = y0 * (1 + q0 * np.exp(r * t[t < tS])) / (1 + q0)
-	# big population, standard baranyi-roberts function
-	At = t[t >= tS] + (1.0 / v) * np.log((np.exp(-v * t[t >= tS]) + q0)/(1 + q0))
-	y[t >= tS] = K / (1 - (1 - (K / y0)**nu) * np.exp(-r * nu * At))**(1.0 / nu)
-	return y
 
 
 def smooth(x, y, PLOT=False, **kwargs):
@@ -313,7 +318,9 @@ def guess_r(t, N, nu=None, K=None):
 	return dNdtmax / (K * nu * (1 + nu)**(-(1 + nu) / nu))
 
 
-def guess_q0_v(t, N, param_guess):		
+def guess_q0_v(t, N, param_guess):
+	r"""Guesses the values of :math:`q_0` and :math:`v` by fitting a model to a curve with other parameters fixed.
+	"""
 	param_fix = {'y0', 'K', 'r', 'nu'}
 	param_guess = dict(param_guess)
 	if 'q0' in param_guess:
@@ -329,14 +336,16 @@ def guess_q0_v(t, N, param_guess):
 
 
 class BaranyiRoberts(lmfit.model.Model):
-	"""TODO
+	"""The Baranyi-Roberts growth model is an extension of the logistic and Richards model that adds a lag phase.
+
+	See also
+	--------
+	baranyi_roberts_function
 	"""
 
 	def __init__(self, *args, **kwargs):
 		if args:
 			func, args = args[0], args[1:]
-		elif kwargs.get('use_step_func', False):
-			func = baranyi_roberts_step_function
 		else:
 			func = baranyi_roberts_function
 		super(BaranyiRoberts, self).__init__(func, *args, **kwargs)
@@ -347,7 +356,31 @@ class BaranyiRoberts(lmfit.model.Model):
 		}
 
 
-	def guess(self, data, t, param_guess=None, param_min=None, param_max=None, param_fix=None):		
+	def guess(self, data, t, param_guess=None, param_min=None, param_max=None, param_fix=None):
+		"""Use heuristics to guess model parameters.
+
+		Parameters
+		----------
+		data : numpy.ndarray
+			population size or density data
+		t : numpy.ndarray
+			time, usually in hours
+		param_guess : dict, optional
+			mapping parameter names to values used as guesses to override the heuristic guess
+		param_min, param_max: dict, optional
+			mapping parameter names to values used to bound the parametrs in the fit procedure
+		param_fix : set, optional
+			names of parameters to fix at the guessed value, i.e., no to estimate in the fit procedure
+
+		Returns
+		-------
+		lmfit.parameter.Parameters
+			a dictionary of the model parameters ready to be used by the `fit` method
+
+		See also
+		--------
+		lmfit.model.Model.guess
+		"""	
 		if (sorted(t) != t).all():
 			raise ValueError("Time argument t must be sorted")
 
@@ -397,7 +430,27 @@ class BaranyiRoberts(lmfit.model.Model):
 		return params
 
 
-	def get_sympy_expr(self, params):	
+	def get_sympy_expr(self, params):
+		"""Generate the required variables for creating a Dfun to be used in the fitting procedure.
+
+		Parameters
+		----------
+		params : dict
+			a dictionary of the model parameters, possibly created by :py:method:`guess`.
+
+		Returns
+		-------
+			dNdt : sympy.expr.Expr
+				expression for the derivate of the model function
+			t : sympy.symbol.symbol
+			ma	time symbol
+			args : tuple of sympy.symbol.symbol
+				tuple of symbols of model parameters
+
+		See also
+		--------
+		curveball.models.make_Dfun
+		"""
 		t, y0, K, r, nu, q0, v = sympy.symbols('t y0 K r nu q0 v')
 		args = [y0, K, r, nu, q0, v]
 		# remove fixed params and replace their symbols by their values
@@ -441,10 +494,16 @@ class BaranyiRoberts(lmfit.model.Model):
 
 
 class Richards(BaranyiRoberts):
+	"""The Richards model extends the logistic model by including the :math:`nu` parameter that controls the
+	curvature of the response of the growth rate to population size/density. Also knows as the *theta-logistic model*.
+
+	Reference
+	---------
+	Richards, F. J. 1959. "A Flexible Growth Function for Empirical Use." Journal of Experimental Botany 10 (2): 290-301. doi:10.1093/jxb/10.2.290.
+	Gilpin, Michael E., and Francisco J. Ayala. 1973. "Global Models of Growth and Competition." Proceedings of the National Academy of Sciences of the United States of America 70 (12 Pt 1-2): 3590–3593. doi:10.1073/pnas.70.12.3590.
+	"""
 	def __init__(self, *args, **kwargs):
-		def func(t, y0, K, r, nu):
-			if kwargs.get('use_step_func', False):
-				return baranyi_roberts_step_function(t, y0, K, r, nu, np.inf, np.inf)
+		def func(t, y0, K, r, nu):			
 			return baranyi_roberts_function(t, y0, K, r, nu, np.inf, np.inf)
 		super(Richards, self).__init__(func, *args, **kwargs)
 		self.nested_models = {
@@ -452,10 +511,16 @@ class Richards(BaranyiRoberts):
 		}
 
 class RichardsLag1(BaranyiRoberts):
+	r"""This is an extension of the :py:class:`Richards` that includes a single lag parameter :math:`q_0` (and sets :math:`v=r`).
+
+	See also
+	--------
+	BaranyiRoberts
+	Richards
+	RichardsLag2
+	"""
 	def __init__(self, *args, **kwargs):
 		def func(t, y0, K, r, nu, q0): 
-			if kwargs.get('use_step_func', False):
-				return baranyi_roberts_step_function(t, y0, K, r, nu, q0, r)
 			return baranyi_roberts_function(t, y0, K, r, nu, q0, r)
 		super(RichardsLag1, self).__init__(func, *args, **kwargs)
 		self.nested_models = {
@@ -464,10 +529,16 @@ class RichardsLag1(BaranyiRoberts):
 		}
 
 class LogisticLag2(BaranyiRoberts):
+	r"""This is an extension of the :py:class:`Logistic` model that includes a two lag parameters :math:`q_0` and :math:`v`).
+	
+	See also
+	--------
+	BaranyiRoberts
+	Logistic
+	LogisticLag1
+	"""
 	def __init__(self, *args, **kwargs):
 		def func(t, y0, K, r, q0, v): 
-			if kwargs.get('use_step_func', False):
-				return baranyi_roberts_step_function(t, y0, K, r, 1.0, q0, v)
 			return baranyi_roberts_function(t, y0, K, r, 1.0, q0, v)
 		super(LogisticLag2, self).__init__(func, *args, **kwargs)
 		self.nested_models = {
@@ -475,10 +546,16 @@ class LogisticLag2(BaranyiRoberts):
 		}
 
 class LogisticLag1(BaranyiRoberts):
+	r"""This is an extension of the :py:class:`Logistic` that includes a single lag parameter :math:`q_0` (and sets :math:`v=r`).
+
+	See also
+	--------
+	BaranyiRoberts
+	Richards
+	LogisticLag2
+	"""
 	def __init__(self, *args, **kwargs):
 		def func(t, y0, K, r, q0):
-			if kwargs.get('use_step_func', False):
-				return baranyi_roberts_step_function(t, y0, K, r, 1.0, q0, r)
 			return baranyi_roberts_function(t, y0, K, r, 1.0, q0, r)
 		super(LogisticLag1, self).__init__(func, *args, **kwargs)
 		self.nested_models = {
@@ -486,10 +563,25 @@ class LogisticLag1(BaranyiRoberts):
 		}
 
 class Logistic(BaranyiRoberts):
+	r"""This is the simplest growth model with a stationary phase, defined by the ODE:
+
+	.. :math::
+	
+		\frac{dN}{dt} = r N \Big( 1 - \frac{N}{K} \Big)
+
+	See also
+	--------
+	BaranyiRoberts
+	Richards
+	LogisticLag1
+	LogisticLag2
+
+	References
+	----------
+	`Wikipedia <https://en.wikipedia.org/wiki/Logistic_function#In_ecology:_modeling_population_growth>`_
+	"""
 	def __init__(self, *args, **kwargs):
 		def func(t, y0, K, r):
-			if kwargs.get('use_step_func', False):
-				return baranyi_roberts_step_function(t, y0, K, r, 1.0, np.inf, np.inf)
 			return baranyi_roberts_function(t, y0, K, r, 1.0, np.inf, np.inf)
 		super(Logistic, self).__init__(func, *args, **kwargs)
 		self.nested_models = {}
@@ -565,4 +657,3 @@ if __name__ == '__main__':
 	assert np.isposinf(logistic_result.best_values['v'])
 	assert np.isposinf(logistic_result.best_values['q0'])
 	print(logistic_result.model.name, logistic_result.nvarys, logistic_result.bic, _lag(logistic_result))
-	
