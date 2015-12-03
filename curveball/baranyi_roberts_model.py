@@ -390,9 +390,9 @@ class BaranyiRoberts(lmfit.model.Model):
 		param_fix = set() if param_fix is None else set(param_fix)
 		
 		if 'y0' not in param_guess:
-			param_guess['y0'] = np.min(data)
+			param_guess['y0'] = (data[t == t.min()]).mean()
 		if 'K' not in param_guess:
-			param_guess['K'] = np.max(data)
+			param_guess['K'] = (data[t == t.max()]).mean()
 		if 'nu' not in self.param_names:
 			nu = 1.0
 		elif 'nu' not in param_guess:
