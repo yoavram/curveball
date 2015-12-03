@@ -23,6 +23,7 @@ import xlrd
 import matplotlib.pyplot as plt
 import seaborn as sns
 sns.set_style("ticks")
+from memory_profiler import profile
 
 
 VERBOSE = False
@@ -192,6 +193,7 @@ def plate(plate_folder, plate_file, output_file, list, show):
 			plt.show()
 		else:
 			fig.savefig(output_file.name)
+			fig.close()
 	else:
 		plate.to_csv(output_file, index=False)
 	if output_file.name != '-':
@@ -236,7 +238,7 @@ def analyse(path, output_file, plate_folder, plate_file, blank_strain, ref_strai
 		fig.show()
 		click.echo("Plate with %d strains: %s" % (len(plate_strains), ', '.join(plate_strains)))
 		click.confirm('Is this the plate you wanted?', default=False, abort=True, show_default=True)
-
+		fig.close()
 	if os.path.isdir(path):
 		files = glob.glob(os.path.join(path, '*'))
 		#files = [os.path.join(path, fn) for fn in files]
@@ -258,6 +260,7 @@ def analyse(path, output_file, plate_folder, plate_file, blank_strain, ref_strai
 		click.secho("Wrote output to %s" % output_file.name, fg='green')
 
 
+@profile
 def _process_file(filepath, plate, blank_strain, ref_strain, max_time, guess, param_min, param_max, param_fix, weights):
 	"""Analyses a single growth curves file.
 
@@ -266,7 +269,7 @@ def _process_file(filepath, plate, blank_strain, ref_strain, max_time, guess, pa
 	`analyse`
 	"""
 	results = []	
-	fn,ext = os.path.splitext(filepath)
+	fn, ext = os.path.splitext(filepath)
 	echo_info("\tHandler: {1}\n".format(filepath, ext))
 	handler = file_extension_handlers.get(ext)
 	if handler is None:
@@ -295,11 +298,13 @@ def _process_file(filepath, plate, blank_strain, ref_strain, max_time, guess, pa
 
 	if PLOT:
 		wells_plot_fn = fn + '_wells.png'
-		curveball.plots.plot_wells(df, output_filename=wells_plot_fn)
+		g = curveball.plots.plot_wells(df, output_filename=wells_plot_fn)
+		g.fig.close()
 		echo_info("Wrote wells plot to %s" % click.format_filename(wells_plot_fn))
 
 		strains_plot_fn = fn + '_strains.png'
-		curveball.plots.plot_strains(df, output_filename=strains_plot_fn)
+		g = curveball.plots.plot_strains(df, output_filename=strains_plot_fn)
+		g.fig.close()
 		echo_info("Wrote strains plot to %s" % click.format_filename(strains_plot_fn))
 	
 	if blank_strain in strains: 
@@ -310,58 +315,60 @@ def _process_file(filepath, plate, blank_strain, ref_strain, max_time, guess, pa
 	else:
 		echo_error("Warning, reference strains '%s' doesn't exist!" % ref_strain)
 
-	with click.progressbar(strains, label='Fitting strain growth curves', item_show_func=lambda s: s, color='green') as bar:
-		for strain in bar:
-			strain_df = df[df.Strain == strain]
-			_ = curveball.models.fit_model(strain_df, param_guess=guess, param_min=param_min, param_max=param_max, param_fix=param_fix, use_weights=weights, PLOT=PLOT, PRINT=VERBOSE)
+	for strain in strains:
+		strain_df = df[df.Strain == strain]
+		_ = curveball.models.fit_model(strain_df, param_guess=guess, param_min=param_min, param_max=param_max, param_fix=param_fix, use_weights=weights, PLOT=PLOT, PRINT=VERBOSE)
+		if PLOT:
+			fit_results,fig,ax = _
+			strain_plot_fn = fn + ('_strain_%s.png' % strain)
+			fig.savefig(strain_plot_fn)
+			fig.close()
+			echo_info("Wrote strain %s plot to %s" % (strain, click.format_filename(strain_plot_fn)))
+		else:
+			fit_results = _
+
+		res = {}
+		fit = fit_results[0]
+		res['folder'] = os.path.dirname(filepath)
+		res['filename'] = os.path.splitext(os.path.basename(fn))[0]
+		res['strain'] = strain
+		res['model'] = fit.model.name
+		res['RSS'] = fit.chisqr
+		res['RMSD'] = np.sqrt(res['RSS'] / fit.ndata)
+		res['NRMSD'] = res['RMSD'] / (strain_df.OD.max() - strain_df.OD.min())
+		res['CV(RMSD)'] = res['RMSD'] / (strain_df.OD.mean())
+		res['bic'] = fit.bic
+		res['aic'] = fit.aic			
+		params = fit.params
+		res['y0'] = params['y0'].value
+		res['K'] = params['K'].value
+		res['r'] = params['r'].value
+		res['nu'] = params['nu'].value if 'nu' in params else 1
+		res['q0'] = params['q0'].value if 'q0' in params else 0
+		res['v'] = params['v'].value if 'v' in params else 0
+		res['max_growth_rate'] = curveball.models.find_max_growth(fit)[-1]
+		res['lag'] = curveball.models.find_lag(fit)
+		res['has_lag'] = curveball.models.has_lag(fit_results)
+		res['has_nu'] = curveball.models.has_nu(fit_results, PRINT=VERBOSE)			
+
+		if strain == ref_strain:
+			ref_fit = fit
+			res['w'] = 1
+		elif ref_strain in strains:
+			colors = plate[plate.Strain.isin([strain, ref_strain])].Color.unique()
+			_ = curveball.competitions.compete(fit, ref_fit, hours=df.Time.max(), colors=colors, PLOT=PLOT)
 			if PLOT:
-				fit_results,fig,ax = _
-				strain_plot_fn = fn + ('_strain_%s.png' % strain)
-				fig.savefig(strain_plot_fn)
-				echo_info("Wrote strain %s plot to %s" % (strain, click.format_filename(strain_plot_fn)))
+				t,y,fig,ax = _
+				competition_plot_fn = fn + ('_%s_vs_%s.png' % (strain, ref_strain))
+				fig.savefig(competition_plot_fn)
+				fig.close()
+				echo_info("Wrote competition %s vs %s plot to %s" % (strain, ref_strain, click.format_filename(strain_plot_fn)))
 			else:
-				fit_results = _
+				t,y = _
+			res['w'] = curveball.competitions.fitness_LTEE(y, assay_strain=0, ref_strain=1)
 
-			res = {}
-			fit = fit_results[0]
-			res['folder'] = os.path.dirname(filepath)
-			res['filename'] = os.path.splitext(os.path.basename(fn))[0]
-			res['strain'] = strain
-			res['model'] = fit.model.name
-			res['RSS'] = fit.chisqr
-			res['RMSD'] = np.sqrt(res['RSS'] / fit.ndata)
-			res['NRMSD'] = res['RMSD'] / (strain_df.OD.max() - strain_df.OD.min())
-			res['CV(RMSD)'] = res['RMSD'] / (strain_df.OD.mean())
-			res['bic'] = fit.bic
-			res['aic'] = fit.aic			
-			params = fit.params
-			res['y0'] = params['y0'].value
-			res['K'] = params['K'].value
-			res['r'] = params['r'].value
-			res['nu'] = params['nu'].value if 'nu' in params else 1
-			res['q0'] = params['q0'].value if 'q0' in params else 0
-			res['v'] = params['v'].value if 'v' in params else 0
-			res['max_growth_rate'] = curveball.models.find_max_growth(fit)[-1]
-			res['lag'] = curveball.models.find_lag(fit)
-			res['has_lag'] = curveball.models.has_lag(fit_results)
-			res['has_nu'] = curveball.models.has_nu(fit_results, PRINT=VERBOSE)			
-
-			if strain == ref_strain:
-				ref_fit = fit
-				res['w'] = 1
-			elif ref_strain in strains:
-				colors = plate[plate.Strain.isin([strain, ref_strain])].Color.unique()
-				_ = curveball.competitions.compete(fit, ref_fit, hours=df.Time.max(), colors=colors, PLOT=PLOT)
-				if PLOT:
-					t,y,fig,ax = _
-					competition_plot_fn = fn + ('_%s_vs_%s.png' % (strain, ref_strain))
-					fig.savefig(competition_plot_fn)
-					echo_info("Wrote competition %s vs %s plot to %s" % (strain, ref_strain, click.format_filename(strain_plot_fn)))
-				else:
-					t,y = _
-				res['w'] = curveball.competitions.fitness_LTEE(y, assay_strain=0, ref_strain=1)
-
-			results.append(res)
+		results.append(res)
+		plt.clf()
 	return results
 
 
