@@ -236,7 +236,6 @@ def analyse(path, output_file, plate_folder, plate_file, blank_strain, ref_strai
 		fig.show()
 		click.echo("Plate with %d strains: %s" % (len(plate_strains), ', '.join(plate_strains)))
 		click.confirm('Is this the plate you wanted?', default=False, abort=True, show_default=True)
-		fig.close()
 	if os.path.isdir(path):
 		files = glob.glob(os.path.join(path, '*'))
 		#files = [os.path.join(path, fn) for fn in files]
@@ -296,12 +295,10 @@ def _process_file(filepath, plate, blank_strain, ref_strain, max_time, guess, pa
 	if PLOT:
 		wells_plot_fn = fn + '_wells.png'
 		g = curveball.plots.plot_wells(df, output_filename=wells_plot_fn)
-		g.fig.close()
 		echo_info("Wrote wells plot to %s" % click.format_filename(wells_plot_fn))
 
 		strains_plot_fn = fn + '_strains.png'
 		g = curveball.plots.plot_strains(df, output_filename=strains_plot_fn)
-		g.fig.close()
 		echo_info("Wrote strains plot to %s" % click.format_filename(strains_plot_fn))
 	
 	if blank_strain in strains: 
@@ -319,7 +316,6 @@ def _process_file(filepath, plate, blank_strain, ref_strain, max_time, guess, pa
 			fit_results,fig,ax = _
 			strain_plot_fn = fn + ('_strain_%s.png' % strain)
 			fig.savefig(strain_plot_fn)
-			fig.close()
 			echo_info("Wrote strain %s plot to %s" % (strain, click.format_filename(strain_plot_fn)))
 		else:
 			fit_results = _
@@ -358,7 +354,6 @@ def _process_file(filepath, plate, blank_strain, ref_strain, max_time, guess, pa
 				t,y,fig,ax = _
 				competition_plot_fn = fn + ('_%s_vs_%s.png' % (strain, ref_strain))
 				fig.savefig(competition_plot_fn)
-				fig.close()
 				echo_info("Wrote competition %s vs %s plot to %s" % (strain, ref_strain, click.format_filename(strain_plot_fn)))
 			else:
 				t,y = _
