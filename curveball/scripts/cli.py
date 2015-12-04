@@ -331,7 +331,9 @@ def _process_file(filepath, plate, blank_strain, ref_strain, max_time, guess, pa
 		res['NRMSD'] = res['RMSD'] / (strain_df.OD.max() - strain_df.OD.min())
 		res['CV(RMSD)'] = res['RMSD'] / (strain_df.OD.mean())
 		res['bic'] = fit.bic
-		res['aic'] = fit.aic			
+		res['aic'] = fit.aic
+		res['weighted_bic'] = fit.weighted_bic
+		res['weighted_aic'] = fit.weighted_aic			
 		params = fit.params
 		res['y0'] = params['y0'].value
 		res['K'] = params['K'].value

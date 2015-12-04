@@ -702,6 +702,33 @@ def calc_weights(df, PLOT=False):
     return weights
 
 
+def information_criteria_weights(results):
+    """Calculate weighted AIC and BIC for model results.
+
+    .. :math::
+
+        w_i = \frac{e^{-\frac{x_i - \bar{x}}{2}}}{\sum_j{e^{-\frac{x_j - \bar{x}}{2}}}}
+
+    where :math:`w_i` is the weighted measure for model result :math:`i` and
+    :math:`x_i` is the AIC or BIC of model result :math:`i`.
+
+    Parameters
+    ----------
+    results : sequence of lmfit.model.ModelResult
+        use the :py:member:`lmfit.attr.ModelResult.aic` and :py:attr:`lmfit.model.ModelResult.bic` attributes
+        to add a `weighted_aic` and `weighted_bic` attribute.
+    """
+    aics = np.array([m.aic for m in results])
+    bics = np.array([m.bic for m in results])
+    weighted_aics = np.exp(-0.5 * (aics - aics.min()))
+    weighted_aics /= weighted_aics.sum()
+    weighted_bics = np.exp(-0.5 * (bics - bics.min()))
+    weighted_bics /= weighted_bics.sum()
+    for m, b, a in zip(results, weighted_bics, weighted_aics):
+        m.weighted_aic = a
+        m.weighted_bic = b
+
+
 def nvarys(params):
     return len([p for p in params.values() if p.vary])
 
@@ -796,6 +823,7 @@ def fit_model(df, ax=None, param_guess=None, param_min=None, param_max=None, par
         results[i] = model_result
 
     # sort by increasing BIC
+    information_criteria_weights(results)
     results.sort(key=lambda m: m.bic)
 
     if PRINT:
