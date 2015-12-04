@@ -33,7 +33,17 @@ from warnings import warn
 MAT_VERSION = u'1.0'
 
 
-def read_tecan_xlsx(filename, label=u'OD', sheet=None, max_time=None, plate=None):
+def read_csv(filename, plate=None):
+    df = pd.read_csv(filename)
+    if plate is None and 'Strain' not in df.columns:
+        df[u'Strain'] = u'0'
+    if plate is None and 'Color' not in df.columns:
+        df[u'Color'] = u'#000000'
+    df.Strain = df.Strain.astype(str) # make sure it's not read as int
+    return df
+
+
+def read_tecan_xlsx(filename, label=u'OD', sheets=None, max_time=None, plate=None, PRINT=False):
     """Reads growth measurements from a Tecan Infinity Excel output file.
 
     Parameters
@@ -42,8 +52,8 @@ def read_tecan_xlsx(filename, label=u'OD', sheet=None, max_time=None, plate=None
         path to the file.
     label : str / sequence of str
         a string or sequence of strings containing measurment names used as titles of the data tables in the file.
-    sheet : int, optional
-        sheet number, if known. Otherwise the function will try to guess the sheet.
+    sheets : list, optional
+        list of sheet numbers, if known. Otherwise the function will try to all the sheets.
     max_time : float, optional
         maximal time in hours, defaults to infinity
     plate : pandas.DataFrame, optional
@@ -83,14 +93,18 @@ def read_tecan_xlsx(filename, label=u'OD', sheet=None, max_time=None, plate=None
 
     if isinstance(label, string_types):
         label = [label]
-    
+    if sheets is None:
+            sheets = range(wb.nsheets)
+    if PRINT: print("Reading {0} worksheets from workbook {1}".format(len(sheets), filename))
     label_dataframes = []
     for lbl in label:
-        sheet_dataframes = []
-        for sh in wb.sheets():
+        sheet_dataframes = []        
+        ## FOR sheet
+        for sh_i in sheets:
+            sh = wb.sheet_by_index(sh_i)
             if sh.nrows == 0:
                 continue # to next sheet
-        ## FOR sheet
+        
             for i in range(sh.nrows):
                 ## FOR row
                 row = sh.row_values(i)                
@@ -122,13 +136,13 @@ def read_tecan_xlsx(filename, label=u'OD', sheet=None, max_time=None, plate=None
             for j in range(i + 1, sh.nrows):
                 ## FOR row
                 row = sh.row(j)
-                if len(row[0].value) == 0:
+                if not row[0].value:
                     break
                 data[row[0].value] = [x.value for x in row[1:] if x.ctype == 2]
                 ## FOR row ENDS
 
-            if len(data) == 0:
-                raise ValueError("No data found in file {0}".format(filename))
+            if not data:
+                raise ValueError("No data found in sheet {1} of workbook {0}".format(filename, sh_i))
 
             min_length = min(map(len, data.values()))
             for k,v in data.items():
@@ -143,23 +157,27 @@ def read_tecan_xlsx(filename, label=u'OD', sheet=None, max_time=None, plate=None
             sheet_dataframes.append(df)
         ## FOR sheet ENDS
 
-        if len(sheet_dataframes) == 0:
+        n_sheet_dataframes = len(sheet_dataframes)
+        if n_sheet_dataframes == 0:
             df = pd.DataFrame()
-        elif len(sheet_dataframes) == 1:
+        elif n_sheet_dataframes == 1:
             df = sheet_dataframes[0]
         else:
             df = pd.concat(sheet_dataframes)
 
         min_time = df.Time.min()
-        df.Time = [old_div((t - min_time).total_seconds(), 3600.) for t in df.Time]
-        if not max_time is None:
+        if PRINT:
+            print("Starting time", min_time)
+        df.Time = [(t - min_time).total_seconds() / 3600.0 for t in df.Time]
+        if max_time is not None:
             df = df[df.Time <= max_time]
         df.sort([u'Row', u'Col', u'Time'], inplace=True)
         label_dataframes.append((lbl,df))
 
-    if len(label_dataframes) == 0: # dataframes
+    n_label_dataframes = len(label_dataframes)
+    if n_label_dataframes == 0: # no dataframes
         return pd.DataFrame()
-    if len(label_dataframes) == 1: # just one dataframe
+    if n_label_dataframes == 1: # just one dataframe
         df = label_dataframes[0][1]
     else: # multiple dataframes, merge together
         # FIXME last label isn't used as a suffix, not sure why
@@ -169,10 +187,11 @@ def read_tecan_xlsx(filename, label=u'OD', sheet=None, max_time=None, plate=None
             lbli = '_' + lbli
             df = pd.merge(df, dfi, on=(u'Cycle Nr.', u'Well', u'Row', u'Col'), suffixes=(lbl,lbli))
     if plate is None:
-        df[u'Strain'] = 0
+        df[u'Strain'] = u'0'
         df[u'Color'] = u'#000000'
     else:
         df = pd.merge(df, plate, on=(u'Row', u'Col'))
+    if PRINT: print("Read {0} records from workbook".format(df.shape[0]))
     return df
 
 
@@ -225,7 +244,7 @@ def read_tecan_mat(filename, time_label=u'tps', value_label=u'plate_mat', value_
     df[u'Col'] = [int(w[1:]) for w in df[u'Well']]
     
     if plate is None:
-        df[u'Strain'] = 0
+        df[u'Strain'] = u'0'
         df[u'Color'] = u'#000000'
     else:
         df = pd.merge(df, plate, on=(u'Row', u'Col'))
@@ -316,13 +335,13 @@ def read_tecan_xml(filename, label=u'OD', max_time=None, plate=None):
         dataframes.append(df)
     df = pd.concat(dataframes)
     min_time = df.Time.min()
-    df.Time = [old_div((t - min_time).total_seconds(), 3600.) for t in df.Time]
+    df.Time = [(t - min_time).total_seconds() / 3600.0 for t in df.Time]
     if plate is None:
-        df[u'Strain'] = 0
+        df[u'Strain'] = u'0'
         df[u'Color'] = u'#000000'
     else:
         df = pd.merge(df, plate, on=(u'Row', u'Col'))
-    if not max_time is None:
+    if max_time is not None:
         df = df[df.Time <= max_time]
     df.sort([u'Row', u'Col', u'Time'], inplace=True)
     return df
@@ -398,13 +417,13 @@ def read_sunrise_xlsx(filename, label=u'OD', max_time=None, plate=None):
         dataframes.append(df)
     df = pd.concat(dataframes)
     min_time = df.Time.min()
-    df.Time = [old_div((t - min_time).total_seconds(), 3600.) for t in df.Time]
+    df.Time = [(t - min_time).total_seconds() / 3600.0 for t in df.Time]
     if plate is None:
-        df[u'Strain'] = 0
+        df[u'Strain'] = u'0'
         df[u'Color'] = u'#000000'
     else:
         df = pd.merge(df, plate, on=(u'Row', u'Col'))
-    if not max_time is None:
+    if max_time is not None:
         df = df[df.Time <= max_time]
     df.sort([u'Row', u'Col', u'Time'], inplace=True)
     return df
