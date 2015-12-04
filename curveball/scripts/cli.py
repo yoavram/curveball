@@ -115,7 +115,7 @@ def load_plate(plate_path):
 
 	See also
 	--------
-	:py:func:`find_plate_file`
+	find_plate_file
 	"""	
 	try:
 		plate = pd.read_csv(plate_path)
@@ -127,10 +127,11 @@ def load_plate(plate_path):
 
 
 def where(ctx, param, value):
-	"""Prints the path where Curveball is installed and exists the app. 
+	"""Prints the path where Curveball is installed and exits. 
 
-	Parameters are ignored, except that if `value` or `ctx.resilient_parsing`
-	are not empty/:py:const:`False`/:py:const:`None`, the function returns without doing anything.
+	Parameters are generally ignored; 
+	if `value` or `ctx.resilient_parsing` are not empty/:const:`False`/:const:`None`, 
+	the function returns without doing anything.
 	"""
 	if not value or ctx.resilient_parsing:
 		return
@@ -262,7 +263,7 @@ def _process_file(filepath, plate, blank_strain, ref_strain, max_time, guess, pa
 
 	See also
 	--------
-	`analyse`
+	analyse
 	"""
 	results = []	
 	fn, ext = os.path.splitext(filepath)

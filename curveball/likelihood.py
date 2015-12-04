@@ -9,7 +9,6 @@
 # Copyright (c) 2015, Yoav Ram <yoav@yoavram.com>
 from __future__ import print_function
 from __future__ import division
-from builtins import filter
 from builtins import str
 import numpy as np
 import matplotlib as mpl
@@ -22,7 +21,17 @@ import curveball.baranyi_roberts_model
 
 
 def loglik(t, y, y_sig, f, penalty=None, **params):
-    """Computes the log-likelihood of seeing the data given a model assuming normal distributed observation/measurement errors.
+    r"""Computes the log-likelihood of seeing the data given a model 
+    assuming normal distributed observation/measurement errors.
+
+    .. math::
+
+        \log{L(y | \theta)} = -\frac{1}{2} \sum_i { \log{(2 \pi \sigma_{i}^{2})} + \frac{(y - f(t_i; \theta))^2}{\sigma_{i}^{2}} }
+
+    which is the log-likelihood of seeing the data points :math:`t_i, y_i` 
+    with measurement error :math:`\sigma_i`
+    given the model function :math:`f`, the model parameters :math:`\theta`, 
+    and that the measurement error at time :math:`t_i` has a normal distribution with mean 0.
 
     Parameters
     ----------
@@ -33,7 +42,7 @@ def loglik(t, y, y_sig, f, penalty=None, **params):
     y_sig : np.ndarray
         one dimensional array of standrad deviations of the observations
     f : callable
-        a function the calculates the expcted observations (`yhat`) from `t` and any parameters in `params`
+        a function the calculates the expected observations (`f(t)`) from `t` and any parameters in `params`
     penalty : callable
         a function that calculates a scalar penalty from the parameters in `params` to be substracted from the log-likelihood
     params : floats, optional
@@ -52,7 +61,7 @@ def loglik(t, y, y_sig, f, penalty=None, **params):
         
 
 def ridge_regularization(lam, **center):
-    """Create a penaly function that employs the ridge regularization method:
+    r"""Create a penaly function that employs the ridge regularization method:
 
     .. math::
 
@@ -76,7 +85,7 @@ def ridge_regularization(lam, **center):
     callable
         the penalty function, accepts model parameters as float keyword arguments and returns a float penalty to the log-likelihood
 
-    Example:
+    Examples
     --------
     >>> penalty = ridge_regularization(1, y=0.1, K=1, r=1)
     >>> loglik(t, y, y_sig, logistic, penalty=penalty, y0=0.12, K=0.98, r=1.1)
@@ -88,7 +97,7 @@ def ridge_regularization(lam, **center):
 
 def loglik_r_nu(r_range, nu_range, df, f=curveball.baranyi_roberts_model.baranyi_roberts_function, 
                 penalty=None, **params):
-    r"""Estimates the log-likelihood plane for :math:`r` and :math:`\nu` given data and a model function.
+    r"""Estimates the log-likelihood surface for :math:`r` and :math:`\nu` given data and a model function.
 
     Parameters
     ----------
@@ -210,8 +219,8 @@ def plot_loglik(Ls, xrange, yrange, xlabel=None, ylabel=None, columns=4, fig_tit
     ax : numpy.ndarray
         array of axis objects
 
-    Example
-    -------
+    Examples
+    --------
     >>> L = loglik_r_nu(rs, nus, df, y0=y0, K=K, q0=q0, v=v)
     >>> plot_loglik(L0, rs, nus, normalize=False, fig_title=fig_title, xlabel=r'$r$', ylabel=r'$\nu$', colorbar=False)
     """
@@ -276,7 +285,7 @@ def plot_loglik(Ls, xrange, yrange, xlabel=None, ylabel=None, columns=4, fig_tit
 
 
 def plot_model_loglik(m, df, fig_title=None):
-    """Plot the log-ikelihood surfaces for :math:`\nu` over :math:`r` and :math:`q_0` over :math:`r` for given data and model fitting result.
+    r"""Plot the log-ikelihood surfaces for :math:`\nu` over :math:`r` and :math:`q_0` over :math:`r` for given data and model fitting result.
 
     Parameters
     ----------
@@ -294,10 +303,11 @@ def plot_model_loglik(m, df, fig_title=None):
     ax : numpy.ndarray
         array of axis objects
 
-    Example
-    -------
+    Examples
+    --------
     >>> m = curveball.models.fit_model(df)
     >>> curveball.likelihood.plot_model_loglik(m, df)
+
     """
     K = m.best_values['K']
     y0 = m.best_values['y0']

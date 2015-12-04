@@ -134,7 +134,7 @@ def tsplot(df, x='Time', y='OD', ci_level=95, ax=None, output_filename=None):
 
 	The grouping of the data is done by the value of `x` and ``Strain``, if such a column exists in `df`; 
 	otherwise it is done by `x` and ``Well``.
-	The aggregation is done by :py:func`seaborn.tsplot` which calculates the mean with a confidence interval.
+	The aggregation is done by :py:func:`seaborn.tsplot` which calculates the mean with a confidence interval.
 	The colors are given by the ``Color`` column, the labels of the colors are given by the ``Strain`` column; 
 	if ``Strain`` and ``Color`` don't exist in `df` then 
 	the function will use a default palette and color the lines by well.
@@ -151,13 +151,13 @@ def tsplot(df, x='Time', y='OD', ci_level=95, ax=None, output_filename=None):
 		confidence interval width in precent (0-100), defaults to 95.	
 	output_filename : str, optional 
 		filename to save the resulting figure; if not given, figure is not saved.
-	ax : axis object, optional
-    	plot in given axis; if None creates a new figure.
+	ax : matplotlib.axes.Axes, optional
+		plot into this axes, if not given create a new figure
 
 	Returns
 	-------
 	matplotlib.axes.Axes
-		figure object.
+		axes object
 	"""
 	if 'Strain' in df:
 		condition = 'Strain'
@@ -240,7 +240,7 @@ def plot_params_distribution(param_samples, color='k', cmap="viridis", alpha=Non
 
 	Returns
 	-------
-	sns.Grid
+	seaborn.Grid
 		figure object
 	"""
 	nsamples = param_samples.shape[0]
@@ -279,11 +279,11 @@ def plot_model_residuals(model_fit, rv=scipy.stats.norm, color='k'):
 
 	Parameters
 	----------
-	model_fit : lmfit.model.ModelResult
+	model_fit : lmfit.ModelResult
 		the result of a model fitting procedure.
 	rv : scipy.stats.rv_continuous, optional
 		:py:class:`scipy.stats.rv_continuous` random variable whose probability density function (pdf)
-		will be fitted to the histogram. Defaults the normal distribution (:py:class:`scipy.stats.norm`).
+		will be fitted to the histogram. Defaults to the normal distribution (`scipy.stats.norm`).
 	color : str, optional
 		color string for the plot, defaults to `k` for black.
 
@@ -324,7 +324,7 @@ def plot_residuals(df, time='Time', value='OD', resid_func=lambda x: x - x.mean(
 	Parameters
 	----------
 	df : pandas.DataFrame
-		a data frame with columns `Time` and `OD`.
+		a data frame with columns ``Time`` and ``OD``.
 	time : str, optional
 		name of column over which to group and plot the residuals. Defaults to ``Time``.
 	value : str, optional

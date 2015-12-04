@@ -68,7 +68,8 @@ setup(
             'pillow'
         ],
         'docs': [
-            'sphinx>=1.3.0'
+            'sphinx>=1.3.0',
+            'numpydoc'
         ]
     },
     entry_points={

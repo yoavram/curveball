@@ -19,8 +19,8 @@ Models
 
 Curveball uses the logistic model and its derivaties, the Richards model and the Baranyi-Roberts model:
 
-Logistic model (L3)
-^^^^^^^^^^^^^^^^^^^
+Logistic model
+^^^^^^^^^^^^^^
 
 Also known as the `Valhulst model <https://en.wikipedia.org/wiki/Logistic_function#In_ecology:_modeling_population_growth>`_,
 the logistic model includes three parameters and is the simplest and most commonly used population growth model.
@@ -39,11 +39,12 @@ The logistic model is defined by an ordinary differential equation (ODE) which a
 - r: initial per capita growth rate 
 - K: maximum population size
 
-Richards model (R4)
-^^^^^^^^^^^^^^^^^^^
+Richards model
+^^^^^^^^^^^^^^
 
 Also known as the `Generalised logistic model <http://en.wikipedia.org/wiki/Generalised_logistic_function>`_, 
-Richards model [Richards1959]_ extends the logistic model by including the curvature parameter :math:`\nu`:
+Richards model [Richards1959]_ (or in its discrete time version, the :math:`\theta`-logistic model [Gilpin1973]_) 
+extends the logistic model by including the curvature parameter :math:`\nu`:
 
 .. math::
 
@@ -57,7 +58,7 @@ Richards model [Richards1959]_ extends the logistic model by including the curva
 - :math:`\nu`: curvature of the logsitic term
 
 The logistic model is then a special case of the Richards model for :math:`\nu=1`, 
-that is, **L3 is nested in R4**.
+that is, **the Logistic model is nested in the Richards model**.
 
 When :math:`\nu>1`, the effect of the logistic term :math:`(1-(\frac{N}{K})^{\nu})`
 increases in comparison to the logistic model, 
@@ -67,7 +68,7 @@ When :math:`0<\nu<1`, the effect of the logistic term :math:`(1-(\frac{N}{K})^{\
 decreases in comparison to the logistic model, 
 and the transition from fast growth to slow growth is faster.
 
-Baranyi-Roberts (BR6)
+Baranyi-Roberts model
 ^^^^^^^^^^^^^^^^^^^^^
 
 The Baranyi-Roberts model [Baranyi1994]_ extends Richards model by introducing a lag phase
@@ -89,7 +90,8 @@ The model is then described by the following ODE and exact solution:
 
 		N(t) = \frac{K}{\Big[1 - \Big(1 - \Big(\frac{K}{N_0}\Big)^{\nu}\Big) e^{-r \nu A(t)}\Big]^{1/\nu}}
 
-        A(t) = \int_0^t{\alpha(s)ds} = \int_0^t{\frac{q_0}{q_0 + e^{-v s}} ds} = t + \frac{1}{v} \log{\Big( \frac{e^{-v t} + q_0}{1 + q_0} \Big)}
+    A(t) = \int_0^t{\alpha(s)ds} = \int_0^t{\frac{q_0}{q_0 + e^{-v s}} ds} = 
+    t + \frac{1}{v} \log{\Big( \frac{e^{-v t} + q_0}{1 + q_0} \Big)}
 
 
 - :math:`N_0`: initial population size
@@ -99,16 +101,18 @@ The model is then described by the following ODE and exact solution:
 - :math:`q_0`: initial adjustment to current environment
 - v: adjustment rate
 
-Note that :math:`A(t) \to  t - \lambda` as :math:`t \to \infty`; this :math:`\lambda` is called the *lag duration*.
+Note that :math:`A(t) - t \to  \lambda` as :math:`t \to \infty`; this :math:`\lambda` is called the *lag duration*.
 
 Richards model is then a special case of the Baranyi-Roberts model for :math:`1/v \to 0`, 
-that is, **R4 is nested in BR6**. Therefore, **L3 is nested in BR6** by :math:`\nu=1, 1/v \to 0`.
+that is, **Richards model is nested in Baranyi-Roberts**. 
+Therefore, **Logistic is also nested in Baranyi-Roberts** by :math:`\nu=1, 1/v \to 0`.
 
-Logistic model with lag phase (BR4)
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Logistic models with lag phase
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-In addition, we define an additional model, Baranyi-Roberts with :math:`\nu=1` or a logistic model with lag phase.
-This model has four parameters and is therefore called BR4. 
+We define tow additional models: Baranyi-Roberts with :math:`\nu=1` or a logistic model with lag phase, 
+and the same model with :math:`v=r` [Baty2004]_.
+These models have five and four and parameters, respectively.
 
 Model hierarchy and the likelihood ratio test
 ---------------------------------------------
@@ -156,6 +160,9 @@ BIC is a common method to measure the quality of a model fit [Kaas1995]_,
 balancing between model fit (distance from data) and complexity (number of parameters).
 See :py:func:`lmfit.model.ModelFit.bic` for more information.
 
+Curveball also calculates the *weighted BIC* each model fitted to the same data.
+This can be interpreted as the weight of evidence for each model.
+
 Example
 -------
 
@@ -173,9 +180,11 @@ Example
 References
 ----------
 
-.. [Richards1959] Richards, F. J. 1959. `A Flexible Growth Function for Empirical Use <http://dx.doi.org/10.1093/jxb/10.2.290>`_. Journal of Experimental Botany
+.. [Richards1959] Richards, F. J., 1959. `A Flexible Growth Function for Empirical Use <http://dx.doi.org/10.1093/jxb/10.2.290>`_. Journal of Experimental Botany
 .. [Baranyi1994] Baranyi, J., Roberts, T. A., 1994. `A dynamic approach to predicting bacterial growth in food <www.ncbi.nlm.nih.gov/pubmed/7873331>`_. Int. J. Food Microbiol.
 .. [Kaas1995] Kass, R., Raftery, A., 1995. `Bayes Factors <http://www.tandfonline.com/doi/abs/10.1080/01621459.1995.10476572>`_. J. Am. Stat. Assoc.
+.. [Gilpin1973] Gilpin, M. E., Ayala, F. J., 1973. `Global Models of Growth and Competition <https://dx.doi.org/10.1073/pnas.70.12.3590>`_. Proc. Nat. Acad. Sci. U S A.
+.. [Baty2004] Baty, Florent, and Marie-Laure Delignette-Muller. 2004. `Estimating the Bacterial Lag Time: Which Model, Which Precision? <http://linkinghub.elsevier.com/retrieve/pii/S016816050300429X>`_. Intl. J. Food Microbiol.
 
 Members
 -------
