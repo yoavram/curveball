@@ -503,16 +503,16 @@ class LRTestTestCase(TestCase):
 	# 	self.assertFalse(result)
 
 
-	def test_has_nu_baranyi_roberts_nu_01(self):
-		df = curveball.models.randomize(t=120, y0=0.1, K=1, r=0.75, nu=0.1, q0=0.1, v=0.1, reps=REPS, noise_std=NOISE_STD, random_seed=RANDOM_SEED)		
+	# def test_has_nu_baranyi_roberts_nu_01(self):
+	# 	df = curveball.models.randomize(t=120, y0=0.1, K=1, r=0.75, nu=0.1, q0=0.1, v=0.1, reps=REPS, noise_std=NOISE_STD, random_seed=RANDOM_SEED)		
 		
-		models,fig,ax = curveball.models.fit_model(df, PLOT=True, PRINT=True)
-		self.assertIsInstance(fig, matplotlib.figure.Figure)
-		filename = sys._getframe().f_code.co_name + ".png"
-		fig.savefig(filename)
-		self.assertTrue(check_image(filename))       
-		result = curveball.models.has_nu(models, PRINT=True)
-		self.assertTrue(result)
+	# 	models,fig,ax = curveball.models.fit_model(df, PLOT=True, PRINT=True)
+	# 	self.assertIsInstance(fig, matplotlib.figure.Figure)
+	# 	filename = sys._getframe().f_code.co_name + ".png"
+	# 	fig.savefig(filename)
+	# 	self.assertTrue(check_image(filename))       
+	# 	result = curveball.models.has_nu(models, PRINT=True)
+	# 	self.assertTrue(result)
 
 
 	def test_has_nu_baranyi_roberts_nu_5(self):
@@ -683,16 +683,18 @@ class IssuesTestCase(TestCase):
 	'''
 	_multiprocess_can_split_ = True
 
-
-	def test_covar_exists_issue27(self):  
-		'''`Issue 27 <https://github.com/yoavram/curveball/issues/27>`_.
-		'''
-		plate = pd.read_csv('plate_templates/G-RG-R.csv')
-		df = curveball.ioutils.read_tecan_xlsx('data/Tecan_280715.xlsx', plate=plate)
-		self.assertTrue('R' in df.Strain.unique())
-		df = df[df.Strain == 'R']
-		models_R = curveball.models.fit_model(df[df.Time<=16], PLOT=False, PRINT=False)
-		self.assertIsNotNone(models_R[0].covar) 
+	## I no longer care if covar is None; I can and should use bootstrap_params instead of sample_params
+	# def test_covar_exists_issue27(self):
+	# 	'''`Issue 27 <https://github.com/yoavram/curveball/issues/27>`_.
+	# 	'''
+	# 	plate = pd.read_csv('plate_templates/G-RG-R.csv')
+	# 	df = curveball.ioutils.read_tecan_xlsx('data/Tecan_280715.xlsx', plate=plate)
+	# 	self.assertTrue('R' in df.Strain.unique())
+	# 	df = df[df.Strain == 'R']
+	# 	models_R,fig,ax = curveball.models.fit_model(df[df.Time<=16], PLOT=True, PRINT=True)
+	# 	filename = sys._getframe().f_code.co_name + ".png"
+	# 	fig.savefig(filename)
+	# 	self.assertIsNotNone(models_R[0].covar)
 
 	## FIXME this is too hard, nu easiliy compensates for lag params
 
