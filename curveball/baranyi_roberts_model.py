@@ -587,6 +587,113 @@ class Logistic(BaranyiRoberts):
 		self.nested_models = {}
 
 
+def delayed_logistic_function(t, y0, K, r, lam):
+	"""See `DelayedLogistic`.
+
+	Parameters
+	----------
+	t : np.ndarray
+		time
+	y0, K, r, lam : float
+		model parameters
+	"""
+	y = np.empty(t.size)
+	y[t < lam] = y0
+	y[t >= lam] = K / ( 1 - (1 - K / y0) * np.exp(-r * (t - lam)) )
+	return y
+
+
+class DelayedLogistic(lmfit.model.Model):
+	r"""The delayed logistic growth model is an extension of the logistic that adds a lag phase by delaying time.
+
+	.. :math::
+
+		\frac{dN}{dt} = 0 if t < \lambda
+
+		\frac{dN}{dt} = r N \Big(1 - \frac{N}{K} \Big) if t >= \lambda \Rightarrow
+
+		N(t) = \frac{K}{1 - (1 \frac{K}{N_0}) e^{-r (t-\lambda)}
+
+	See also
+	--------
+	delayed_logistic_function
+	"""
+	def __init__(self, *args, **kwargs):
+		if args:
+			func, args = args[0], args[1:]
+		else:
+			func = delayed_logistic_function
+		super(DelayedLogistic, self).__init__(func, *args, **kwargs)
+		self.name = self.__class__.__name__
+		# self.nested_models = {
+		# 	'nu': LogisticLag2,
+		# 	'lag': Richards
+		# }
+
+	def guess(self, data, t, param_guess=None, param_min=None, param_max=None, param_fix=None):
+		"""Use heuristics to guess model parameters.
+
+		Parameters
+		----------
+		data : numpy.ndarray
+			population size or density data
+		t : numpy.ndarray
+			time, usually in hours
+		param_guess : dict, optional
+			mapping parameter names to values used as guesses to override the heuristic guess
+		param_min, param_max: dict, optional
+			mapping parameter names to values used to bound the parametrs in the fit procedure
+		param_fix : set, optional
+			names of parameters to fix at the guessed value, i.e., no to estimate in the fit procedure
+
+		Returns
+		-------
+		lmfit.parameter.Parameters
+			a dictionary of the model parameters ready to be used by the `fit` method
+
+		See also
+		--------
+		lmfit.model.Model.guess
+		"""	
+		if (sorted(t) != t).all():
+			raise ValueError("Time argument t must be sorted")
+
+		param_guess = dict() if param_guess is None else dict(param_guess)
+		param_min = dict() if param_min is None else dict(param_min)
+		param_max = dict() if param_max is None else dict(param_max)
+		param_fix = set() if param_fix is None else set(param_fix)
+		
+		if 'y0' not in param_guess:
+			param_guess['y0'] = np.min(data)
+		if 'K' not in param_guess:
+			param_guess['K'] = np.max(data)
+		# if 'nu' not in self.param_names:
+		# 	nu = 1.0
+		# elif 'nu' not in param_guess:
+			# guess_nu has not been performing well, just use 1.0
+			# param_guess['nu'] = guess_nu(t, data, K=param_guess['K'], PLOT=False, PRINT=False)
+		# 	param_guess['nu'] = 1.0 
+		# 	nu = param_guess['nu']
+		# else:
+		# 	nu = param_guess['nu']
+		if 'r' not in param_guess:
+			param_guess['r'] = guess_r(t, data, K=param_guess['K'], nu=1)
+		if 'lam' not in param_guess:
+			param_guess['lam'] = 0			
+
+		params = lmfit.parameter.Parameters()
+		for pname in self.param_names:		
+			params.add(
+				name 	= pname,
+				value 	= param_guess[pname],
+				min 	= param_min.get(pname, MIN_VALUES.get(pname, 0)),
+				max 	= param_max.get(pname, np.inf),
+				vary 	= pname not in param_fix
+			)
+			
+		return params
+
+
 if __name__ == '__main__':
 	def nvarys(params): 
 		return len([p for p in params.values() if p.vary])
