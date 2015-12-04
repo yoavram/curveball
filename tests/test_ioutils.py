@@ -17,6 +17,31 @@ import pkg_resources
 import curveball
 import pandas as pd
 
+
+RANDOM_SEED = int(os.environ.get('RANDOM_SEED', 0))
+
+
+class CurveballCSVTestCase(TestCase):
+    def setUp(self):
+        self.filename = pkg_resources.resource_filename("data", "Tecan_210115.csv")
+        self.plate = pd.read_csv(pkg_resources.resource_filename("plate_templates", "G-RG-R.csv"))
+
+    def test_read_curveball_csv(self):
+        df = curveball.ioutils.read_curveball_csv(self.filename)
+        self.assertIsNotNone(df)
+        self.assertIsInstance(df, pd.DataFrame)
+        self.assertEquals(df.shape, (4992, 9))
+        self.assertEquals(df.columns.tolist() , ['Time', u'Temp. [\xb0C]', 'Cycle Nr.', 'Well', 'OD', 'Row', 'Col', 'Strain', 'Color'])
+
+
+    def test_write_curveball_csv(self):
+        df = curveball.models.randomize(random_seed=RANDOM_SEED)
+        f, fn = tempfile.mkstemp()
+        curveball.ioutils.write_curveball_csv(df, fn)
+        df1 = pd.read_csv(fn)
+        pd.util.testing.assert_frame_equal(df, df1)
+
+
 class XLSXTestCase(TestCase):
     def setUp(self):
         self.filename = pkg_resources.resource_filename("data", "Tecan_210115.xlsx")

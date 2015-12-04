@@ -31,10 +31,10 @@ PROMPT = True
 ERROR_COLOR = 'red'
 INFO_COLOR = 'white'
 file_extension_handlers = {
-							'.mat': curveball.ioutils.read_tecan_mat, 
-							'.xlsx': curveball.ioutils.read_tecan_xlsx,
-							'.csv': curveball.ioutils.read_csv,
-						  }
+	'.mat': curveball.ioutils.read_tecan_mat, 
+	'.xlsx': curveball.ioutils.read_tecan_xlsx,
+	'.csv': curveball.ioutils.read_curveball_csv,
+}
 
 
 def echo_error(message):
