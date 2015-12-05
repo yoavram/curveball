@@ -10,7 +10,7 @@ on the different operating systems.
 Dependencies
 ------------
 
--  Python 3.4 and 2.7
+-  Python 3.4 or 2.7
 -  numpy
 -  scipy
 -  pandas

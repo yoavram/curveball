@@ -9,7 +9,6 @@
 # Copyright (c) 2015, Yoav Ram <yoav@yoavram.com>
 from __future__ import division
 from builtins import range
-from past.utils import old_div
 import warnings
 import copy
 import numpy as np
@@ -20,6 +19,7 @@ import lmfit
 import curveball
 import seaborn as sns
 sns.set_style("ticks")
+
 
 def _alfa(t, q0, v):
 	if np.isinf(q0) or np.isinf(v):
@@ -201,8 +201,10 @@ def double_baranyi_roberts_ode8(y, t, r, K, nu, q0, v):
 	return dydt
 
 
-def compete(m1, m2, y0=None, p0=(0.5, 0.5), t=None, hours=24, num_of_points=100, nsamples=1, lag_phase=True, ode=double_baranyi_roberts_ode1, 
-	params1=None, params2=None, ci=95, colors=None, ax=None, PLOT=False, sampler='covar', df1=None, df2=None):
+def compete(m1, m2, p0=(0.5, 0.5), y0=None, t=None, hours=24, num_of_points=100, 
+			nsamples=1, lag_phase=True, ode=double_baranyi_roberts_ode1, 
+			params1=None, params2=None, ci=95, colors=None, ax=None, PLOT=False, 
+			sampler='covar', df1=None, df2=None):
 	"""Simulate competitions between two strains using growth parameters estimated
 	by fitting growth models to growth curves data.
 
@@ -221,35 +223,48 @@ def compete(m1, m2, y0=None, p0=(0.5, 0.5), t=None, hours=24, num_of_points=100,
 	----------
 	m1, m2 : lmfit.model.ModelResult
 		model fitting results of growth models defined in :py:mod:`curveball.models`.
-	y0 : tuple, optional
-		initial population sizes/densities. Defaults to a tuple with twice the average of the ``y0`` parameter of `m1` and `m2`.
+	p0, y0 : tuple, optional
+		`p0` is the initial relative frequencies; `y0` is the initial population sizes. 
+		if `y0` is given than ``y0[0]`` and ``y0[0]`` are the initial population size for `m1` and `m2`, respectively.
+		if `y0` is not given, then it will be set to the average estimated `y0` in `m1` and `m2` multiplied by `p0`.
+	t : numpy.ndarray or None, optional
+		array of time points in which to calculate the population sizes.
 	hours : int, optional
-		how many hours should the competition proceed, defaults to 24.
+		if `t` is not given, determines how many hours should the competition proceed, defaults to 24.
+	num_of_points : int, optional
+		if `t` is not given, determines the number of time points to use, defaults to 100.
 	nsamples : int, optional
-		how many replicates of the competition should be simulated; if `nsamples` = 1, only one competition is simulated with the estimated parameters; otherwise `nsamples` competitions are simulated with parameters drawn from a distribution based on the covariance matrix of the parameter estimates (see :py:func:`curveball.models.sample_params`). Defaults to 1.
+		how many replicates of the competition should be simulated; 
+		if `nsamples` = 1, only one competition is simulated with the estimated parameters; 
+		otherwise `nsamples` competitions are simulated with parameters drawn from a parameter distribution 
+		determined by `sampler`. Defaults to 1.
 	lag_phase : bool, optional
-		if :py:const:`True`, use lag phase as given by `m1` and `m2`. Otherwise, override the lag phase parameters to prevent a lag phase. Defaults to :py:const:`True`.
+		if `True`, use lag phase as given by `m1` and `m2`. Otherwise, override the lag phase parameters to prevent a lag phase. Defaults to :const:`True`.
 	ode : func, optional
 		an ordinary differential systems system defined by a function that accepts ``y``, ``t``, and additional arguments, and returns the derivate of ``y`` with respect to ``t``. Defaults to :py:func:`.double_baranyi_roberts_ode0`.
 	params1, params2 : dict, optional
-		dictionaries of model parameter values; if given, overrides values from `m1` and `m2`.
-	num_of_points : int, optional
-		number of time points to use, defaults to 100.
+		dictionaries of model parameter values; if given, overrides values from `m1` and `m2`.	
 	ci : float, optional
-		confidence interval size, in (0, 100), only applicable when `PLOT` is :py:const:`True`, defaults to 95%.
+		confidence interval size, in (0, 100), only applicable when `PLOT` is :const:`True`, defaults to 95%.
 	colors : sequence of str, optional
-		if `PLOT` is :py:const:`True`, this sets the colors of the drawn lines. `colors[0]` will be used for `m1`; `colors[1]` for `m2`. If not provided, defaults to the current pallete.
+		if `PLOT` is :const:`True`, this sets the colors of the drawn lines. `colors[0]` will be used for `m1`; `colors[1]` for `m2`. If not provided, defaults to the current pallete.
 	ax : matplotlib.axes.Axes, optional
-		if `PLOT` is :py:const:`True`, an axes to plot into; if not provided, a new one is created.
+		if `PLOT` is :const:`True`, an axes to plot into; if not provided, a new one is created.
 	PLOT : bool, optional
-		if :py:const:`True`, the function will plot the curves of *y* as a function of *t*. Defaults to :py:const:`False`.
+		if :const:`True`, the function will plot the curves of *y* as a function of *t*. Defaults to :const:`False`.
+	sampler : str, optional
+		if ``covar``, the parameters will be sampled using the covariance matrix (:py:func:`curveball.models.sample_params`); 
+		if ``bootstrap`` the parameters will be sampled by resampling the growth curves (:py:func:`curveball.models.bootstrap_params`).
+	df1, df2 : pandas.DataFrame, optional
+		the data frames used to fit `m1` and `m2`, only used when `sampler` is ``bootstrap``.
 
 	Returns
 	-------
 	t : numpy.ndarray
 		1d (or 2d, if `nsamples`>1) array of time points, in hours.
 	y: numpy.ndarray
-		2d (or 3d, if `nsamples`>1) array of strain frequencies. First axis is time, second axis is strain, third axis (if applicable) is sample.
+		2d (or 3d, if `nsamples`>1) array of strain frequencies. 
+		First axis is time, second axis is strain, third axis (if applicable) is sample.
 	fig : matplotlib.figure.Figure
 		figure object.
 	ax : numpy.ndarray
@@ -262,8 +277,8 @@ def compete(m1, m2, y0=None, p0=(0.5, 0.5), t=None, hours=24, num_of_points=100,
 	AssertionError
 		if an intermediate calculation produced an invalid result (not guaranteed).
 
-	Example
-	-------
+	Examples
+	--------
 	>>> import pandas as pd
 	>>> import curveball
 	>>> plate = pd.read_csv('plate_templates/G-RG-R.csv')
@@ -384,7 +399,6 @@ def selection_coefs_ts(t, y, ax=None, PLOT=False):
 
 		s = \frac{d}{dt} \log{\frac{A(t)}{B(t)}}
 
-
 	Parameters
 	----------
 	t : numpy.ndarray
@@ -392,9 +406,9 @@ def selection_coefs_ts(t, y, ax=None, PLOT=False):
 	y : numpy.ndarray
 		array of population densities, as produced by :py:func:`compete`, where the first axis is time and the second axis is strain.
 	ax : matplotlib.axes.Axes, optional
-		if `PLOT` is :py:const:`True`, an axes to plot into; if not provided, a new one is created.    
+		if `PLOT` is :const:`True`, an axes to plot into; if not provided, a new one is created.    
 	PLOT : bool, optional
-		if :py:const:`True`, the function will plot the curve of *s* as a function of *t*.
+		if :const:`True`, the function will plot the curve of *s* as a function of *t*.
 
 	Returns
 	-------
@@ -402,8 +416,8 @@ def selection_coefs_ts(t, y, ax=None, PLOT=False):
 		the selection coefficients of the assay strain relative to the reference strain over time.
 	fig : matplotlib.figure.Figure
 		figure object.
-	ax : numpy.ndarray
-		array of :py:class:`matplotlib.axes.Axes` objects.
+	ax : numpy.ndarray of matplotlib.axes.Axes
+		array of axes objects.
 
 	Notes
 	-----
@@ -414,7 +428,7 @@ def selection_coefs_ts(t, y, ax=None, PLOT=False):
 	----------
 	.. [12] Chevin, L-M. 2011. `On Measuring Selection in Experimental Evolution <http://dx.doi.org/10.1098/rsbl.2010.0580>`_. Biology Letters.	
 	"""
-	svals = np.gradient(np.log(old_div(y[:,0],y[:,1])), t)
+	svals = np.gradient(np.log(y[:,0] / y[:,1]), t)
 	svals[np.isinf(svals)] = svals[np.isfinite(svals)].max()
 
 	if PLOT:
@@ -437,7 +451,7 @@ def fitness_LTEE(y, ref_strain=0, assay_strain=1, t0=0, t1=-1, ci=0):
 
 	.. math::
 
-		\omega = \frac{\log{(A(t)/A(0))}}{\log{(B(t)/B(0))}}
+		\omega = \frac{\log{(A(t) / A(0))}}{\log{(B(t) / B(0))}}
 
 	If `ci` > 0, treats the third axis of `y` as replicates (from a parameteric boostrap) to calculate the confidence interval on the fitness.
 
@@ -454,7 +468,7 @@ def fitness_LTEE(y, ref_strain=0, assay_strain=1, t0=0, t1=-1, ci=0):
 	t1 : int, optional
 		the index of the time point at which to end the calculation of the relative fitness, defaults to -1 (last).
 	ci : bool, optional
-		if :py:const:`True`, a confidence interval will be calculated using the third axis of `y` as replicates.
+		if :const:`True`, a confidence interval will be calculated using the third axis of `y` as replicates.
 	
 	Returns
 	-------
@@ -484,13 +498,12 @@ def fitness_LTEE(y, ref_strain=0, assay_strain=1, t0=0, t1=-1, ci=0):
 		raise ValueError()
 	w = np.zeros(y.shape[2])
 	for i in range(y.shape[2]):
-		At0, Bt0 = y[t0,assay_strain,i], y[t0,ref_strain,i]
-		At1, Bt1 = y[t1,assay_strain,i], y[t1,ref_strain,i]
-		w[i] = (old_div(np.log(old_div(At1,At0)), np.log(old_div(Bt1,Bt0))))
+		At0, Bt0 = y[t0, assay_strain, i], y[t0, ref_strain, i]
+		At1, Bt1 = y[t1, assay_strain, i], y[t1, ref_strain, i]
+		w[i] = np.log(At1 / At0) / np.log(Bt1 / Bt0)
 
 	if ci == 0:
 		return w.mean()
 	else:
 		margin = (1 - ci) * 50
 		return w.mean(), np.percentile(w, margin), np.percentile(w, ci * 100 + margin)
-

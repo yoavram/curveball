@@ -42,14 +42,19 @@ python setup.py develop
 
 ### Editing the documentation
 
-The documentation files are in the `docs` folder: `.rst` files are the source of the docs, `conf.py` is a configuration file.
-To build the documentation you need to install Sphinx:
+All documentation, including docstrings, is written in `reStructuredText  <http://sphinx-doc.org/rest.html>`_,
+which is just plain text with some markup to indicate text structure.
+The documentation files are in the `docs` folder: 
+`.rst` files are the source files of the documentation, 
+`conf.py` is a configuration file,
+the `_static` folder mostly has images and some other static assets.
+To build the documentation you need to install Sphinx and numpydoc:
 
 ```
-pip install --upgrade sphinx
+pip install sphinx numpydoc sphinx-rtd-theme
 ```
 
-You should use `pip` as it installs a more recent version than `conda` does.
+Docstrings and documentation follow the `numpy/scipy standard <https://github.com/numpy/numpy/blob/master/doc/HOWTO_DOCUMENT.rst.txt>`_.
 
 #### Building the documentation
 

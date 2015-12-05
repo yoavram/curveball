@@ -35,7 +35,7 @@ MIN_VALUES = {
 def lag(model_result=None, q0=None, v=None):
 	r"""Calculate lag duration from model Parameters.
 
-	Lag duration :math:`\lambda` is calculated as:
+	Lag duration :math:`\lambda` is calculated as [Baranyi1994]_:
 
 	.. math::
 
@@ -43,15 +43,13 @@ def lag(model_result=None, q0=None, v=None):
 
 	This definition follows from the Baranyi-Roberts model definition of :math:`A(t)`:
 
-		A(t) - t = \frac{1}{v} \log{\Big(\frac{e^{-vt} + q_0}{1 + q_0} \Big)} \to_{t \to \infty} t - \lambda
+	.. math::
 
-	See also
-	--------
-	baranyi_roberts_function
+		A(t) - t = \frac{1}{v} \log{\Big(\frac{e^{-vt} + q_0}{1 + q_0} \Big)} \to_{t \to \infty} \lambda
 
 	References
 	----------
-	.. [1] Baranyi, J., Roberts, T. A., 1994. `A dynamic approach to predicting bacterial growth in food <www.ncbi.nlm.nih.gov/pubmed/7873331>`_. Int. J. Food Microbiol.
+	.. [Baranyi1994] Baranyi, J., Roberts, T. A., 1994. `A dynamic approach to predicting bacterial growth in food <www.ncbi.nlm.nih.gov/pubmed/7873331>`_. Int. J. Food Microbiol.
 
 	"""
 	if model_result is not None:
@@ -65,7 +63,7 @@ def lag(model_result=None, q0=None, v=None):
 
 
 def baranyi_roberts_function(t, y0, K, r, nu, q0, v):
-	r"""The Baranyi-Roberts growth model is an extension of the logistic and Richards model that adds a lag phase [1]_.
+	r"""The Baranyi-Roberts growth model is an extension of the logistic and Richards model that adds a lag phase [Baranyi1994]_.
 
 	.. math::
 
@@ -107,7 +105,7 @@ def baranyi_roberts_function(t, y0, K, r, nu, q0, v):
 
 	References
 	----------
-	.. [1] Baranyi, J., Roberts, T. A., 1994. `A dynamic approach to predicting bacterial growth in food <www.ncbi.nlm.nih.gov/pubmed/7873331>`_. Int. J. Food Microbiol.
+	.. [Baranyi1994] Baranyi, J., Roberts, T. A., 1994. `A dynamic approach to predicting bacterial growth in food <www.ncbi.nlm.nih.gov/pubmed/7873331>`_. Int. J. Food Microbiol.
 	"""
 	if np.isposinf(v):
 		v = r
@@ -131,7 +129,7 @@ def smooth(x, y, PLOT=False, **kwargs):
 	y : numpy.ndarray
 		array of floats for the dependent variable
 	PLOT : bool, optional
-		if :py:const:`True`, plots a figure of the input and smoothed data, defaults to :py:const:`False`
+		if :const:`True`, plots a figure of the input and smoothed data, defaults to :const:`False`
 	kwargs : optional
 		extra keyword arguments passed to the smoothing function. Use `frac` (between 0 and 1) to control the fraction of the data used when estimating each y-value.
 
@@ -140,9 +138,13 @@ def smooth(x, y, PLOT=False, **kwargs):
 	yhat : numpy.ndarray
 		array of floats for the smoothed dependent variable
 	fig : matplotlib.figure.Figure
-		if the argument `PLOT` was :py:const:`True`, the generated figure.
+		if the argument `PLOT` was :const:`True`, the generated figure.
 	ax : matplotlib.axes.Axes
-		if the argument `PLOT` was :py:const:`True`, the generated axis.		
+		if the argument `PLOT` was :const:`True`, the generated axis.
+
+	See also
+	--------
+	statsmodels.nonparametric.smoothers_lowess : for more details on the lowess smoothing.
 	"""
 	if 'return_sorted' not in kwargs:
 		kwargs['return_sorted'] = False
@@ -160,7 +162,7 @@ def smooth(x, y, PLOT=False, **kwargs):
 def guess_nu(t, N, K=None, frac=0.1, PLOT=False, PRINT=False):
 	r"""Guesses the value of :math:`\nu` from the shape of the growth curve.
 
-	Following [4]_:
+	Following [Richards1959]_:
 
 	.. math::
 
@@ -183,22 +185,22 @@ def guess_nu(t, N, K=None, frac=0.1, PLOT=False, PRINT=False):
 	frac : float, optional
 		fraction of data to use when smoothing the derivative curve.
 	PLOT : bool, optional
-		if :py:const:`True`, the function will plot the calculations.
+		if :const:`True`, the function will plot the calculations.
 	PRINT : bool, optional
-		if :py:const:`True`, the function will print intermediate results of the calculations.
+		if :const:`True`, the function will print intermediate results of the calculations.
 
 	Returns
 	-------
 	x : float
 		the guess of :math:`\nu`.
 	fig : matplotlib.figure.Figure
-		if the argument `PLOT` was :py:const:`True`, the generated figure.
+		if the argument `PLOT` was :const:`True`, the generated figure.
 	ax : matplotlib.axes.Axes
-		if the argument `PLOT` was :py:const:`True`, the generated axis.
+		if the argument `PLOT` was :const:`True`, the generated axis.
 
 	References
 	----------
-	.. [4] Richards, F. J. 1959. `A Flexible Growth Function for Empirical Use <http://dx.doi.org/10.1093/jxb/10.2.290>`_. Journal of Experimental Botany
+	.. [Richards1959] Richards, F. J. 1959. `A Flexible Growth Function for Empirical Use <http://dx.doi.org/10.1093/jxb/10.2.290>`_. Journal of Experimental Botany
 	"""
 	t, N = np.array(t), np.array(N)
 	if K is None:
@@ -267,7 +269,7 @@ def guess_nu(t, N, K=None, frac=0.1, PLOT=False, PRINT=False):
 def guess_r(t, N, nu=None, K=None):
 	r"""Guesses the value of *r* from the shape of the growth curve.
 
-	Following [5]_:
+	Following [Richards1959]_:
 
 	.. math::
 
@@ -297,7 +299,7 @@ def guess_r(t, N, nu=None, K=None):
 
 	References
 	----------
-	.. [5] Richards, F. J. 1959. `A Flexible Growth Function for Empirical Use <http://dx.doi.org/10.1093/jxb/10.2.290>`_. Journal of Experimental Botany
+	.. [Richards1959] Richards, F. J. 1959. `A Flexible Growth Function for Empirical Use <http://dx.doi.org/10.1093/jxb/10.2.290>`_. Journal of Experimental Botany
 	"""
 	if K is None:
 		K = N.max()
@@ -336,11 +338,7 @@ def guess_q0_v(t, N, param_guess):
 
 
 class BaranyiRoberts(lmfit.model.Model):
-	"""The Baranyi-Roberts growth model is an extension of the logistic and Richards model that adds a lag phase.
-
-	See also
-	--------
-	baranyi_roberts_function
+	"""The Baranyi-Roberts growth model is an extension of the logistic and Richards model that adds a lag phase.	
 	"""
 
 	def __init__(self, *args, **kwargs):
@@ -367,7 +365,7 @@ class BaranyiRoberts(lmfit.model.Model):
 			time, usually in hours
 		param_guess : dict, optional
 			mapping parameter names to values used as guesses to override the heuristic guess
-		param_min, param_max: dict, optional
+		param_min, param_max : dict, optional
 			mapping parameter names to values used to bound the parametrs in the fit procedure
 		param_fix : set, optional
 			names of parameters to fix at the guessed value, i.e., no to estimate in the fit procedure
@@ -494,13 +492,13 @@ class BaranyiRoberts(lmfit.model.Model):
 
 
 class Richards(BaranyiRoberts):
-	"""The Richards model extends the logistic model by including the :math:`nu` parameter that controls the
-	curvature of the response of the growth rate to population size/density. Also knows as the *theta-logistic model*.
+	r"""The Richards model [Richards1959]_ extends the logistic model by including the :math:`nu` parameter that controls the
+	curvature of the response of the growth rate to population size/density. Also knows as the :math:`\theta`-logistic model[Gilpin1973]_.
 
-	Reference
-	---------
-	Richards, F. J. 1959. "A Flexible Growth Function for Empirical Use." Journal of Experimental Botany 10 (2): 290-301. doi:10.1093/jxb/10.2.290.
-	Gilpin, Michael E., and Francisco J. Ayala. 1973. "Global Models of Growth and Competition." Proceedings of the National Academy of Sciences of the United States of America 70 (12 Pt 1-2): 3590–3593. doi:10.1073/pnas.70.12.3590.
+	References
+	----------
+	.. [Richards1959] Richards, F. J. 1959. "A Flexible Growth Function for Empirical Use." Journal of Experimental Botany 10 (2): 290-301. doi:10.1093/jxb/10.2.290.
+	.. [Gilpin1973] Gilpin, Michael E., and Francisco J. Ayala. 1973. "Global Models of Growth and Competition." Proceedings of the National Academy of Sciences of the United States of America 70 (12 Pt 1-2): 3590–3593. doi:10.1073/pnas.70.12.3590.
 	"""
 	def __init__(self, *args, **kwargs):
 		def func(t, y0, K, r, nu):			
@@ -512,12 +510,6 @@ class Richards(BaranyiRoberts):
 
 class RichardsLag1(BaranyiRoberts):
 	r"""This is an extension of the :py:class:`Richards` that includes a single lag parameter :math:`q_0` (and sets :math:`v=r`).
-
-	See also
-	--------
-	BaranyiRoberts
-	Richards
-	RichardsLag2
 	"""
 	def __init__(self, *args, **kwargs):
 		def func(t, y0, K, r, nu, q0): 
@@ -529,13 +521,7 @@ class RichardsLag1(BaranyiRoberts):
 		}
 
 class LogisticLag2(BaranyiRoberts):
-	r"""This is an extension of the :py:class:`Logistic` model that includes a two lag parameters :math:`q_0` and :math:`v`).
-	
-	See also
-	--------
-	BaranyiRoberts
-	Logistic
-	LogisticLag1
+	r"""This is an extension of the :py:class:`Logistic` model that includes a two lag parameters :math:`q_0` and :math:`v`).	
 	"""
 	def __init__(self, *args, **kwargs):
 		def func(t, y0, K, r, q0, v): 
@@ -547,12 +533,6 @@ class LogisticLag2(BaranyiRoberts):
 
 class LogisticLag1(BaranyiRoberts):
 	r"""This is an extension of the :py:class:`Logistic` that includes a single lag parameter :math:`q_0` (and sets :math:`v=r`).
-
-	See also
-	--------
-	BaranyiRoberts
-	Richards
-	LogisticLag2
 	"""
 	def __init__(self, *args, **kwargs):
 		def func(t, y0, K, r, q0):
@@ -565,19 +545,12 @@ class LogisticLag1(BaranyiRoberts):
 class Logistic(BaranyiRoberts):
 	r"""This is the simplest growth model with a stationary phase, defined by the ODE:
 
-	.. :math::
+	.. math::
 	
 		\frac{dN}{dt} = r N \Big( 1 - \frac{N}{K} \Big)
-
-	See also
-	--------
-	BaranyiRoberts
-	Richards
-	LogisticLag1
-	LogisticLag2
-
-	References
-	----------
+	
+	Notes
+	-----
 	`Wikipedia <https://en.wikipedia.org/wiki/Logistic_function#In_ecology:_modeling_population_growth>`_
 	"""
 	def __init__(self, *args, **kwargs):

@@ -9,10 +9,8 @@
 # Copyright (c) 2015, Yoav Ram <yoav@yoavram.com>
 from __future__ import print_function
 from __future__ import division
-from builtins import filter
 from builtins import str
 from builtins import range
-from past.utils import old_div
 import sys
 import numbers
 from warnings import warn
@@ -33,14 +31,66 @@ import curveball.baranyi_roberts_model
 
 
 def is_model(cls):
+    """Returns :const:`True` if the input is a subclass of :py:class:`lmfit.model.Model`.
+
+    Parameters
+    ----------
+    cls : class
+
+    Returns
+    -------
+    bool
+    """
     return inspect.isclass(cls) and issubclass(cls, lmfit.model.Model)
 
 
 def get_models(module):
+    """Finds and returns all models in `module`.
+
+    Parameters
+    ----------
+    module : module
+        the module in which to look for models
+
+    Returns
+    -------
+    list
+        list of subclasses of :py:class:`lmfit.model.Model` that can be used with :py:func:`curveball.models.fit_model`
+
+    See also
+    --------
+    fit_model
+    is_model
+    curveball.baranyi_roberts_model
+    """
     return [m[1] for m in inspect.getmembers(module, curveball.models.is_model)]
 
 
 def bootstrap_params(df, model_class, nsamples, unit='Well'):
+    """Sample model parameters by fitting the model to resampled data.
+
+    The data is bootstraped by drawing growth curves (sampling from the `unit` column in `df`) with replacement.
+
+    Parameters
+    ----------
+    df : pandas.DataFrame
+        the data to fit
+    model_class : class
+        the class of the model to use, a subclass of :py:class:`lmfit.model.Model`
+    nsamples : int
+        number of samples to draw
+    unit : str, optional
+        the name of the column in `df` that identifies a resampling unit, defaults to ``Well``
+
+    Returns
+    -------
+    pandas.DataFrame
+        data frame of samples; each row is a sample, each column is a parameter.
+
+    See also
+    --------
+    sample_params
+    """
     if not is_model(model_class):
         raise TypeError("Input model_class must be a {0}, but it is {1}".format(lmfit.Model.__name__, 
                                                                                 model_class.__class__.__name__))
@@ -65,15 +115,19 @@ def sample_params(model_fit, nsamples, params=None, covar=None):
         the model fit that defines the sampled distribution
     nsamples : int
         number of samples to make
-    params: dict, optional
+    params : dict, optional
         a dictionary of model parameter values; if given, overrides values from `model_fit`
-    covar: numpy.ndarray, optional
+    covar : numpy.ndarray, optional
         an array containing the parameters covariance matrix; if given, overrides values from `model_fit`
 
     Returns
     -------
     pandas.DataFrame
         data frame of samples; each row is a sample, each column is a parameter.
+
+    See also
+    --------
+    bootstrap_params
     """
     if params is None:
         params = model_fit.params
@@ -145,7 +199,9 @@ def randomize(t=12, y0=0.1, K=1.0, r=0.1, nu=1.0, q0=np.inf, v=np.inf,
 def lrtest(m0, m1, alfa=0.05):
     r"""Performs a likelihood ratio test on two nested models.
 
-    For two models, one nested in the other (meaning that the nested model estimated parameters are a subset of the nesting model), the test statistic :math:`D` is:
+    For two models, one nested in the other 
+    (meaning that the nested model estimated parameters are a subset of the nesting model), 
+    the test statistic :math:`D` is:
 
     .. math::
 
@@ -157,19 +213,21 @@ def lrtest(m0, m1, alfa=0.05):
 
 
     where :math:`\Lambda` is the likelihood ratio, :math:`D` is the statistic, 
-    :math:`X_{i}` are the data points, :math:`\hat{X_i}(\theta)` is the model prediction with parameters :math:`\theta`, 
+    :math:`X_{i}` are the data points, :math:`\hat{X_i}(\theta)` is the 
+    model prediction with parameters :math:`\theta`, 
     :math:`\theta_i` is the parameters estimation for model :math:`i`, 
-    :math:`n` is the number of data points, and :math:`\Delta` is the difference in number of parameters between the models.
+    :math:`n` is the number of data points, and :math:`\Delta` is the 
+    difference in number of parameters between the models.
 
     The function compares between two :py:class:`lmfit.model.ModelResult` objects. 
-    These are the results of fitting models to the same data set using the `lmfit <lmfit.github.io/lmfit-py>`_ package
+    These are the results of fitting models to the same dataset 
+    using the `lmfit <lmfit.github.io/lmfit-py>`_ package.
 
     The function compares between model fit `m0` and `m1` and assumes that `m0` is nested in `m1`, 
     meaning that the set of varying parameters of `m0` is a subset of the varying parameters of `m1`. 
-    The property ``chisqr`` of the :py:class:`lmfit.model.ModelResult` objects is 
-    the sum of the square of the residuals of the fit. 
-    ``ndata`` is the number of data points. 
-    ``nvarys`` is the number of varying parameters.
+    :py:attr:`lmfit.model.ModelResult.chisqr` is the sum of the square of the residuals of the fit. 
+    :py:attr:`lmfit.model.ModelResult.ndata` is the number of data points. 
+    :py:attr:`lmfit.model.ModelResult.nvarys` is the number of varying parameters.
 
     Parameters
     ----------
@@ -189,11 +247,10 @@ def lrtest(m0, m1, alfa=0.05):
     ddf : int 
         the number of degrees of freedom
 
-    See also
-    --------
-    `Generalised Likelihood Ratio Test Example <http://www.stat.sc.edu/~habing/courses/703/GLRTExample.pdf>`_
-
-    `IPython notebook <http://nbviewer.ipython.org/github/yoavram/ipython-notebooks/blob/master/likelihood%20ratio%20test.ipynb>`_
+    Notes
+    ----------
+    - `Generalised Likelihood Ratio Test Example <http://www.stat.sc.edu/~habing/courses/703/GLRTExample.pdf>`_.
+    - `IPython notebook <http://nbviewer.ipython.org/github/yoavram/ipython-notebooks/blob/master/likelihood%20ratio%20test.ipynb>`_.
     """
     n0 = m0.ndata
     k0 = m0.nvarys
@@ -204,7 +261,7 @@ def lrtest(m0, m1, alfa=0.05):
     k1 = m1.nvarys
     chisqr1 = m1.chisqr
     assert chisqr1 > 0, chisqr1
-    D = -n0 * (np.log(m1.chisqr)-np.log(m0.chisqr))
+    D = -n0 * (np.log(m1.chisqr) - np.log(m0.chisqr))
     assert D > 0, D
     ddf = k1 - k0
     assert ddf > 0, ddf
@@ -249,7 +306,7 @@ def find_max_growth(model_fit, after_lag=True):
     model_fit : lmfit.model.ModelResult
         the result of a model fitting procedure
     after_lag : bool
-        if true, only explore the time after the lag phase. Otherwise start at time zero. Defaults to :py:const:`True`.
+        if true, only explore the time after the lag phase. Otherwise start at time zero. Defaults to :const:`True`.
 
     Returns
     -------
@@ -297,7 +354,7 @@ def find_lag(model_fit, params=None):
 
     The function calculates the tangent line to the model curve at the point of maximum derivative (the inflection point). 
     The time when this line intersects with :math:`N_0` (the initial population size) 
-    is labeled :math:`\lambda` and is called the lag duration time [2]_.
+    is labeled :math:`\lambda` and is called the lag duration time [fig2.2]_.
 
     Parameters
     ----------
@@ -313,12 +370,12 @@ def find_lag(model_fit, params=None):
 
     References
     ----------
-    .. [2] Fig. 2.2 pg. 19 in Baranyi, J., 2010. `Modelling and parameter estimation of bacterial growth with distributed lag time. <http://www2.sci.u-szeged.hu/fokozatok/PDF/Baranyi_Jozsef/Disszertacio.pdf>`_.
+    .. [fig2.2] Fig. 2.2 pg. 19 in Baranyi, J., 2010. `Modelling and parameter estimation of bacterial growth with distributed lag time. <http://www2.sci.u-szeged.hu/fokozatok/PDF/Baranyi_Jozsef/Disszertacio.pdf>`_.
 
     See also
     --------
-    :py:func:`find_lag_ci`,
-    :py:func:`has_lag`
+    find_lag_ci
+    has_lag
     """
     if params is None:
         params = model_fit.params
@@ -374,9 +431,8 @@ def find_lag_ci(model_fit, nsamples=1000, ci=0.95):
 
     See also
     --------
-    :py:func:`find_lag`,
-    :py:func:`has_lag`,
-    :py:func:`sample_params`
+    find_lag
+    has_lag    
     """
     lam = find_lag(model_fit)
     if not 0 <= ci <= 1:
@@ -406,29 +462,29 @@ def find_lag_ci(model_fit, nsamples=1000, ci=0.95):
 def has_lag(model_fits, alfa=0.05, PRINT=False):
     r"""Checks if if the best fit has statisticaly significant lag phase :math:`\lambda > 0`.
 
-    If the best fitted model doesn't has a lag phase to begin with, return :py:const:`False`. 
+    If the best fitted model doesn't has a lag phase to begin with, return :const:`False`. 
     This includes the logistic model and Richards model.
 
     Otherwise, a likelihood ratio test will be perfomed with nesting determined according to Figure 1. 
     The null hypothesis of the test is that :math:`\frac{1}{v} = 0` , 
     i.e. the adjustment rate :math:`v` is infinite and therefore there is no lag phase.
 
-    If the null hypothesis is rejected than the function will return :py:const:`True`.
-    Otherwise it will return :py:const:`False`.
+    The function will return :const:`True` if the null hypothesis is rejected, 
+    otherwise it will return :const:`False`.
 
     Parameters
     ----------
-    model_fits : list lmfit.model.ModelResult
+    model_fits : sequence of lmfit.model.ModelResult
         the results of several model fitting procedures, ordered by their statistical preference. Generated by :py:func:`fit_model`.
     alfa : float, optional
         test significance level, defaults to 0.05 = 5%.
     PRINT : bool, optional
-        if :py:const:`True`, the function will print the result of the underlying statistical test; defaults to :py:const:`False`.
+        if :const:`True`, the function will print the result of the underlying statistical test; defaults to :const:`False`.
 
     Returns
     -------
     bool
-        the result of the hypothesis test. :py:const:`True` if the null hypothesis was rejected and the data suggest that there is a significant lag phase.
+        the result of the hypothesis test. :const:`True` if the null hypothesis was rejected and the data suggest that there is a significant lag phase.
 
     Raises
     ------
@@ -459,10 +515,10 @@ def has_lag(model_fits, alfa=0.05, PRINT=False):
 def has_nu(model_fits, alfa=0.05, PRINT=False):
     r"""Checks if if the best fit has :math:`\nu \ne 1` and if so if that is statisticaly significant.
 
-    If the best fitted model has :math:`\nu = 1` to begin with, return :py:const:`False`. This includes the logistic model.
+    If the best fitted model has :math:`\nu = 1` to begin with, return :const:`False`. This includes the logistic model.
     Otherwise, a likelihood ratio test will be perfomed with nesting determined according to Figure 1. 
-    The null hypothesis of the test is that :math:`\nu = 1`; if it is rejected than the function will return :py:const:`True`.
-    Otherwise it will return :py:const:`False`.
+    The null hypothesis of the test is that :math:`\nu = 1`; if it is rejected than the function will return :const:`True`.
+    Otherwise it will return :const:`False`.
 
     Parameters
     ----------
@@ -471,12 +527,12 @@ def has_nu(model_fits, alfa=0.05, PRINT=False):
     alfa : float, optional
         test significance level, defaults to 0.05 = 5%.
     PRINT : bool, optional
-        if :py:const:`True`, the function will print the result of the underlying statistical test; defaults to :py:const:`False`.
+        if :const:`True`, the function will print the result of the underlying statistical test; defaults to :const:`False`.
 
     Returns
     -------
     bool
-        the result of the hypothesis test. :py:const:`True` if the null hypothesis was rejected and the data suggest that :math:`\nu` is significantly different from one.
+        the result of the hypothesis test. :const:`True` if the null hypothesis was rejected and the data suggest that :math:`\nu` is significantly different from one.
 
     Raises
     ------
@@ -534,15 +590,15 @@ def cooks_distance(df, model_fit, use_weights=True):
     model_fit : lmfit.model.ModelResult
         result of model fitting procedure
     use_weights : bool, optional
-        should the function use standard deviation across replicates as weights for the fitting procedure, defaults to :py:const:`True`.
+        should the function use standard deviation across replicates as weights for the fitting procedure, defaults to :const:`True`.
 
     Returns
     -------
     dict
         a dictionary of Cook's distances: keys are wells (from the `Well` column in `df`), values are Cook's distances.
 
-    See also
-    --------
+    Notes
+    -----
     `Wikipedia <https://en.wikipedia.org/wiki/Cook's_distance>`_
     """
     p = model_fit.nvarys
@@ -578,20 +634,20 @@ def find_outliers(df, model_fit, deviations=2, use_weights=True, ax=None, PLOT=F
     deviations : float, optional
         the number of standard deviations that defines an outlier, defaults to 2.
     use_weights : bool, optional
-        should the function use standard deviation across replicates as weights for the fitting procedure, defaults to :py:const:`True`.
+        should the function use standard deviation across replicates as weights for the fitting procedure, defaults to :const:`True`.
     ax : matplotlib.axes.Axes, optional
         an axes to plot into; if not provided, a new one is created.
     PLOT : bool, optional
-        if :py:const:`True`, the function will plot the Cook's distances of the wells and the threshold.
+        if :const:`True`, the function will plot the Cook's distances of the wells and the threshold.
 
     Returns
     -------
     outliers : list
         the labels of the outlier wells.
     fig : matplotlib.figure.Figure
-        if the argument `PLOT` was :py:const:`True`, the generated figure.
+        if the argument `PLOT` was :const:`True`, the generated figure.
     ax : matplotlib.axes.Axes
-        if the argument `PLOT` was :py:const:`True`, the generated axis.
+        if the argument `PLOT` was :const:`True`, the generated axis.
     """
     D = cooks_distance(df, model_fit, use_weights=use_weights)
     D = sorted(D.items()) # TODO SortedDict?
@@ -635,20 +691,20 @@ def find_all_outliers(df, model_fit, deviations=2, max_outlier_fraction=0.1, use
     max_outlier_fraction : float, optional
         maximum fraction of wells to define as outliers, defaults to 0.1 = 10%.
     use_weights : bool, optional
-        should the function use standard deviation across replicates as weights for the fitting procedure, defaults to :py:const:`True`.
+        should the function use standard deviation across replicates as weights for the fitting procedure, defaults to :const:`True`.
     ax : matplotlib.axes.Axes
         an axes to plot into; if not provided, a new one is created.
     PLOT : bool, optional
-        if :py:const:`True`, the function will plot the Cook's distances of the wells and the threshold.
+        if :const:`True`, the function will plot the Cook's distances of the wells and the threshold.
 
     Returns
     -------
     outliers : list
         a list of lists: the list nested at index *i* contains the labels of the outlier wells found at iteration *i*.
     fig : matplotlib.figure.Figure
-        if the argument `PLOT` was :py:const:`True`, the generated figure.
+        if the argument `PLOT` was :const:`True`, the generated figure.
     ax : matplotlib.axes.Axes
-        if the argument `PLOT` was :py:const:`True`, the generated axis.
+        if the argument `PLOT` was :const:`True`, the generated axis.
     """
     outliers = []
     num_wells = len(df.Well.unique())
@@ -674,8 +730,26 @@ def find_all_outliers(df, model_fit, deviations=2, max_outlier_fraction=0.1, use
 
 
 def calc_weights(df, PLOT=False):
-    """If there is more than one replicate, use the standard deviations as weight.
+    """Calculate weights for the fittiing procedure based on the standard deviations at each time point.
+
+    If there is more than one replicate, use the standard deviations as weight.
     Warn about NaN and infinite values.
+
+    Parameters
+    ----------
+    df : pandas.DataFrame
+        data frame with `Time` and `OD` columns
+    PLOT : bool, optional
+        if :const:`True`, plot the weights by time
+
+    Returns
+    -------
+    weights : np.ndarray
+        array of weights, calculated as the inverse of the standard deviations at each time point
+    fig : matplotlib.figure.Figure
+        if the argument `PLOT` was :const:`True`, the generated figure.
+    ax : matplotlib.axes.Axes
+        if the argument `PLOT` was :const:`True`, the generated axis.
     """
     deviations = df.groupby('Time').OD.transform(lambda x: np.repeat(x.std(), len(x))).as_matrix()
     if np.isnan(deviations).any():
@@ -703,7 +777,7 @@ def calc_weights(df, PLOT=False):
 
 
 def information_criteria_weights(results):
-    """Calculate weighted AIC and BIC for model results.
+    r"""Calculate weighted AIC and BIC for model results.
 
     .. :math::
 
@@ -715,8 +789,11 @@ def information_criteria_weights(results):
     Parameters
     ----------
     results : sequence of lmfit.model.ModelResult
-        use the :py:member:`lmfit.attr.ModelResult.aic` and :py:attr:`lmfit.model.ModelResult.bic` attributes
-        to add a `weighted_aic` and `weighted_bic` attribute.
+        use the :py:attr:`lmfit.attr.ModelResult.aic` and :py:attr:`lmfit.model.ModelResult.bic` attributes to add a `weighted_aic` and `weighted_bic` attribute.
+
+    Notes
+    -----
+    - `Weighted AIC explained <http://stats.stackexchange.com/questions/35010/aic-bic-number-interpretation/44360#44360>`_.
     """
     aics = np.array([m.aic for m in results])
     bics = np.array([m.bic for m in results])
@@ -733,7 +810,8 @@ def nvarys(params):
     return len([p for p in params.values() if p.vary])
 
 
-def fit_model(df, ax=None, param_guess=None, param_min=None, param_max=None, param_fix=None, models=None, use_weights=False, use_Dfun=False, method='leastsq', PLOT=True, PRINT=True):
+def fit_model(df, param_guess=None, param_min=None, param_max=None, param_fix=None, 
+              models=None, use_weights=False, use_Dfun=False, method='leastsq', ax=None, PLOT=True, PRINT=True):
     r"""Fit and select a growth model to growth curve data.
 
     This function fits several growth models to growth curve data (``OD`` as a function of ``Time``).
@@ -742,8 +820,6 @@ def fit_model(df, ax=None, param_guess=None, param_min=None, param_max=None, par
     ----------
     df : pandas.DataFrame
         growth curve data, see :py:mod:`curveball.ioutils` for a detailed definition.
-    ax : matplotlib.axes.Axes, optional
-        an axes to plot into; if not provided, a new one is created.
     param_guess : dict, optional
         a dictionary of parameter guesses to use (key: :py:class:`str` of param name; value: :py:class:`float` of param guess).
     param_min : dict, optional
@@ -753,21 +829,25 @@ def fit_model(df, ax=None, param_guess=None, param_min=None, param_max=None, par
     param_fix : set, optional
         a set of names (:py:class:`str`) of parameters to fix rather then vary, while fitting the models.
     use_weights : bool, optional
-        should the function use the deviation across replicates as weights for the fitting procedure, defaults to :py:const:`False`.
+        should the function use the deviation across replicates as weights for the fitting procedure, defaults to :const:`False`.
     use_Dfun : bool, optional
-        should the function calculate the partial derivatives of the model functions to be used in the fitting procedure, defaults to :py:const:`False`.
+        should the function calculate the partial derivatives of the model functions to be used in the fitting procedure, defaults to :const:`False`.
+    models : one or more model classes, optional
+        model classes (not instances) to use for fitting; defaults to all model classes in `curveball.baranyi_roberts_model`.
     method : str, optional
         the minimization method to use, defaults to `leastsq`, 
         can be anything accepted by :py:func:`lmfit.minimizer.Minimizer.minimize` or :py:func:`lmfit.minimizer.Minimizer.scalar_minimize`.
+    ax : matplotlib.axes.Axes, optional
+        an axes to plot into; if not provided, a new one is created.
     PLOT : bool, optional
-        if :py:const:`True`, the function will plot the all model fitting results.
+        if :const:`True`, the function will plot the all model fitting results.
     PRINT : bool, optional
-        if :py:const:`True`, the function will print the all model fitting results.
+        if :const:`True`, the function will print the all model fitting results.
 
     Returns
     -------
-    models : list
-        a list of :py:class:`lmfit.model.ModelResult` objects, sorted by the fitting quality.
+    models : list of lmfit.model.ModelResult
+        all model fitting results, sorted by increasing BIC (a measure of fit quality).
     fig : matplotlib.figure.Figure
         figure object.
     ax : numpy.ndarray
@@ -782,17 +862,14 @@ def fit_model(df, ax=None, param_guess=None, param_min=None, param_max=None, par
     AssertionError
         if any of the intermediate calculated values are inconsistent (for example, ``y0<0``).
 
-    Example
-    -------
+    Examples
+    --------
     >>> import curveball
     >>> import pandas as pd
+    >>> import matplotlib.pyplot as plt
     >>> plate = pd.read_csv('plate_templates/G-RG-R.csv')
     >>> df = curveball.ioutils.read_tecan_xlsx('data/Tecan_280715.xlsx', label='OD', plate=plate)
-    >>> green_models = curveball.models.fit_model(df[df.Strain == 'G'])
-
-    See also
-    --------
-    calc_weights
+    >>> green_models = curveball.models.fit_model(df[df.Strain == 'G'], PLOT=True)
     """
     if not isinstance(df, pd.DataFrame):
         raise TypeError("Input df must be a %s, but it is %s" % (pd.DataFrame.__name__, df.__class__.__name__))

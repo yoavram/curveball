@@ -46,10 +46,10 @@ def _fix_dtypes(df):
     None
     """
     if u'Strain' in df.columns:
-        df[u'Strain'] = df[u'Strain'].astype('category')
+        df[u'Strain'] = df[u'Strain'].astype(str)
     for col in df.columns:
         if df[col].dtype == object:
-            df[col] = df[col].astype('category')
+            df[col] = df[col].astype(str)
     
 
 def read_curveball_csv(filename, plate=None):
@@ -66,8 +66,8 @@ def read_curveball_csv(filename, plate=None):
     -------
     pandas.DataFrame
 
-    Example
-    -------    
+    Examples
+    --------   
     >>> df = curveball.ioutils.read_curveball_csv("data/Tecan_210115.csv")
     """
     df = pd.read_csv(filename, encoding='utf8')
@@ -129,8 +129,8 @@ def read_tecan_xlsx(filename, label=u'OD', sheets=None, max_time=None, plate=Non
     ValueError
         if not data was parsed from the file.
 
-    Example
-    -------
+    Examples
+    --------
     
     >>> plate = pd.read_csv("plate_templates/G-RG-R.csv")
     >>> df = curveball.ioutils.read_tecan_xlsx("data/Tecan_210115.xlsx", label=('OD','Green','Red'), max_time=12, plate=plate)
@@ -335,8 +335,8 @@ def read_tecan_xml(filename, label=u'OD', max_time=None, plate=None):
 
     There will also be a separate column for the value of the label.
 
-    Example
-    -------    
+    Examples
+    --------    
 
     >>> import zipfile
     >>> with zipfile.ZipFile("data/20130211_dh.zip") as z:

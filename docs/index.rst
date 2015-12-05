@@ -7,11 +7,12 @@ Curveball: Predicting competition results from growth curves
 ============================================================
 
 |Anaconda| |Install| |Supported Python versions| |License| 
-|Build Status| |Docs| |codecov.io| |Join the chat at https://gitter.im/yoavram/curveball|
+|Build Status| |Docs| |codecov.io| 
+|Code Issues| |Join the chat at https://gitter.im/yoavram/curveball|
 
 **Author**: `Yoav Ram <http://www.yoavram.com>`_
 
-Curveball is an open source software for analysis and 
+Curveball is an open-source software for analysis and  
 visualization of high-throughput growth curve data 
 and prediction of competition experiment results.
 
@@ -25,8 +26,10 @@ Curveball:
 Who is this for?
 ----------------
 
-Curveball is for researchers who want to analyze growth curve data using a framework that integrates **population dynamics** and **population genetics**,
-allowing the inference and interpretation of **differences in fitness** between strains in terms of **differences in growth traits**.
+Curveball is for researchers who want to analyze growth curve data using 
+a framework that integrates **population dynamics** and **population genetics**,
+allowing the inference and interpretation of **differences in fitness** 
+between strains in terms of **differences in growth traits**.
 
 Curveball provides a **command line interface** (CLI) and an **programmatic interface** (API) 
 that can directly work with collections of growth curve measurements (e.g., 96-well plates).
@@ -66,8 +69,11 @@ Contents:
    ioutils
    plots
    models
+   baranyi_roberts_model
+   likelihood
    competitions
    cli
+   troubleshooting
 
 API
 ---
@@ -84,6 +90,7 @@ Resources:
 * Bugs & feature requests: `GitHub Issues <https://github.com/yoavram/curveball/issues>`_
 * Buildbot: `Travis-CI <https://magnum.travis-ci.com/yoavram/curveball>`_
 * Code coverage: `Codecov <http://codecov.io/github/yoavram/curveball>`_
+* Code quality: `quantifiedcode <https://www.quantifiedcode.com/app/project/fb3dfaa863494b8fa9e3242c542304f6>`_
 * `Change log <https://github.com/yoavram/curveball/tree/master/CHANGELOG.md>`_
 * `Contributing <https://github.com/yoavram/curveball/blob/master/CONTRIBUTING.md>`_
 
@@ -107,6 +114,8 @@ Resources:
    :target: https://curveball.divshot.io
 .. |codecov.io| image:: http://codecov.io/github/yoavram/curveball/coverage.svg?branch=master&token=PV0HysT5gx
    :target: http://codecov.io/github/yoavram/curveball?branch=master
+.. |Code Issues| image:: https://www.quantifiedcode.com/api/v1/project/fb3dfaa863494b8fa9e3242c542304f6/badge.svg
+   :target: https://www.quantifiedcode.com/app/project/fb3dfaa863494b8fa9e3242c542304f6
 .. |Join the chat at https://gitter.im/yoavram/curveball| image:: https://badges.gitter.im/Join%20Chat.svg
    :target: https://gitter.im/yoavram/curveball?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge
 

@@ -26,7 +26,7 @@ sys.path.insert(0, os.path.abspath('_ext'))
 # -- General configuration ------------------------------------------------
 
 # If your documentation needs a minimal Sphinx version, state it here.
-#needs_sphinx = '1.0'
+# needs_sphinx = '1.3.1'
 
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
@@ -37,7 +37,7 @@ extensions = [
     'sphinx.ext.coverage',
     'sphinx.ext.mathjax',
     'sphinx.ext.viewcode',
-    'sphinx.ext.napoleon', # http://sphinx-doc.org/ext/napoleon.html
+    'numpydoc', # https://pypi.python.org/pypi/numpydoc    
     'edit_on_github', # https://gist.github.com/MantasVaitkunas/7c16de233812adcb7028#file-edit_on_github-py-L38-L43
 ]
 
@@ -378,16 +378,15 @@ intersphinx_mapping = {
                       'python': ('https://docs.python.org/', None),
                       'lmfit': ('http://lmfit.github.io/lmfit-py/', None),
                       'numpy': ('http://docs.scipy.org/doc/numpy/', None),
-                      'pandas': ('http://pandas.pydata.org/pandas-docs/version/0.16.2/', None),
+                      'pandas': ('http://pandas.pydata.org/pandas-docs/version/0.17.1/', None),
                       'matplotlib': ('http://matplotlib.org/', None),
-                      'click': ('http://click.pocoo.org/5/', None),
+                      'click': ('http://click.pocoo.org/6/', None),
                       'seaborn': ('http://stanford.edu/~mwaskom/software/seaborn/', None),
                       'scipy': ('http://docs.scipy.org/doc/scipy/reference', None),
                       }
 
-# Napoleon settings
-napoleon_numpy_docstring = True
-
 # Edit on GitHub - https://gist.github.com/MantasVaitkunas/7c16de233812adcb7028#file-edit_on_github-py-L38-L43
 edit_on_github_project = 'yoavram/curveball'
 edit_on_github_branch = 'master'
+
+# numpydoc

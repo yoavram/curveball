@@ -86,7 +86,7 @@ On **Windows**:
 
 >>> mkdir curveball-tutorial
 >>> cd curveball-tutorial
->>> copy PATH\..\data\Tecan_280715.xlsx curveball-tutorial\.
+>>> copy PATH\..\data\Tecan_280715.xlsx .
 1 file(s) copied.
 
 
@@ -95,7 +95,7 @@ On **Linux** and **OS X**:
 
 >>> mkdir curveball-tutorial
 >>> cd curveball-tutorial
->>> cp PATH/../data/Tecan_280715.xlsx curveball-tutorial/.
+>>> cp PATH/../data/Tecan_280715.xlsx .
 
 
 Analysing the data
@@ -132,28 +132,28 @@ It will result in the creation of several figures (in ``.png`` files):
 
 .. figure:: /_static/Tecan_280715_wells.png
 
-	:file:`Tecan_280715_wells.png`, showing the growth curve in each well of the plate. 	
+	showing the growth curve in each well of the plate. 	
 
 
 .. _fig-strains:
 
 .. figure:: /_static/Tecan_280715_strains.png
 
-	:file:`Tecan_280715_strains.png`, showing the mean curve of each strain. 	
+	showing the mean curve of each strain. 	
 
 
 .. _fig-strain-G:
 
 .. figure:: /_static/Tecan_280715_strain_G.png
 
-	:file:`Tecan_280715_strain_G.png`, showing the model fitting and selection plot of strain G.
+	showing the model fitting and selection plot of strain G.
 
 
 .. _fig-R_vs_G:
 
 .. figure:: /_static/Tecan_280715_R_vs_G.png
 
-	:file:`Tecan_280715_R_vs_G.png`, showing the results of the simulated competition.
+	showing the results of the simulated competition.
 
 
 Also, it prints out a table that contains a summary for each strain,
@@ -161,15 +161,8 @@ including all the growth parameters estimated by Curveball.
 
 Here is the summary table:
 
-
-================== ================== ================== ================== ================== =================== ========= =================== ============ ====== ======= ====== ================== ================== =============================== ====== ===================== ================== ====== ================ ================== ====================== 
-CV(RMSD)           K                  NRMSD              RMSD               RSS                aic                 benchmark bic                 filename     folder has_lag has_nu lag                max_growth_rate    model                           nu     q0                    r                  strain v                w                  y0                     
-================== ================== ================== ================== ================== =================== ========= =================== ============ ====== ======= ====== ================== ================== =============================== ====== ===================== ================== ====== ================ ================== ====================== 
-1.7028857795077685 0.4769751053497271 1.175407322220409  0.6098012987448757 38.67319289089746  -93.83728008632407  True      -85.90410738889996  Tecan_280715        False   False  3.579842904093281  0.6310154510844753 Model(logistic_function)        1.0    0.0                   0.6930950455906393 G      0.0              1.0                0.005157266632801694   
-1.2252369450580851 0.6055132402735754 0.8407580808664133 0.5719677013759472 34.023293347397605 -104.12497893915484 True      -93.54741534258935  Tecan_280715        False   True   2.4685799566489632 1.3088956668222909 Model(richards_function)        0.0001 0.0                   4566.720634139815  RG     0.0              1.6479257308833295 0.00010000077914185113 
-0.6950659317256362 0.570718301115291  0.4474269550613505 0.314093722266387  10.260106102184043 -222.69724695434638 True      -206.83090155949816 Tecan_280715        True    True   2.326713585671191  1.5242441314315438 Model(baranyi_roberts_function) 0.0001 0.0001000169778643555 5230.304087016137  R      45.4960566138844 1.7914023961185985 0.000100000290268909   
-================== ================== ================== ================== ================== =================== ========= =================== ============ ====== ======= ====== ================== ================== =============================== ====== ===================== ================== ====== ================ ================== ====================== 
-
+.. csv-table:: 
+  :file: _static/summary.csv
 
 .. note::
   
