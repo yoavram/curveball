@@ -24,13 +24,13 @@ before_install:
   - conda config --add channels yoavram
   - conda config --set always_yes true
   - conda config --set anaconda_upload no
-  - pip install codecov
+  - pip install codecov | cat
 
 # Install packages
 install:
   - conda install -q python=$TRAVIS_PYTHON_VERSION pip requests conda-build jinja2 anaconda-client atlas numpy scipy matplotlib dateutil pandas statsmodels lxml seaborn sympy xlrd lmfit coverage nose pillow
-  - conda build conda-recipe
-  - conda install --use-local curveball
+  - conda build -q conda-recipe
+  - conda install --use-local -q curveball
 
 # Run test
 script:
@@ -45,7 +45,7 @@ after_success:
 
 before_deploy:
 # Build docs
-  - pip install --upgrade sphinx sphinx-rtd-theme numpydoc
+  - pip install --upgrade sphinx sphinx-rtd-theme numpydoc | cat
   - cd docs
   - make html
   - cd ..
