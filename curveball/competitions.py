@@ -310,8 +310,12 @@ def compete(m1, m2, p0=(0.5, 0.5), y0=None, t=None, hours=24, num_of_points=100,
 				warnings.warn("Bootstrap sampling doesn't support params1 and params2 arguments")
 			if df1 is None or df2 is None:
 				raise ValueError("Bootstrap sampling requires kwargs df1 and df2")
-			m1_samples = curveball.models.bootstrap_params(df1, m1.model.__class__, nsamples)
-			m2_samples = curveball.models.bootstrap_params(df2, m2.model.__class__, nsamples)
+			m1_fixed = {pname for pname,p in m1.params.items() if not p.vary}
+			m2_fixed = {pname for pname,p in m2.params.items() if not p.vary}
+			m1_samples = curveball.models.bootstrap_params(df1, m1.model.__class__, nsamples, 
+														   fit_kws={'param_fix': m1_fixed})
+			m2_samples = curveball.models.bootstrap_params(df2, m2.model.__class__, nsamples,
+														   fit_kws={'param_fix': m2_fixed})
 		else:
 			raise ValueError("Unknow sampler method: {0}".format(sampler))
 		min_nsamples = min(len(m1_samples), len(m2_samples))
@@ -360,11 +364,11 @@ def compete(m1, m2, p0=(0.5, 0.5), y0=None, t=None, hours=24, num_of_points=100,
 		y[:,:,i] = odeint(ode, y0=y0, t=t, args=args)
 
 		# DEBUG
-		# _y_,info = odeint(double_baranyi_roberts_ode, y0, t, args=args, full_output=1)        
-		# info['args'] = (y0,) + args
-		# infodict[i] = info
-		# if info['message'] == 'Integration successful.':
-		#    y[:,:,i] = _y_
+		#_y_,info = odeint(double_baranyi_roberts_ode0, y0, t, args=args, full_output=1)        
+		#info['args'] = (y0,) + args
+		#infodict[i] = info
+		#if info['message'] == 'Integration successful.':
+		#   y[:,:,i] = _y_
 
 	if PLOT:
 		if ax is None:

@@ -66,7 +66,7 @@ def get_models(module):
     return [m[1] for m in inspect.getmembers(module, curveball.models.is_model)]
 
 
-def bootstrap_params(df, model_class, nsamples, unit='Well'):
+def bootstrap_params(df, model_class, nsamples, unit='Well', fit_kws=None):
     """Sample model parameters by fitting the model to resampled data.
 
     The data is bootstraped by drawing growth curves (sampling from the `unit` column in `df`) with replacement.
@@ -81,7 +81,8 @@ def bootstrap_params(df, model_class, nsamples, unit='Well'):
         number of samples to draw
     unit : str, optional
         the name of the column in `df` that identifies a resampling unit, defaults to ``Well``
-
+    fit_kws : dict, optional
+        dict of kwargs for `fit_model`
     Returns
     -------
     pandas.DataFrame
@@ -101,12 +102,13 @@ def bootstrap_params(df, model_class, nsamples, unit='Well'):
                                                                                 model_class.__class__.__name__))
     if df.empty:
         raise ValueError("Input data frame df is empty")
+    if fit_kws is None: fit_kws = dict()
     unique_wells = df[unit].unique()
     results = [None] * nsamples
     for i in range(nsamples):
         wells = pd.Series(unique_wells).sample(frac=1, replace=True)
         _df = df[df.Well.isin(wells)]
-        results[i] = fit_model(_df, models=model_class, PLOT=False, PRINT=False)[0]
+        results[i] = fit_model(_df, models=model_class, PLOT=False, PRINT=False, **fit_kws)[0]
     param_samples = [m.best_values for m in results]
     param_samples = pd.DataFrame(param_samples)
     return param_samples
