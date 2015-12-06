@@ -87,6 +87,11 @@ def bootstrap_params(df, model_class, nsamples, unit='Well'):
     pandas.DataFrame
         data frame of samples; each row is a sample, each column is a parameter.
 
+    Raises
+    ------
+    ValueError : if `model_class` isn't a model class
+    ValueError : if `df` is empty
+
     See also
     --------
     sample_params
@@ -94,6 +99,8 @@ def bootstrap_params(df, model_class, nsamples, unit='Well'):
     if not is_model(model_class):
         raise TypeError("Input model_class must be a {0}, but it is {1}".format(lmfit.Model.__name__, 
                                                                                 model_class.__class__.__name__))
+    if df.empty:
+        raise ValueError("Input data frame df is empty")
     unique_wells = df[unit].unique()
     results = [None] * nsamples
     for i in range(nsamples):
