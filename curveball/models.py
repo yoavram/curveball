@@ -919,7 +919,9 @@ def fit_model(df, param_guess=None, param_min=None, param_max=None, param_fix=No
         dx = df.Time.max() / 25.0
         columns = min(3, len(results))
         rows = int(np.ceil(len(results) / columns))
-        fig, ax = plt.subplots(rows, columns, sharex=True, sharey=True, figsize=(16, 6))
+        w = max(8, 4 * columns)
+        h = max(6, 3*rows)
+        fig, ax = plt.subplots(rows, columns, sharex=True, sharey=True, figsize=(w, h))
         if not hasattr(ax, '__iter__'):
             ax = np.array(ax, ndmin=2)
         for i,fit in enumerate(results):
