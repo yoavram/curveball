@@ -84,7 +84,7 @@ API
 Resources:
 ----------
 
-* `Documentation <https://curveball.divshot.io>`_
+* `Documentation <https://curveball.netlify.com>`_
 * Source code: `GitHub  <https://github.com/yoavram/curveball>`_
 * Comments or questions: `Gitter <https://gitter.im/yoavram/curveball>`_, `Twitter <https://twitter.com/yoavram>`_, `Email <mailto:yoav@yoavram.com>`_
 * Bugs & feature requests: `GitHub Issues <https://github.com/yoavram/curveball/issues>`_
@@ -111,7 +111,7 @@ Resources:
 .. |Build Status| image:: https://magnum.travis-ci.com/yoavram/curveball.svg?token=jdWtkbZwtnsj5TaFxVKJ&branch=travis
    :target: https://magnum.travis-ci.com/yoavram/curveball
 .. |Docs| image:: https://img.shields.io/badge/docs-latest-yellow.svg
-   :target: https://curveball.divshot.io
+   :target: https://curveball.netlify.com
 .. |codecov.io| image:: http://codecov.io/github/yoavram/curveball/coverage.svg?branch=master&token=PV0HysT5gx
    :target: http://codecov.io/github/yoavram/curveball?branch=master
 .. |Code Issues| image:: https://www.quantifiedcode.com/api/v1/project/fb3dfaa863494b8fa9e3242c542304f6/badge.svg
