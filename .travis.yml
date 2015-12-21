@@ -49,31 +49,18 @@ before_deploy:
   - cd docs
   - make html
   - cd ..
+# Install netlify
+  - npm install -g netlify-cli
 
 deploy:
-# Deploy docs to divshot
-  - provider: divshot
-    api_key:
-      secure: ou0wBUsGCDzlA5oOmGGlLqiECV2SyCBsfU1e2j+FzVermDrowhNCNdVk9TVeO6lvIzc2F8R40sMk/SOjaAdT/A9+CRNgFdOJcTTbW1bWRBhU4EEaW9TLYXp0gkHS9xhHG+3xHF1Ox5tIQt912OUnhxnWIuOUEecUMvObScg7bdE0KNHdhyFLcC6g+o9Ny/HkZc3czKoKdy+kAjn1/hvP+LrPEEQoVWPsuYVnPHn7U1ERE/LBxH8zEdFWAYlFz4nqEda/cOfYcvr4Ua5ye8iSuA3c8OHv/Hsgkj2Fx9eCh4DnTPmij87Bq9wEvFqcMsJz0VvL0ecxKZ8GF2nUTsFVsXEl/hublpFaJwWKJFLcKdkNozRsjaICM1zWp4949tkc6U8dEYb/iZdZc6eRX2RD7eNWRFYZEWNYFRZ6ESQpAnD10CZGcBlLBZzsrw6W8/9G57+kQB3aT9ceCqhoqq8vF+VXDo1NJE5MpMQVpPOT+x7DDGot6gaXCxteCSySIcZLLnXwPZouhZeZqFrpnciDkhjnIkViKsQ9VXXGyr7YqhrERx2Z7rH00c+668BwgBmo8US99VGQiCR/FoUJ37vw2LYpxWv8+U0Mzor5pGinwq8X3yjynh/Bcz5PfBJ/s0UVyXl79eQZw62WbFi6ymudIDvMittLJ2vEGhshYNprzEc=
-    environment: production
+# Deploy to netlify.com
+  - provider: script
+    script: netlify deploy -p docs/_build/html --access-token $NETLIFY_TOKEN
     on:
       repo: yoavram/curveball
       branch: master
     skip_cleanup: true
-
-# Deploy package to PyPi
-  # - provider: pypi
-  #   user: yoavram
-  #   password:
-  #     secure: tnLc3jwANjMK+IAWEhdD2vpIzcRm5TdrK/xykh4uIovCumKTNlEUK9LrsahMxgVOkmnC4ci2phIPz1udZkHq+ICzZ8C6IlaYvhAbrKbU5FxrSbmxBdu8tilxXIMn1pmzG4yqrgdl1GQ4X/IRqYhX71O2bEUpHXlXztTLC/WSKA7onmIHFn1oCmAGq32wo2KzSRPDgkkZfDyVZshB2mTluNdXsBuImvokEU3ubNunTF7y4jSrzAwbEHgcRHyTzGDJXlnhcrWz/a+0Lttt2HmlsQpJX6GltCDnX/V8us23wj38P5e2u0D0dJ7ND3k99GY2NCkUxGXp4prikdrGdJLWdZQJ2p3Io6z9KhSQsirQPmLAry/MBbZHIvS1q8Bq4jqdCukdtXbVfkAgWOtvqsV+C5x0FtCIx0+1PTgKgvwcQwqCtGMuIhDsu65/niGGaETNxQ6/Dab1mgtT634BdPjKed4daA1evM5cQBnGt/eh62SnW5CQBpykN6w9xj4TtywTTvv8TIyr9h7geaxIT5IHWBfTWzh5IYRpj3ic41gykv8SFidpjZcxyAABOjtXtABhGVBSd8OENJEyM5y4KQhpj/Q/CdZYBoDNEf/u1UBKwhJkU1xXjWNrlqhvBZgSwqTcY4sLMdDM37FNtDEjhXtFvfb2NfBsW0IOlzwXTasdhjU=
-  #   on:
-  #     tags: true
-  #     repo: yoavram/curveball
-  #     branch: master
-  #   server: https://testpypi.python.org/pypi
-  #   skip_cleanup: true
-
- # Deploy to Anaconda.org
+# Deploy to Anaconda.org
   - provider: script
     script: ./deploy_anaconda.sh
     on:
