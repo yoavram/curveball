@@ -548,7 +548,7 @@ def baranyi_roberts_gd(y, t, *args):
 	alfa2 = _alfa(t, q02, v2)
 	dy1dt = r1 * alfa1 * y1 * (1 - (y1/K1)**nu1) * (1 - (y2/K2)**(nu2*a2))
 	dy2dt = r2 * alfa2 * y2 * (1 - (y1/K1)**(nu1*a1)) * (1 - (y2/K2)**nu2)
-	return dy1dt, dy2dt  
+	return [dy1dt, dy2dt]
 
 
 def baranyi_roberts_lv(y, t, *args):
@@ -568,7 +568,7 @@ def baranyi_roberts_lv(y, t, *args):
 	Kmax = max(K1**nu1, K2**nu2)
 	dy1dt = r1 * alfa1 * y1 * (1 - (y1/K1)**nu1) * (1 - (y1**a1 + y2**a2)/Kmax)
 	dy2dt = r2 * alfa2 * y2 * (1 - (y2/K2)**nu2) * (1 - (y1**a1 + y2**a2)/Kmax)
-	return dy1dt, dy2dt  
+	return [dy1dt, dy2dt]
 
 
 def baranyi_roberts_yr(y, t, *args):
@@ -584,12 +584,12 @@ def baranyi_roberts_yr(y, t, *args):
 	alfa2 = _alfa(t, q02, v2)
 	dy1dt = r1 * alfa1 * y1 * (1 - (y1/K1)**nu1 - (a2 * y2/K2)**nu2)
 	dy2dt = r2 * alfa2 * y2 * (1 - (a1 * y1/K1)**nu1 - (y2/K2)**nu2)
-	return dy1dt, dy2dt  
+	return [dy1dt, dy2dt]
 
 
-def fit_and_compete(m1, m2, df_mixed, y0=None, ode=baranyi_roberts_yr, 
-					num_of_points=100, fixed=False, 
-					a1guess=1, a2guess=1,
+def fit_and_compete(m1, m2, df_mixed, y0=None, aguess=(1, 1), fixed=False,
+					ode=baranyi_roberts_yr, num_of_points=100,
+					value_var = 'OD', time_var = 'Time',
 					PLOT=False, colors=sns.color_palette('Set1', 3)):
 	K = m1.best_values['K'], m2.best_values['K']
 	r = m1.best_values['r'], m2.best_values['r']
@@ -599,45 +599,58 @@ def fit_and_compete(m1, m2, df_mixed, y0=None, ode=baranyi_roberts_yr,
 	if y0 is None:
 		y0 = m1.best_values['y0']/2, m2.best_values['y0']/2
 
-	y_mixed = df_mixed.groupby('Time')['OD'].mean().as_matrix()
-	t_mixed = np.unique(df_mixed['Time'])
+	y_mixed = df_mixed.groupby(time_var)[value_var].mean().as_matrix()
+	y_mixed_std = df_mixed.groupby(time_var)[value_var].std().as_matrix()
+	t_mixed = np.unique(df_mixed[time_var])
 	t = np.linspace(0, t_mixed.max(), num_of_points)
 
-	def mixed_model(t, a1, a2):
-	    a = a1, a2
-	    y = odeint(ode, y0, t, args=(K, r, nu, q0, v, a))
-	    return y.sum(axis=1)
 	if fixed:
-		a = a1guess, a2guess
+		a = aguess
+		a1, a2 = a
 	else:
-		a, acov = curve_fit(mixed_model, t_mixed, y_mixed, (a1guess, a2guess))
-	a1, a2 = a
+		def mixed_model(t, a1, a2):
+		    y = odeint(ode, y0, t, args=(K, r, nu, q0, v, (a1, a2)))
+		    return y.sum(axis=1)
+		model = lmfit.Model(mixed_model)
+
+		params = model.make_params(a1=aguess[0], a2=aguess[1])
+		params['a1'].set(min=1e-4)
+		params['a2'].set(min=1e-4)
+
+		result = model.fit(data=y_mixed, t=t_mixed, params=params, weights=1.0 / y_mixed_std, method='nelder')
+
+		a = result.best_values['a1'], result.best_values['a2']
+		a1, a2 = a
+
 	y = odeint(ode, y0, t, args=(K, r, nu, q0, v, a))
 
 	if PLOT:
 		ysum = y.sum(axis=1)
-		p1 = y[:,0]/ysum
-		p2 = y[:,1]/ysum
-		MRSE = ((odeint(ode, y0, t_mixed, args=(K, r, nu, q0, v, a)).sum(axis=1) - y_mixed)**2).mean() 
+		p1 = y[:, 0] / ysum
+		p2 = y[:, 1] / ysum
+		MRSE = ((odeint(ode, y0, t_mixed, args=(K, r, nu, q0, v, a)).sum(axis=1) - y_mixed)**2).mean()
 
 		w, h = plt.rcParams['figure.figsize']
-		fig,ax = plt.subplots(1, 2, figsize=(w*2, h), sharex=True)
+		fig, ax = plt.subplots(1, 2, figsize=(w * 2, h), sharex=True)
 
-		ax[0].plot(t, y[:,0], color=colors[0])
-		ax[0].plot(t, y[:,1], color=colors[1])
+
+		ax[0].plot(t, y[:, 0], color=colors[0])
+		ax[0].plot(t, y[:, 1], color=colors[1])
 		ax[0].plot(t, ysum, color=colors[2])
-		ax[0].plot(t_mixed, y_mixed, 'o', color=colors[2])
+		if not fixed:
+			ax[0].plot(t_mixed, result.init_fit, ls='-.', color=colors[2])
+		ax[0].errorbar(t_mixed, y_mixed, y_mixed_std, fmt='o', color=colors[2])
 
 		ax[0].set(xlabel='Time (hour)', ylabel='OD', 
-		          xlim=(-0.5, t.max()+0.5),
-		          title="MRSE: {:.2g}".format(MRSE))
+				  xlim=(-0.5, t.max() + 0.5),
+				  title="MRSE: {:.2g}".format(MRSE))
 
 		ax[1].plot(t, p1, color=colors[0])
 		ax[1].plot(t, p2, color=colors[1])
 		
 		ax[1].set(xlabel='Time (hour)', ylabel='Frequency',
-		          xlim=(-0.5, t.max()+0.5), ylim=(0, 1),
-		          title="a1={:.2g}, a2={:.2g}".format(*a))
+				  xlim=(-0.5, t.max() + 0.5), ylim=(0, 1),
+				  title="a1={:.2g}, a2={:.2g}".format(*a))
 		
 		sns.despine()
 		fig.tight_layout()
