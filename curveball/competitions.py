@@ -587,8 +587,25 @@ def baranyi_roberts_yr(y, t, *args):
 	return [dy1dt, dy2dt]
 
 
+def baranyi_roberts_yr2(y, t, *args):
+	y1, y2 = y
+	K, r, nu, q0, v, a = args
+	r1, r2 = r
+	K1, K2 = K
+	nu1, nu2 = nu
+	q01, q02 = q0
+	v1, v2 = v
+	a1, a2 = a
+	alfa1 = _alfa(t, q01, v1)
+	alfa2 = _alfa(t, q02, v2)
+	dy1dt = r1 * alfa1 * y1 * (1 - (y1**nu1) / (K1**nu1) - a2 * (y2**nu2) / (K1**nu1))
+	dy2dt = r2 * alfa2 * y2 * (1 - a1 * (y1**nu1) / (K2**nu2) - (y2**nu2) / (K2**nu2))
+	return [dy1dt, dy2dt]
+
+
+
 def fit_and_compete(m1, m2, df_mixed, y0=None, aguess=(1, 1), fixed=False,
-					ode=baranyi_roberts_yr, num_of_points=100,
+					ode=baranyi_roberts_yr, num_of_points=100, method='nelder',
 					value_var = 'OD', time_var = 'Time',
 					PLOT=False, colors=sns.color_palette('Set1', 3)):
 	K = m1.best_values['K'], m2.best_values['K']
@@ -614,10 +631,10 @@ def fit_and_compete(m1, m2, df_mixed, y0=None, aguess=(1, 1), fixed=False,
 		model = lmfit.Model(mixed_model)
 
 		params = model.make_params(a1=aguess[0], a2=aguess[1])
-		params['a1'].set(min=1e-4)
-		params['a2'].set(min=1e-4)
+		params['a1'].set(min=1e-1, max=10)
+		params['a2'].set(min=1e-1, max=10)
 
-		result = model.fit(data=y_mixed, t=t_mixed, params=params, weights=1.0 / y_mixed_std, method='nelder')
+		result = model.fit(data=y_mixed, t=t_mixed, params=params, weights=1.0 / y_mixed_std, method=method)
 
 		a = result.best_values['a1'], result.best_values['a2']
 		a1, a2 = a
@@ -654,5 +671,5 @@ def fit_and_compete(m1, m2, df_mixed, y0=None, aguess=(1, 1), fixed=False,
 		
 		sns.despine()
 		fig.tight_layout()
-		return t, y, fig, ax
-	return t, y
+		return t, y, a, fig, ax
+	return t, y, a
