@@ -1,9 +1,9 @@
 package:
   name: curveball
-  version: {{ environ.get('GIT_DESCRIBE_TAG', '') }}
+  version: {{ GIT_DESCRIBE_TAG }}
 
 source:
-  path: ../
+  git_url: ../
 #  patches:
    # List any patch files here
    # - fix.patch
