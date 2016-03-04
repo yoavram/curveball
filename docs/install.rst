@@ -10,7 +10,7 @@ on the different operating systems.
 Dependencies
 ------------
 
--  Python 3.4 or 2.7
+-  Python 3.5, 3.4 or 2.7
 -  numpy
 -  scipy
 -  pandas
@@ -23,7 +23,7 @@ Dependencies
 -  lxml
 -  click
 -  future
--  dateutil
+-  python-dateutil
        
 
 .. hint::
@@ -37,7 +37,7 @@ Users
 -----
 
 The recommended way to install the dependencies is to download and install 
-`Anaconda <https://www.continuum.io/downloads>`_ (Python 3.4 or 2.7),
+`Anaconda <https://www.continuum.io/downloads>`_ (Python 3.5, 3.4 or 2.7),
 available for free on Windows, OS X, and Linux.
 
 After installing Anaconda, open a terminal or command line, and write the following commands to install the dependencies:

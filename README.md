@@ -14,4 +14,4 @@
 
 [![logo](/docs/_static/logo_200px.png?raw=true)](http://www.freepik.com/free-vector/ball-of-wool_762106.htm)
 
-Please see the [documentation](https://curveball.divshot.io).
+Please see the [documentation](https://curveball.netlify.com).
