@@ -10,17 +10,19 @@ language: python
 python:
   - 2.7
   - 3.4
+  - 3.5
 notifications:
   email: 
     - yoav@yoavram.com
 
 # Setup anaconda
 before_install:
+  - git fetch --unshallow
   - wget http://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh -O miniconda.sh
   - chmod +x miniconda.sh
   - ./miniconda.sh -b
   - export PATH=$HOME/miniconda2/bin:$PATH
-  - conda update --yes -q conda
+  - conda update --yes -q conda pip
   - conda config --add channels yoavram
   - conda config --set always_yes true
   - conda config --set anaconda_upload no
@@ -28,7 +30,7 @@ before_install:
 
 # Install packages
 install:
-  - conda install -q python=$TRAVIS_PYTHON_VERSION pip requests conda-build jinja2 anaconda-client atlas numpy scipy matplotlib dateutil pandas statsmodels lxml seaborn sympy xlrd lmfit coverage nose pillow
+  - conda install -q python=$TRAVIS_PYTHON_VERSION requests conda-build jinja2 anaconda-client atlas numpy scipy matplotlib python-dateutil pandas statsmodels lxml seaborn sympy xlrd lmfit coverage nose pillow
   - conda build -q conda-recipe
   - conda install --use-local -q curveball
 
