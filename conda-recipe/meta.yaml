@@ -39,7 +39,7 @@ requirements:
     - matplotlib
     - pandas
     - seaborn
-    - statsmodels
+    - scikit-learn
     - sympy
     - lmfit
     - nose
@@ -56,7 +56,7 @@ requirements:
     - matplotlib
     - pandas
     - seaborn
-    - statsmodels
+    - scikit-learn
     - sympy
     - lmfit
 
