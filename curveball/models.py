@@ -621,7 +621,6 @@ def cooks_distance(df, model_fit, use_weights=True):
         OD = _df.OD.as_matrix()
         weights =  calc_weights(_df) if use_weights else None
         model_fit_i = copy.deepcopy(model_fit)
-        print("**", len(OD), len(time), len(weights))
         model_fit_i.fit(data=OD, t=time, weights=weights)
         D[well] = model_fit_i.chisqr / (p * MSE)
     return D
@@ -673,7 +672,8 @@ def find_outliers(df, model_fit, deviations=2, use_weights=True, ax=None, PLOT=F
         ax.axhline(y=dist_mean, ls='-', color='k')
         ax.axhline(y=dist_mean + deviations * dist_std, ls='--', color='k')
         ax.axhline(y=dist_mean - deviations * dist_std, ls='--', color='k')
-        ax.set_xticks(list(range(len(wells))))
+        ax.set_xticks(range(len(wells)))
+        ax.set_xlim(-0.5, len(wells) - 0.5)
         ax.set_xticklabels(wells, rotation=90)
         ax.set_xlabel('Well')
         ax.set_ylabel("Cook's distance")
