@@ -14,7 +14,11 @@ import inspect
 from warnings import warn
 import numpy as np
 from scipy.optimize import minimize
-from statsmodels.nonparametric.smoothers_lowess import lowess
+from scipy.misc import derivative
+import sklearn.linear_model
+import sklearn.preprocessing
+import sklearn.pipeline
+import sklearn.grid_search
 import matplotlib.pyplot as plt
 import pandas as pd
 import lmfit
@@ -120,7 +124,10 @@ def baranyi_roberts_function(t, y0, K, r, nu, q0, v):
 
 
 def smooth(x, y, PLOT=False, **kwargs):
-	"""Lowess smoothing function.
+	"""Estimate a smoothing function.
+
+	The function finds a polynomial function that fits to the data using a linear regressions model
+	with polynomial features and using a cross-validation grid search to find the best polynomial degree.
 
 	Parameters
 	----------
@@ -135,31 +142,37 @@ def smooth(x, y, PLOT=False, **kwargs):
 
 	Returns
 	-------
-	yhat : numpy.ndarray
-		array of floats for the smoothed dependent variable
+	f : function
+		smooth function that corresponds to the data.
 	fig : matplotlib.figure.Figure
 		if the argument `PLOT` was :const:`True`, the generated figure.
 	ax : matplotlib.axes.Axes
 		if the argument `PLOT` was :const:`True`, the generated axis.
-
-	See also
-	--------
-	statsmodels.nonparametric.smoothers_lowess : for more details on the lowess smoothing.
 	"""
-	if 'return_sorted' not in kwargs:
-		kwargs['return_sorted'] = False
-	if 'missing' not in kwargs:
-		kwargs['missing'] = 'raise'
-	yhat = lowess(y, x, **kwargs)
+	# do a grid search to find the optimal polynomial degree
+	model = sklearn.grid_search.GridSearchCV(
+		# use a linear model with polynomial features
+	    sklearn.pipeline.Pipeline([
+	        ('poly', sklearn.preprocessing.PolynomialFeatures(degree=3)),
+	        ('linear', sklearn.linear_model.LinearRegression())
+	    ]),
+	    cv=kwargs.get('cv', 5),
+	    param_grid={
+	        'poly__degree': np.arange(kwargs.get('min_degree', 3), kwargs.get('max_degree', 14), 2)
+	    }
+	)
+	x = x.reshape(-1, 1)
+	model.fit(x, y)
+	yhat = model.predict(x)
 	if PLOT:
 		fig, ax = plt.subplots(1, 1)
 		ax.plot(x, yhat, 'k--')
 		ax.plot(x, y, 'ko')
 		return yhat, fig, ax
-	return yhat
+	return lambda x: model.predict(np.array(x).reshape(-1, 1))
 
 
-def guess_nu(t, N, K=None, frac=0.1, PLOT=False, PRINT=False):
+def guess_nu(t, N, K=None, PLOT=False, PRINT=False):
 	r"""Guesses the value of :math:`\nu` from the shape of the growth curve.
 
 	Following [Richards1959]_:
@@ -182,8 +195,6 @@ def guess_nu(t, N, K=None, frac=0.1, PLOT=False, PRINT=False):
 		`N[i]` is the population size at time `t[i]`
 	K : float, optional
 		a guess of `K`, the maximum population size. If not given, it is guessed.
-	frac : float, optional
-		fraction of data to use when smoothing the derivative curve.
 	PLOT : bool, optional
 		if :const:`True`, the function will plot the calculations.
 	PRINT : bool, optional
@@ -205,30 +216,20 @@ def guess_nu(t, N, K=None, frac=0.1, PLOT=False, PRINT=False):
 	t, N = np.array(t), np.array(N)
 	if K is None:
 		K = N.max()
+	# smooth and calculate derivative
+	N_smooth = smooth(t, N) 	
+	# calculate derivative	
+	dNdt = derivative(N_smooth, t)
+	assert len(t) > 0
+	assert len(t) == len(dNdt)
 	# only use the second part of the curve starting from N=K/e (inflexion point for nu=0)
 	idx = N >= K * np.exp(-1)
 	if idx.sum() < 10:
 		warn('Less than 10 data points above K/e!')	
-	t, N = t[idx], N[idx]	
-	# smooth and calculate derivative
-	N_smooth = smooth(t, N) 	
-	# calculate gradient
-	dt = np.gradient(t)[0]
-	dNdt = np.gradient(N_smooth, dt)
-	# set nan to zero
-	dNdt[np.isnan(dNdt)] = 0
-	# remove *infinite* values
-	idx = np.isfinite(dNdt)
-	t = t[idx]
-	dNdt = dNdt[idx]
-	assert np.isfinite(dNdt).all()
-	assert len(t) == len(dNdt)
-	assert len(t) > 0
-	# smooth derivative
-	dNdt_smooth = smooth(t, dNdt, frac=frac)
+	t, N, dNdt = t[idx], N[idx], dNdt[idx]
 	# find N at inflexion point
-	i = dNdt_smooth.argmax()
-	Ninf = N_smooth[i]
+	i = dNdt.argmax()
+	Ninf = N_smooth(t[i])
 	# find nu that gives Ninf at inflexion point
 	def target(nu):
 		return np.abs(K * (1 + nu)**(-1.0 / nu)  - Ninf)
@@ -246,17 +247,27 @@ def guess_nu(t, N, K=None, frac=0.1, PLOT=False, PRINT=False):
 		x = 1.0
 	if PLOT:
 		fs = plt.rcParams['figure.figsize']
-		fig, ax = plt.subplots(1, 2, figsize=(fs[0] * 2, fs[1]))
-		ax1,ax2 = ax
-		ax1.plot(t, dNdt, 'ok')
-		ax1.plot(t, dNdt_smooth, '--k')
-		ax1.axvline(t[i], color='k', ls='--')
+		fig, ax = plt.subplots(1, 3, figsize=(fs[0] * 3, fs[1]))
+		ax0, ax1, ax2 = ax
+		
+		N_t = N_smooth(t)
+		ax0.plot(t, N_t, '-k')
+		ax0.axvline(t[i], color='k', ls='--')
+		ax0.axhline(N_t[i], color='k', ls='--')
+		ax0.set_xlabel('Time')
+		ax0.set_ylabel('N')
+		
+		ax1.plot(t, dNdt, '-k')
 		ax1.axvline(t[i], color='k', ls='--')
 		ax1.axhline(dNdt[i], color='k', ls='--')
 		ax1.set_xlabel('Time')
 		ax1.set_ylabel('dN/dt')
+		dN = (dNdt.max() - dNdt.min()) / 10
+		ax1.set_ylim(dNdt.min() - dN, dNdt.max() + dN)
 		
 		ax2.plot(np.logspace(-3,3), target(np.logspace(-3, 3)), 'k-')
+		ax2.axvline(x, color='k', ls='--')
+		ax2.axhline(y, color='k', ls='--')
 		ax2.set_xlabel(r'$\nu$')
 		ax2.set_ylabel('Target function')
 		ax2.set_xscale('log')
@@ -266,7 +277,7 @@ def guess_nu(t, N, K=None, frac=0.1, PLOT=False, PRINT=False):
 	return x[0]
 
 
-def guess_r(t, N, nu=None, K=None):
+def guess_r(t, N, nu=None, K=None, PLOT=False):
 	r"""Guesses the value of *r* from the shape of the growth curve.
 
 	Following [Richards1959]_:
@@ -301,23 +312,45 @@ def guess_r(t, N, nu=None, K=None):
 	----------
 	.. [Richards1959] Richards, F. J. 1959. `A Flexible Growth Function for Empirical Use <http://dx.doi.org/10.1093/jxb/10.2.290>`_. Journal of Experimental Botany
 	"""
+	t, N = np.array(t), np.array(N)
 	if K is None:
 		K = N.max()
 	if nu is None:
 		nu = guess_nu(t, N, K, PLOT=False, PRINT=False)
-
-	idx = N >= K * np.exp(-1) / 4
-	t = t[idx]
-	N = N[idx]
-	N_smooth = smooth(t, N)
-	N_smooth = np.unique(N_smooth)
-	t = np.unique(t)
-	dt = np.gradient(t)[0]
-	dNdt = np.gradient(N_smooth, dt)
-	dNdt_smooth = smooth(t, dNdt)
-	dNdtmax = dNdt_smooth.max()
 	
-	return dNdtmax / (K * nu * (1 + nu)**(-(1 + nu) / nu))
+	# smooth and calculate derivative
+	N_smooth = smooth(t, N) 	
+	# calculate derivative	
+	dNdt = derivative(N_smooth, t)
+	# limit max search
+	idx = N >= K * np.exp(-1) / 4
+	t, dNdt = t[idx], dNdt[idx]
+	i = dNdt.argmax()
+	dNdtmax = dNdt[i]
+	r = dNdtmax / (K * nu * (1 + nu)**(-(1 + nu) / nu))
+	if PLOT:
+		fs = plt.rcParams['figure.figsize']
+		fig, ax = plt.subplots(1, 2, figsize=(fs[0] * 2, fs[1]))
+		ax0, ax1 = ax
+		
+		N_t = N_smooth(t)
+		ax0.plot(t, N_t, '-k')
+		ax0.axvline(t[i], color='k', ls='--')
+		ax0.axhline(N_t[i], color='k', ls='--')
+		ax0.set_xlabel('Time')
+		ax0.set_ylabel('N')
+		
+		ax1.plot(t, dNdt, '-k')
+		ax1.axvline(t[i], color='k', ls='--')
+		ax1.axhline(dNdt[i], color='k', ls='--')
+		ax1.set_xlabel('Time')
+		ax1.set_ylabel('dN/dt')
+		dN = (dNdt.max() - dNdt.min()) / 10
+		ax1.set_ylim(dNdt.min() - dN, dNdt.max() + dN)
+		
+		fig.tight_layout()        
+		return r, fig, ax
+	return r
 
 
 def guess_q0_v(t, N, param_guess):
