@@ -82,8 +82,8 @@ def baranyi_roberts_function(t, y0, K, r, nu, q0, v):
 	- r: initial per capita growth rate
 	- K: maximum population size
 	- :math:`\nu`: curvature of the logsitic term
-	- :math:`q_0`: initial adjustment to current environment
-	- v: adjustment rate
+	- :math:`q_0`: initial physiological state of the population
+	- v: rate of physiological state adjustment
 
 	Parameters
 	----------
@@ -98,9 +98,9 @@ def baranyi_roberts_function(t, y0, K, r, nu, q0, v):
 	nu : float
 		curvature of the logsitic term (:math:`\nu>0`)
 	q0 : float
-		initial adjustment to current environment (:math:`0<q_0<1`)
+		initial physiological state of the population (:math:`0<q_0<1`)
 	v : float
-		adjustment rate (:math:`v>0`)
+		rate of physiological state adjustment (:math:`v>0`)
 
 	Returns
 	-------
