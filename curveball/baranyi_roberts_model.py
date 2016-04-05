@@ -15,15 +15,12 @@ from warnings import warn
 import numpy as np
 from scipy.optimize import minimize
 from scipy.misc import derivative
-import sklearn.linear_model
-import sklearn.preprocessing
-import sklearn.pipeline
-import sklearn.grid_search
 import matplotlib.pyplot as plt
 import pandas as pd
 import lmfit
 import sympy
 import curveball
+from curveball.utils import smooth
 
 
 MIN_VALUES = {
@@ -121,55 +118,6 @@ def baranyi_roberts_function(t, y0, K, r, nu, q0, v):
 		return y0 * np.exp(r * nu * At)
 	else:
 		return K / ((1 - (1 - (K / y0)**nu) * np.exp(-r * nu * At))**(1.0/nu))
-
-
-def smooth(x, y, PLOT=False, **kwargs):
-	"""Estimate a smoothing function.
-
-	The function finds a polynomial function that fits to the data using a linear regressions model
-	with polynomial features and using a cross-validation grid search to find the best polynomial degree.
-
-	Parameters
-	----------
-	x : numpy.ndarray
-		array of floats for the independent variable
-	y : numpy.ndarray
-		array of floats for the dependent variable
-	PLOT : bool, optional
-		if :const:`True`, plots a figure of the input and smoothed data, defaults to :const:`False`
-	kwargs : optional
-		extra keyword arguments passed to the smoothing function. Use `frac` (between 0 and 1) to control the fraction of the data used when estimating each y-value.
-
-	Returns
-	-------
-	f : function
-		smooth function that corresponds to the data.
-	fig : matplotlib.figure.Figure
-		if the argument `PLOT` was :const:`True`, the generated figure.
-	ax : matplotlib.axes.Axes
-		if the argument `PLOT` was :const:`True`, the generated axis.
-	"""
-	# do a grid search to find the optimal polynomial degree
-	model = sklearn.grid_search.GridSearchCV(
-		# use a linear model with polynomial features
-	    sklearn.pipeline.Pipeline([
-	        ('poly', sklearn.preprocessing.PolynomialFeatures(degree=3)),
-	        ('linear', sklearn.linear_model.LinearRegression())
-	    ]),
-	    cv=kwargs.get('cv', 5),
-	    param_grid={
-	        'poly__degree': np.arange(kwargs.get('min_degree', 3), kwargs.get('max_degree', 14), 2)
-	    }
-	)
-	x = x.reshape(-1, 1)
-	model.fit(x, y)
-	yhat = model.predict(x)
-	if PLOT:
-		fig, ax = plt.subplots(1, 1)
-		ax.plot(x, yhat, 'k--')
-		ax.plot(x, y, 'ko')
-		return yhat, fig, ax
-	return lambda x: model.predict(np.array(x).reshape(-1, 1))
 
 
 def guess_nu(t, N, K=None, PLOT=False, PRINT=False):

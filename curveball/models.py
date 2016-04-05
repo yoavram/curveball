@@ -28,6 +28,7 @@ import seaborn as sns
 sns.set_style("ticks")
 import curveball
 import curveball.baranyi_roberts_model
+from curveball.utils import smooth
 
 
 def is_model(cls):
@@ -817,6 +818,43 @@ def information_criteria_weights(results):
 
 def nvarys(params):
     return len([p for p in params.values() if p.vary])
+
+
+def fit_exponential_growth_phase(t, N, k=2):
+    r"""Fits an exponential model to the exponential growth phase.
+
+    Fits a polynomial p(t)~N, finds tmax the time of the maximum of the derivative dp/dt,
+    and fits a linear function to log(N) around tmax.
+    The resulting slope (a) and intercept (b) are the parameters of the exponential model:
+
+    .. math::
+
+        N(t) = N_0 e^{at}
+
+        N_0 = e^b
+
+    Arguments
+    ---------
+    t : np.ndarray
+        time
+    N : np.ndarray
+        `N[i]` is the population size at time `t[i]`
+    k : int
+        number of points to take around tmax, defaults to 2 for a total of 5 points
+
+    Returns
+    -------
+    slope : float
+        slope of the linear regression, a
+    intercept : float
+        intercept of the linear regression, b
+    """
+    N_smooth = smooth(t, N)
+    dNdt = derivative(N_smooth, t)
+    imax = dNdt.argmax()
+    idx = np.arange(imax - k, imax + k)
+    slope, intercept = linregress(t[idx], np.log(N[idx]))[:2]
+    return slope, intercept
 
 
 def fit_model(df, param_guess=None, param_min=None, param_max=None, param_fix=None, 
