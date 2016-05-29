@@ -334,7 +334,7 @@ def _process_file(filepath, plate, blank_strain, ref_strain, max_time, guess, pa
 		res['bic'] = fit.bic
 		res['aic'] = fit.aic
 		res['weighted_bic'] = fit.weighted_bic
-		res['weighted_aic'] = fit.weighted_aic			
+		res['weighted_aic'] = fit.weighted_aic
 		params = fit.params
 		res['y0'] = params['y0'].value
 		res['K'] = params['K'].value
@@ -343,9 +343,10 @@ def _process_file(filepath, plate, blank_strain, ref_strain, max_time, guess, pa
 		res['q0'] = params['q0'].value if 'q0' in params else 0
 		res['v'] = params['v'].value if 'v' in params else 0
 		res['max_growth_rate'] = curveball.models.find_max_growth(fit)[-1]
+		res['min_doubling_time'] = np.log(2) / res['max_growth_rate']
 		res['lag'] = curveball.models.find_lag(fit)
 		res['has_lag'] = curveball.models.has_lag(fit_results)
-		res['has_nu'] = curveball.models.has_nu(fit_results, PRINT=VERBOSE)			
+		res['has_nu'] = curveball.models.has_nu(fit_results, PRINT=VERBOSE)
 
 		if strain == ref_strain:
 			ref_fit = fit
