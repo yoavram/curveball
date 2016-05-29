@@ -211,8 +211,9 @@ def plate(plate_folder, plate_file, output_file, list, show):
 @click.option('--param_max', type=(str, float), multiple=True, callback=to_dict, help='set the maximum allowed value for a parameter')
 @click.option('--param_fix', type=str, multiple=True, callback=to_set, help='fix a parameter to it\'s initial guess')
 @click.option('--weights/--no-weights', default=True, help="use weights for the fitting procedure")
+@click.option('--ci/--no-ci', default=False, help="find confidence intervals for lag and max growth rate")
 @cli.command()
-def analyse(path, output_file, plate_folder, plate_file, blank_strain, ref_strain, max_time, guess, param_min, param_max, param_fix, weights):
+def analyse(path, output_file, plate_folder, plate_file, blank_strain, ref_strain, max_time, guess, param_min, param_max, param_fix, weights, ci):
 	"""Analyse growth curves data using Curveball.
 
 	To get help for the parameters, run:
@@ -249,7 +250,7 @@ def analyse(path, output_file, plate_folder, plate_file, blank_strain, ref_strai
 	
 	with click.progressbar(files, label='Processing files:', item_show_func=get_filename, color='green') as bar:
 		for filepath in bar:
-			file_results = _process_file(filepath, plate, blank_strain, ref_strain, max_time, guess, param_min, param_max, param_fix, weights)
+			file_results = _process_file(filepath, plate, blank_strain, ref_strain, max_time, guess, param_min, param_max, param_fix, weights, ci)
 			results.extend(file_results)
 	
 	output_table = pd.DataFrame(results)
@@ -258,7 +259,7 @@ def analyse(path, output_file, plate_folder, plate_file, blank_strain, ref_strai
 		click.secho("Wrote output to %s" % output_file.name, fg='green')
 
 
-def _process_file(filepath, plate, blank_strain, ref_strain, max_time, guess, param_min, param_max, param_fix, weights):
+def _process_file(filepath, plate, blank_strain, ref_strain, max_time, guess, param_min, param_max, param_fix, weights, ci):
 	"""Analyses a single growth curves file.
 
 	See also
@@ -344,15 +345,16 @@ def _process_file(filepath, plate, blank_strain, ref_strain, max_time, guess, pa
 		res['v'] = params['v'].value if 'v' in params else 0
 		res['max_growth_rate'] = curveball.models.find_max_growth(fit)[-1]
 		res['min_doubling_time'] = np.log(2) / res['max_growth_rate']
-		_, _, low, high = curveball.models.find_max_growth_ci(fit)
-		res['max_growth_rate_low'] = low
-		res['max_growth_rate_high'] = high
-		res['min_doubling_time_low'] = np.log(2) / res['max_growth_rate_high']
-		res['min_doubling_time_high'] = np.log(2) / res['max_growth_rate_low']
 		res['lag'] = curveball.models.find_lag(fit)
-		low, high = curveball.models.find_lag_ci(fit)
-		res['lag_low'] = low
-		res['lag_high'] = high
+		if ci:
+			_, _, low, high = curveball.models.find_max_growth_ci(fit, strain_df)
+			res['max_growth_rate_low'] = low
+			res['max_growth_rate_high'] = high
+			res['min_doubling_time_low'] = np.log(2) / res['max_growth_rate_high']
+			res['min_doubling_time_high'] = np.log(2) / res['max_growth_rate_low']
+			low, high = curveball.models.find_lag_ci(fit, strain_df)
+			res['lag_low'] = low
+			res['lag_high'] = high
 		res['has_lag'] = curveball.models.has_lag(fit_results)
 		res['has_nu'] = curveball.models.has_nu(fit_results, PRINT=VERBOSE)
 
