@@ -367,7 +367,7 @@ def find_max_growth(model_fit, params=None, after_lag=True):
     return t1, y1, a, t2, y2, mu
 
 
-def find_max_growth_ci(model_fit, after_lag=True, nsamples=1000, ci=0.95):
+def find_max_growth_ci(model_fit, df, after_lag=True, nsamples=1000, ci=0.95):
     """Estimates a confidence interval for the maximum population/specific growth rates from the model fit.
 
     The function uses *parameteric bootstrap*:
@@ -380,6 +380,8 @@ def find_max_growth_ci(model_fit, after_lag=True, nsamples=1000, ci=0.95):
     ----------
     model_fit : lmfit.model.ModelResult
         the result of a model fitting procedure
+    df : pandas.DataFrame
+        data frame used to fit `model_fit`   
     after_lag : bool
         if true, only explore the time after the lag phase. Otherwise start at time zero. Defaults to :const:`True`.        
     nsamples : int, optional
@@ -404,7 +406,7 @@ def find_max_growth_ci(model_fit, after_lag=True, nsamples=1000, ci=0.95):
         raise ValueError("ci must be between 0 and 1")
     aa = np.zeros(nsamples)
     mumu = np.zeros(nsamples)
-    param_samples = sample_params(model_fit, nsamples)
+    param_samples = bootstrap_params(df, type(model_fit.model), nsamples)    
     params = copy.deepcopy(model_fit.params)
     for i in range(param_samples.shape[0]):
         sample = param_samples.iloc[i,:]
@@ -490,7 +492,7 @@ def find_lag(model_fit, params=None):
     return lam
 
 
-def find_lag_ci(model_fit, nsamples=1000, ci=0.95):
+def find_lag_ci(model_fit, df, nsamples=1000, ci=0.95):
     """Estimates a confidence interval for the lag duration from the model fit.
 
     The function uses *parameteric bootstrap*:
@@ -503,6 +505,8 @@ def find_lag_ci(model_fit, nsamples=1000, ci=0.95):
     ----------
     model_fit : lmfit.model.ModelResult
         the result of a model fitting procedure
+    df : pandas.DataFrame
+        data frame used to fit `model_fit`
     nsamples : int, optional
         number of samples, defaults to 1000
     ci : float, optional
@@ -522,7 +526,7 @@ def find_lag_ci(model_fit, nsamples=1000, ci=0.95):
     if not 0 <= ci <= 1:
         raise ValueError("ci must be between 0 and 1")
     lags = np.zeros(nsamples)
-    param_samples = sample_params(model_fit, nsamples)
+    param_samples = bootstrap_params(df, type(model_fit.model), nsamples)    
     params = copy.deepcopy(model_fit.params)
     for i in range(param_samples.shape[0]):
         sample = param_samples.iloc[i,:]
