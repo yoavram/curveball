@@ -348,6 +348,20 @@ class FindMaxGrowthTestCase(TestCase):
 		self.assertTrue(relative_error(r * (1 - y0 / K), mu) < 1, "mu=%.4g, r(1-y0/K)=%.4g" % (mu, r * (1 - y0 / K)))
 
 
+	def test_find_max_growth_ci_logistic(self):
+		y0 = 0.1
+		K = 1.0
+		r = 0.75
+		df = curveball.models.randomize(t=12, y0=y0, K=K, r=r, nu=1, reps=REPS, noise_std=NOISE_STD, random_seed=RANDOM_SEED)
+		model = curveball.baranyi_roberts_model.Logistic()
+		model_fit = model.fit(df.OD, t=df.Time, y0=y0, K=K, r=r)
+		  
+		t1,y1,a,t2,y2,mu = curveball.models.find_max_growth(model_fit)
+		a_low, a_high, mu_low, mu_high = curveball.models.find_max_growth_ci(model_fit)
+		self.assertTrue(a_low < a < a_high, "a is {2}, a CI is ({0},{1})".format(a_low, a_high, a))
+		self.assertTrue(mu_low < mu < mu_high, "mu is {2}, mu CI is ({0},{1})".format(mu_low, mu_high, mu))
+
+
 	def test_find_max_growth_logistic_lag(self):
 		y0 = 0.1
 		K = 1.0

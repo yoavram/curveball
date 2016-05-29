@@ -17,7 +17,7 @@ from warnings import warn
 import numpy as np
 import matplotlib.pyplot as plt
 import collections
-from scipy.stats import chisqprob
+from scipy.stats import chisqprob, linregress
 from scipy.misc import derivative
 import pandas as pd
 import copy
@@ -280,8 +280,8 @@ def lrtest(m0, m1, alfa=0.05):
     return prefer_m1, pval, D, ddf
 
 
-def find_max_growth(model_fit, after_lag=True):
-    r"""Estimates the maximum population growth rate from the model fit.
+def find_max_growth(model_fit, params=None, after_lag=True):
+    r"""Estimates the maximum population and specific growth rates from the model fit.
 
     The function calculates the maximum population growth rate :math:`a=\max{\frac{dy}{dt}}` 
     as the derivative of the model curve and calculates its maximum. 
@@ -315,6 +315,8 @@ def find_max_growth(model_fit, after_lag=True):
     ----------
     model_fit : lmfit.model.ModelResult
         the result of a model fitting procedure
+    params : lmfit.parameter.Parameters, optional
+        if provided, these parameters will override `model_fit`'s parameters
     after_lag : bool
         if true, only explore the time after the lag phase. Otherwise start at time zero. Defaults to :const:`True`.
 
@@ -331,9 +333,15 @@ def find_max_growth(model_fit, after_lag=True):
     y2 : float
         the population size or density (OD) for which the maximum per capita growth rate is achieved.
     mu : float
-        the the maximum per capita growth rate.
+        the the maximum specific (per capita) growth rate.
+
+    See also
+    --------
+    find_max_growth_ci
     """
-    params = model_fit.params
+    if params is None:
+        params = model_fit.params
+
     y0 = params['y0'].value
     K  = params['K'].value
 
@@ -357,6 +365,72 @@ def find_max_growth(model_fit, after_lag=True):
     y2 = y[i]
     
     return t1, y1, a, t2, y2, mu
+
+
+def find_max_growth_ci(model_fit, after_lag=True, nsamples=1000, ci=0.95):
+    """Estimates a confidence interval for the maximum population/specific growth rates from the model fit.
+
+    The function uses *parameteric bootstrap*:
+    `nsamples` random parameter sets are sampled using :py:func:`sample_params`.
+    The maximum population/specific growth rate for each parameter sample is calculated.
+    The confidence interval of the rate is the lower and higher percentiles such that 
+    `ci` percent of the random rates are within the confidence interval.
+
+    Parameters
+    ----------
+    model_fit : lmfit.model.ModelResult
+        the result of a model fitting procedure
+    after_lag : bool
+        if true, only explore the time after the lag phase. Otherwise start at time zero. Defaults to :const:`True`.        
+    nsamples : int, optional
+        number of samples, defaults to 1000
+    ci : float, optional
+        the fraction of lag durations that should be within the calculated limits. 0 < `ci` <, defaults to 0.95.
+    
+    Returns
+    -------
+    low_a, high_a : float
+        the lower and higher boundries of the confidence interval of the the maximum population growth rate in the units of the `model_fit` ``OD``/``Time`` (usually OD/hours).
+    low_mu, high_mu : float
+        the lower and higher boundries of the confidence interval of the the maximum specific growth rate in the units of the `model_fit` 1/``Time`` variable (usually 1/hours).
+
+
+    See also
+    --------
+    find_max_growth
+    """
+    t1, y1, a, t2, y2, mu = find_max_growth(model_fit, after_lag=after_lag)
+    if not 0 <= ci <= 1:
+        raise ValueError("ci must be between 0 and 1")
+    aa = np.zeros(nsamples)
+    mumu = np.zeros(nsamples)
+    param_samples = sample_params(model_fit, nsamples)
+    params = copy.deepcopy(model_fit.params)
+    for i in range(param_samples.shape[0]):
+        sample = param_samples.iloc[i,:]
+        for k,v in params.items():
+            if v.vary:
+                params[k].set(value=sample[k])
+        t1, y1, a, t2, y2, mu = find_max_growth(model_fit, params=params, after_lag=after_lag)
+        aa[i] = a
+        mumu[i] = mu
+    
+    margin = (1.0 - ci) * 50.0
+    idx = np.isfinite(aa) & (aa >= 0)
+    if not idx.all():
+        warn("Warning: omitting {0} non-finite growth rate values".format(len(aa) - idx.sum()))
+    aa = aa[idx]
+    low_a = np.percentile(aa, margin)
+    high_a = np.percentile(aa, ci * 100.0 + margin)
+    assert high_a > low_a, aa.tolist()
+    idx = np.isfinite(mumu) & (mumu >= 0)
+    if not idx.all():
+        warn("Warning: omitting {0} non-finite growth rate values".format(len(mumu) - idx.sum()))
+    mumu = mumu[idx]
+    low_mu = np.percentile(mumu, margin)
+    high_mu = np.percentile(mumu, ci * 100.0 + margin)
+    assert high_mu > low_mu, mumu.tolist()
+    return low_a, high_a, low_mu, high_mu
 
 
 def find_lag(model_fit, params=None):
@@ -466,7 +540,6 @@ def find_lag_ci(model_fit, nsamples=1000, ci=0.95):
     high = np.percentile(lags, ci * 100.0 + margin)
     assert high > low, lags.tolist()
     return low, high
-
 
 
 def has_lag(model_fits, alfa=0.05, PRINT=False):
