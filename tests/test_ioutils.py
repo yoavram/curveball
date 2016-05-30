@@ -39,7 +39,7 @@ class CurveballCSVTestCase(TestCase):
         f, fn = tempfile.mkstemp()
         curveball.ioutils.write_curveball_csv(df, fn)
         df1 = pd.read_csv(fn)
-        pd.util.testing.assert_frame_equal(df, df1)
+        pd.util.testing.assert_frame_equal(df, df1, check_dtype=False)
 
 
 class XLSXTestCase(TestCase):
