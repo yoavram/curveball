@@ -438,6 +438,61 @@ def find_max_growth_ci(model_fit, df, after_lag=True, nsamples=1000, ci=0.95):
     return low_a, high_a, low_mu, high_mu
 
 
+def find_min_doubling_time(model_fit, params=None, PLOT=False):
+    """Estimates the minimal doubling time from the model fit.
+
+    The functions evaluates a growth curves based on the model fit and supplied parameters (if any) 
+    and calculates that time required to double the population density at each time point. 
+    It then returns the minimal doubling time.
+
+    Parameters
+    ----------
+    model_fit : lmfit.model.ModelResult
+        the result of a model fitting procedure
+    params : lmfit.parameter.Parameters, optional
+        if provided, these parameters will override `model_fit`'s parameters
+    PLOT : bool, optional
+        if :const:`True`, the function will plot the Cook's distances of the wells and the threshold.
+
+    Returns
+    -------
+    min_dbl : float
+        the minimal time it takes the population density to double.
+    fig : matplotlib.figure.Figure
+        if the argument `PLOT` was :const:`True`, the generated figure.
+    ax : matplotlib.axes.Axes
+        if the argument `PLOT` was :const:`True`, the generated axis.
+    """
+    if params is None:
+        params = model_fit.params
+
+    def f(t): 
+        return model_fit.model.eval(t=t, params=params)
+
+    t1 = model_fit.userkws['t'].max()
+    t = np.linspace(0, t1, 1000)
+    y = f(t)
+
+    def find_point(point):
+        return abs(y - point).argmin()
+
+    imax = find_point(y.max() / 2) + 1
+    doubling_times = np.zeros(imax)
+    for i0, y0 in enumerate(y[:imax]):
+        i1 = find_point(2 * y0)
+        doubling_times[i0] = t[i1] - t[i0]
+    min_dbl = doubling_times.min()
+
+    if PLOT:
+        fig, ax = plt.subplots(1, 1)
+        ax.plot(t[:imax], doubling_times, '-')
+        ax.axhline(min_dbl, ls='--', color='k')
+        ax.set(xlabel='Time', ylabel='Doubling time')
+        sns.despine()
+        return min_dbl, fig, ax
+
+    return min_dbl
+
 def find_lag(model_fit, params=None):
     """Estimates the lag duration from the model fit.
 
