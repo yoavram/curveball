@@ -188,20 +188,23 @@ def noisify_lognormal_multiplicative(data, std, random_seed=None):
 
 def randomize(t=12, y0=0.1, K=1.0, r=0.1, nu=1.0, q0=np.inf, v=np.inf, 
         func=curveball.baranyi_roberts_model.baranyi_roberts_function, reps=1, noise_std=0.02, 
-        noise_func=noisify_lognormal_multiplicative, random_seed=None, as_df=True, data_label='OD', time_label='Time'):
+        noise_func=noisify_lognormal_multiplicative, random_seed=None, as_df=True, 
+        data_label='OD', time_label='Time', replicate_label='Well'):
     if isinstance(t, numbers.Number):
         t = np.linspace(0, t)
     y = func(t, y0, K, r, nu, q0, v)
     y.resize((len(t),))
     y = y.repeat(reps)
     y.resize((len(t), reps))
+    well = np.arange(reps).repeat(len(t))#.resize(len(t), reps)
     if noise_std > 0:
         y = noise_func(y, noise_std, random_seed)
     y[y < 0] = 0.0
     y = y.flatten()
     t = t.repeat(reps)
+    well = well.flatten()
     if as_df:
-        return pd.DataFrame({data_label: y, time_label: t})
+        return pd.DataFrame({data_label: y, time_label: t, replicate_label: well})
     else:
         return t, y
 

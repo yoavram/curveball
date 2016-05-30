@@ -251,12 +251,12 @@ class FindLagTestCase(TestCase):
 
 
 	def test_find_lag_ci_logistic(self):
-		t, y = curveball.models.randomize(t=12, y0=0.1, K=1, r=0.75, nu=1, reps=REPS, noise_std=NOISE_STD, random_seed=RANDOM_SEED, as_df=False)
+		df = curveball.models.randomize(t=12, y0=0.1, K=1, r=0.75, nu=1, reps=REPS, noise_std=NOISE_STD, random_seed=RANDOM_SEED, as_df=True)
 		model = curveball.baranyi_roberts_model.Logistic()
-		params = model.guess(data=y, t=t)
-		result = model.fit(data=y, t=t, params=params)
+		params = model.guess(data=df.OD, t=df.Time)
+		result = model.fit(data=df.OD, t=df.Time, params=params)
 		lam = curveball.models.find_lag(result)
-		lam_low, lam_high = curveball.models.find_lag_ci(result)
+		lam_low, lam_high = curveball.models.find_lag_ci(result, df, nsamples=100)
 		self.assertTrue(lam_low < lam < lam_high, "Lambda is {2}, Lambda CI is ({0},{1})".format(lam, lam_low, lam_high))
 
 
@@ -272,12 +272,12 @@ class FindLagTestCase(TestCase):
 
 	def test_find_lag_ci_richards(self):
 		for nu in [1.0, 2.0, 5.0]:
-			t, y = curveball.models.randomize(t=12, y0=0.1, K=1, r=0.75, nu=nu, reps=REPS, noise_std=NOISE_STD, random_seed=RANDOM_SEED, as_df=False)
+			df = curveball.models.randomize(t=12, y0=0.1, K=1, r=0.75, nu=nu, reps=REPS, noise_std=NOISE_STD, random_seed=RANDOM_SEED, as_df=True)
 			model = curveball.baranyi_roberts_model.Richards()
-			params = model.guess(data=y, t=t)
-			result = model.fit(data=y, t=t, params=params)
+			params = model.guess(data=df.OD, t=df.Time)
+			result = model.fit(data=df.OD, t=df.Time, params=params)
 			lam = curveball.models.find_lag(result)
-			lam_low,lam_high = curveball.models.find_lag_ci(result)
+			lam_low,lam_high = curveball.models.find_lag_ci(result, df, nsamples=100)
 			self.assertTrue(lam_low < lam < lam_high, "Lambda is {2}, Lambda CI is ({0},{1})".format(lam, lam_low, lam_high))
 
 
@@ -357,7 +357,7 @@ class FindMaxGrowthTestCase(TestCase):
 		model_fit = model.fit(df.OD, t=df.Time, y0=y0, K=K, r=r)
 		  
 		t1,y1,a,t2,y2,mu = curveball.models.find_max_growth(model_fit)
-		a_low, a_high, mu_low, mu_high = curveball.models.find_max_growth_ci(model_fit)
+		a_low, a_high, mu_low, mu_high = curveball.models.find_max_growth_ci(model_fit, df, nsamples=100)
 		self.assertTrue(a_low < a < a_high, "a is {2}, a CI is ({0},{1})".format(a_low, a_high, a))
 		self.assertTrue(mu_low < mu < mu_high, "mu is {2}, mu CI is ({0},{1})".format(mu_low, mu_high, mu))
 
