@@ -24,12 +24,21 @@ from curveball.utils import smooth
 
 
 MIN_VALUES = {
+	# based on nothing
 	'y0': 1e-4,
 	'K': 1e-4,
-	'r': 1e-4,
-	'nu': 1e-4,
+	'r': 1e-4,	
+	'nu': 1e-1,
 	'q0': 1e-4,
 	'v': 1e-4
+}
+
+MAX_VALUES = {
+	# based on min doubling time of ~5 minutes
+	# r = 60 * log(2) / x where x is doubling time in minutes
+	'r': 8,
+	# based on nothing
+	'nu': 10,
 }
 
 
@@ -278,8 +287,8 @@ def guess_r(t, N, nu=None, K=None, PLOT=False):
 	r = dNdtmax / (K * nu * (1 + nu)**(-(1 + nu) / nu))
 	if PLOT:
 		fs = plt.rcParams['figure.figsize']
-		fig, ax = plt.subplots(1, 2, figsize=(fs[0] * 2, fs[1]))
-		ax0, ax1 = ax
+		fig, ax = plt.subplots(1, 3, figsize=(fs[0] * 3, fs[1]))
+		ax0, ax1, ax2 = ax
 		
 		N_t = N_smooth(t)
 		ax0.plot(t, N_t, '-k')
@@ -296,26 +305,52 @@ def guess_r(t, N, nu=None, K=None, PLOT=False):
 		dN = (dNdt.max() - dNdt.min()) / 10
 		ax1.set_ylim(dNdt.min() - dN, dNdt.max() + dN)
 		
+		rs = dNdt / (K * nu * (1 + nu)**(-(1 + nu) / nu))
+		ax2.plot(t, rs, '-k')
+		ax2.axvline(t[i], color='k', ls='--')
+		ax2.axhline(r, color='k', ls='--')
+		ax2.set_xlabel('Time')
+		ax2.set_ylabel('r')		
+
 		fig.tight_layout()        
 		return r, fig, ax
 	return r
 
 
-def guess_q0_v(t, N, param_guess):
-	r"""Guesses the values of :math:`q_0` and :math:`v` by fitting a model to a curve with other parameters fixed.
-	"""
-	param_fix = {'y0', 'K', 'r', 'nu'}
-	param_guess = dict(param_guess)
-	if 'q0' in param_guess:
-		param_fix.add('q0')
-	if 'v' in param_guess:
-		param_fix.add('v')
-	param_guess['q0'] = param_guess.get('q0', 1)
-	param_guess['v'] = param_guess.get('v', 1)
-	model = BaranyiRoberts()
-	params = model.guess(data=N, t=t, param_guess=param_guess, param_fix=param_fix)
-	result = model.fit(data=N, t=t, params=params)	
-	return result.best_values['q0'], result.best_values['v']
+def guess_q0_v(t, N, param_guess, PLOT=False):
+    r"""Guesses the values of :math:`q_0` and :math:`v` by fitting a model to a curve with other parameters fixed.
+    
+    Parameters
+    ----------
+    t : numpy.ndarray
+        time
+    N : numpy:ndarray
+        `N[i]` is the population size at time `t[i]`
+    param_guess : dict
+        dictionary of parameter guesses for ``K``, ``y0``, ``nu``, ``r`` and possibly ``v``.
+    PLOT : bool, optional
+        if :const:`True`, the function will plot the calculations.
+    
+    Returns
+    -------
+    q0, v : float
+        the guess of :math:`\q_0` and ``v``.
+    fig : matplotlib.figure.Figure
+        if the argument `PLOT` was :const:`True`, the generated figure.
+    ax : matplotlib.axes.Axes
+        if the argument `PLOT` was :const:`True`, the generated axis.
+    """
+    param_guess = dict(param_guess)
+    param_fix = set(param_guess.keys())    
+    param_guess['q0'] = param_guess.get('q0', 1) # default guess is 1
+    param_guess['v'] = param_guess.get('v', 1) # default guess is 1
+    model = curveball.baranyi_roberts_model.BaranyiRoberts()
+    params = model.guess(data=N, t=t, param_guess=param_guess, param_fix=param_fix)
+    result = model.fit(data=N, t=t, params=params)
+    if PLOT:
+        ax = result.plot_fit()
+        return result.best_values['q0'], result.best_values['v'], ax.figure, ax
+    return result.best_values['q0'], result.best_values['v']
 
 
 class BaranyiRoberts(lmfit.model.Model):
@@ -395,7 +430,7 @@ class BaranyiRoberts(lmfit.model.Model):
 				name 	= pname,
 				value 	= param_guess[pname],
 				min 	= param_min.get(pname, MIN_VALUES.get(pname, 0)),
-				max 	= param_max.get(pname, np.inf),
+				max 	= param_max.get(pname, MAX_VALUES.get(pname, np.inf)),
 				vary 	= pname not in param_fix
 			)
 		# if 'q0' in params:
