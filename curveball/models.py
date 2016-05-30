@@ -370,11 +370,9 @@ def find_max_growth(model_fit, params=None, after_lag=True):
     return t1, y1, a, t2, y2, mu
 
 
-def find_max_growth_ci(model_fit, df, after_lag=True, nsamples=1000, ci=0.95):
+def find_max_growth_ci(model_fit, param_samples, after_lag=True, ci=0.95):
     """Estimates a confidence interval for the maximum population/specific growth rates from the model fit.
-
-    The function uses *parameteric bootstrap*:
-    `nsamples` random parameter sets are sampled using :py:func:`sample_params`.
+    
     The maximum population/specific growth rate for each parameter sample is calculated.
     The confidence interval of the rate is the lower and higher percentiles such that 
     `ci` percent of the random rates are within the confidence interval.
@@ -383,14 +381,12 @@ def find_max_growth_ci(model_fit, df, after_lag=True, nsamples=1000, ci=0.95):
     ----------
     model_fit : lmfit.model.ModelResult
         the result of a model fitting procedure
-    df : pandas.DataFrame
-        data frame used to fit `model_fit`   
+    param_samples : pandas.DataFrame
+        parameter samples, generated using :function:`sample_params` or :function:`bootstrap_params`
     after_lag : bool
-        if true, only explore the time after the lag phase. Otherwise start at time zero. Defaults to :const:`True`.        
-    nsamples : int, optional
-        number of samples, defaults to 1000
+        if true, only explore the time after the lag phase. Otherwise start at time zero. Defaults to :const:`True`        
     ci : float, optional
-        the fraction of lag durations that should be within the calculated limits. 0 < `ci` <, defaults to 0.95.
+        the fraction of lag durations that should be within the calculated limits. 0 < `ci` <, defaults to 0.95
     
     Returns
     -------
@@ -407,9 +403,9 @@ def find_max_growth_ci(model_fit, df, after_lag=True, nsamples=1000, ci=0.95):
     t1, y1, a, t2, y2, mu = find_max_growth(model_fit, after_lag=after_lag)
     if not 0 <= ci <= 1:
         raise ValueError("ci must be between 0 and 1")
+    nsamples = param_samples.shape[0]
     aa = np.zeros(nsamples)
-    mumu = np.zeros(nsamples)
-    param_samples = bootstrap_params(df, type(model_fit.model), nsamples)    
+    mumu = np.zeros(nsamples)    
     params = copy.deepcopy(model_fit.params)
     for i in range(param_samples.shape[0]):
         sample = param_samples.iloc[i,:]
@@ -493,6 +489,56 @@ def find_min_doubling_time(model_fit, params=None, PLOT=False):
 
     return min_dbl
 
+
+def find_min_doubling_time_ci(model_fit, param_samples, ci=0.95):
+    """Estimates a confidence interval for the minimal doubling time from the model fit.
+
+    The minimal doubling time for each parameter sample is calculated.
+    The confidence interval of the doubling time is the lower and higher percentiles such that 
+    `ci` percent of the random lag durations are within the confidence interval.
+
+    Parameters
+    ----------
+    model_fit : lmfit.model.ModelResult
+        the result of a model fitting procedure
+    param_samples : pandas.DataFrame
+        parameter samples, generated using :function:`sample_params` or :function:`bootstrap_params`    
+    ci : float, optional
+        the fraction of doubling times that should be within the calculated limits. 0 < `ci` <, defaults to 0.95.
+    
+    Returns
+    -------
+    low, high : float
+        the lower and higher boundries of the confidence interval of the minimal doubling times in the units of the `model_fit` ``Time`` variable (usually hours).
+
+    See also
+    --------
+    find_min_doubling_time
+    """
+    min_dbl = find_min_doubling_time(model_fit)
+    if not 0 <= ci <= 1:
+        raise ValueError("ci must be between 0 and 1")
+    nsamples = param_samples.shape[0]
+    dbls = np.zeros(nsamples)
+    params = copy.deepcopy(model_fit.params)
+    for i in range(param_samples.shape[0]):
+        sample = param_samples.iloc[i,:]
+        for k,v in params.items():
+            if v.vary:
+                params[k].set(value=sample[k])
+        dbls[i] = find_min_doubling_time(model_fit, params=params)
+    
+    margin = (1.0 - ci) * 50.0
+    idx = np.isfinite(dbls) & (dbls >= 0)
+    if not idx.all():
+        warn("Warning: omitting {0} non-finite doubling time values".format(len(dbls) - idx.sum()))
+    dbls = dbls[idx]
+    low = np.percentile(dbls, margin)
+    high = np.percentile(dbls, ci * 100.0 + margin)
+    assert high > low, dbls.tolist()
+    return low, high
+
+
 def find_lag(model_fit, params=None):
     """Estimates the lag duration from the model fit.
 
@@ -550,11 +596,9 @@ def find_lag(model_fit, params=None):
     return lam
 
 
-def find_lag_ci(model_fit, df, nsamples=1000, ci=0.95):
+def find_lag_ci(model_fit, param_samples, ci=0.95):
     """Estimates a confidence interval for the lag duration from the model fit.
 
-    The function uses *parameteric bootstrap*:
-    `nsamples` random parameter sets are sampled using :py:func:`sample_params`.
     The lag duration for each parameter sample is calculated.
     The confidence interval of the lag is the lower and higher percentiles such that 
     `ci` percent of the random lag durations are within the confidence interval.
@@ -563,10 +607,8 @@ def find_lag_ci(model_fit, df, nsamples=1000, ci=0.95):
     ----------
     model_fit : lmfit.model.ModelResult
         the result of a model fitting procedure
-    df : pandas.DataFrame
-        data frame used to fit `model_fit`
-    nsamples : int, optional
-        number of samples, defaults to 1000
+    param_samples : pandas.DataFrame
+        parameter samples, generated using :function:`sample_params` or :function:`bootstrap_params`    
     ci : float, optional
         the fraction of lag durations that should be within the calculated limits. 0 < `ci` <, defaults to 0.95.
     
@@ -583,8 +625,8 @@ def find_lag_ci(model_fit, df, nsamples=1000, ci=0.95):
     lam = find_lag(model_fit)
     if not 0 <= ci <= 1:
         raise ValueError("ci must be between 0 and 1")
+    nsamples = param_samples.shape[0]
     lags = np.zeros(nsamples)
-    param_samples = bootstrap_params(df, type(model_fit.model), nsamples)    
     params = copy.deepcopy(model_fit.params)
     for i in range(param_samples.shape[0]):
         sample = param_samples.iloc[i,:]

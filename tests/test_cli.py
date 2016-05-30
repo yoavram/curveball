@@ -236,6 +236,14 @@ class AnalysisTestCase(TestCase):
 		self.assertTrue(is_csv(data))
 
 
+	def test_process_file_with_ci(self):
+		result = self.runner.invoke(cli.cli, ['--no-plot', '--verbose', '--no-prompt', 'analyse', self.filepath, '--ci', '--plate_file=G-RG-R.csv', '--ref_strain=G'])
+		self.assertEquals(result.exit_code, 0, "Code: {}\n{}".format(result.exit_code, result.output))
+		lines = [line for line in result.output.splitlines() if len(line) > 0] 
+		data = os.linesep.join(lines[-4:]) # only last 4 lines
+		self.assertTrue(is_csv(data))
+
+
 	# FIXME - fails on CI, succeeds on local
 	# def test_create_plots(self):
 	# 	result = self.runner.invoke(cli.cli, ['--plot', '--verbose', '--no-prompt', 'analyse', self.filepath, '--plate_file=G-RG-R.csv', '--ref_strain=G'])
