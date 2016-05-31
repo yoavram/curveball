@@ -674,7 +674,8 @@ class SamplingTestCase(TestCase):
 		covar = rng.exponential(0.001, (3, 3))
 		sample_params = curveball.models.sample_params(model_fit, 100, covar=covar)
 		self.assertIsNotNone(sample_params)
-		self.assertEquals(sample_params.shape, (100, 3))
+		self.assertEquals(sample_params.shape[1], 3)
+		self.assertTrue(95 <= sample_params.shape[0] <= 100)
 
 
 	def test_bootstrap_params(self):
