@@ -14,21 +14,31 @@ import inspect
 from warnings import warn
 import numpy as np
 from scipy.optimize import minimize
-from statsmodels.nonparametric.smoothers_lowess import lowess
+from scipy.misc import derivative
 import matplotlib.pyplot as plt
 import pandas as pd
 import lmfit
 import sympy
 import curveball
+from curveball.utils import smooth
 
 
 MIN_VALUES = {
+	# based on nothing
 	'y0': 1e-4,
 	'K': 1e-4,
-	'r': 1e-4,
-	'nu': 1e-4,
+	'r': 1e-4,	
+	'nu': 1e-1,
 	'q0': 1e-4,
 	'v': 1e-4
+}
+
+MAX_VALUES = {
+	# based on min doubling time of ~5 minutes
+	# r = 60 * log(2) / x where x is doubling time in minutes
+	'r': 8,
+	# based on nothing
+	'nu': 10,
 }
 
 
@@ -78,8 +88,8 @@ def baranyi_roberts_function(t, y0, K, r, nu, q0, v):
 	- r: initial per capita growth rate
 	- K: maximum population size
 	- :math:`\nu`: curvature of the logsitic term
-	- :math:`q_0`: initial adjustment to current environment
-	- v: adjustment rate
+	- :math:`q_0`: initial physiological state of the population
+	- v: rate of physiological state adjustment
 
 	Parameters
 	----------
@@ -94,9 +104,9 @@ def baranyi_roberts_function(t, y0, K, r, nu, q0, v):
 	nu : float
 		curvature of the logsitic term (:math:`\nu>0`)
 	q0 : float
-		initial adjustment to current environment (:math:`0<q_0<1`)
+		initial physiological state of the population (:math:`0<q_0<1`)
 	v : float
-		adjustment rate (:math:`v>0`)
+		rate of physiological state adjustment (:math:`v>0`)
 
 	Returns
 	-------
@@ -119,47 +129,7 @@ def baranyi_roberts_function(t, y0, K, r, nu, q0, v):
 		return K / ((1 - (1 - (K / y0)**nu) * np.exp(-r * nu * At))**(1.0/nu))
 
 
-def smooth(x, y, PLOT=False, **kwargs):
-	"""Lowess smoothing function.
-
-	Parameters
-	----------
-	x : numpy.ndarray
-		array of floats for the independent variable
-	y : numpy.ndarray
-		array of floats for the dependent variable
-	PLOT : bool, optional
-		if :const:`True`, plots a figure of the input and smoothed data, defaults to :const:`False`
-	kwargs : optional
-		extra keyword arguments passed to the smoothing function. Use `frac` (between 0 and 1) to control the fraction of the data used when estimating each y-value.
-
-	Returns
-	-------
-	yhat : numpy.ndarray
-		array of floats for the smoothed dependent variable
-	fig : matplotlib.figure.Figure
-		if the argument `PLOT` was :const:`True`, the generated figure.
-	ax : matplotlib.axes.Axes
-		if the argument `PLOT` was :const:`True`, the generated axis.
-
-	See also
-	--------
-	statsmodels.nonparametric.smoothers_lowess : for more details on the lowess smoothing.
-	"""
-	if 'return_sorted' not in kwargs:
-		kwargs['return_sorted'] = False
-	if 'missing' not in kwargs:
-		kwargs['missing'] = 'raise'
-	yhat = lowess(y, x, **kwargs)
-	if PLOT:
-		fig, ax = plt.subplots(1, 1)
-		ax.plot(x, yhat, 'k--')
-		ax.plot(x, y, 'ko')
-		return yhat, fig, ax
-	return yhat
-
-
-def guess_nu(t, N, K=None, frac=0.1, PLOT=False, PRINT=False):
+def guess_nu(t, N, K=None, PLOT=False, PRINT=False):
 	r"""Guesses the value of :math:`\nu` from the shape of the growth curve.
 
 	Following [Richards1959]_:
@@ -182,8 +152,6 @@ def guess_nu(t, N, K=None, frac=0.1, PLOT=False, PRINT=False):
 		`N[i]` is the population size at time `t[i]`
 	K : float, optional
 		a guess of `K`, the maximum population size. If not given, it is guessed.
-	frac : float, optional
-		fraction of data to use when smoothing the derivative curve.
 	PLOT : bool, optional
 		if :const:`True`, the function will plot the calculations.
 	PRINT : bool, optional
@@ -205,30 +173,20 @@ def guess_nu(t, N, K=None, frac=0.1, PLOT=False, PRINT=False):
 	t, N = np.array(t), np.array(N)
 	if K is None:
 		K = N.max()
+	# smooth and calculate derivative
+	N_smooth = smooth(t, N) 	
+	# calculate derivative	
+	dNdt = derivative(N_smooth, t)
+	assert len(t) > 0
+	assert len(t) == len(dNdt)
 	# only use the second part of the curve starting from N=K/e (inflexion point for nu=0)
 	idx = N >= K * np.exp(-1)
 	if idx.sum() < 10:
 		warn('Less than 10 data points above K/e!')	
-	t, N = t[idx], N[idx]	
-	# smooth and calculate derivative
-	N_smooth = smooth(t, N) 	
-	# calculate gradient
-	dt = np.gradient(t)[0]
-	dNdt = np.gradient(N_smooth, dt)
-	# set nan to zero
-	dNdt[np.isnan(dNdt)] = 0
-	# remove *infinite* values
-	idx = np.isfinite(dNdt)
-	t = t[idx]
-	dNdt = dNdt[idx]
-	assert np.isfinite(dNdt).all()
-	assert len(t) == len(dNdt)
-	assert len(t) > 0
-	# smooth derivative
-	dNdt_smooth = smooth(t, dNdt, frac=frac)
+	t, N, dNdt = t[idx], N[idx], dNdt[idx]
 	# find N at inflexion point
-	i = dNdt_smooth.argmax()
-	Ninf = N_smooth[i]
+	i = dNdt.argmax()
+	Ninf = N_smooth(t[i])
 	# find nu that gives Ninf at inflexion point
 	def target(nu):
 		return np.abs(K * (1 + nu)**(-1.0 / nu)  - Ninf)
@@ -246,17 +204,27 @@ def guess_nu(t, N, K=None, frac=0.1, PLOT=False, PRINT=False):
 		x = 1.0
 	if PLOT:
 		fs = plt.rcParams['figure.figsize']
-		fig, ax = plt.subplots(1, 2, figsize=(fs[0] * 2, fs[1]))
-		ax1,ax2 = ax
-		ax1.plot(t, dNdt, 'ok')
-		ax1.plot(t, dNdt_smooth, '--k')
-		ax1.axvline(t[i], color='k', ls='--')
+		fig, ax = plt.subplots(1, 3, figsize=(fs[0] * 3, fs[1]))
+		ax0, ax1, ax2 = ax
+		
+		N_t = N_smooth(t)
+		ax0.plot(t, N_t, '-k')
+		ax0.axvline(t[i], color='k', ls='--')
+		ax0.axhline(N_t[i], color='k', ls='--')
+		ax0.set_xlabel('Time')
+		ax0.set_ylabel('N')
+		
+		ax1.plot(t, dNdt, '-k')
 		ax1.axvline(t[i], color='k', ls='--')
 		ax1.axhline(dNdt[i], color='k', ls='--')
 		ax1.set_xlabel('Time')
 		ax1.set_ylabel('dN/dt')
+		dN = (dNdt.max() - dNdt.min()) / 10
+		ax1.set_ylim(dNdt.min() - dN, dNdt.max() + dN)
 		
 		ax2.plot(np.logspace(-3,3), target(np.logspace(-3, 3)), 'k-')
+		ax2.axvline(x, color='k', ls='--')
+		ax2.axhline(y, color='k', ls='--')
 		ax2.set_xlabel(r'$\nu$')
 		ax2.set_ylabel('Target function')
 		ax2.set_xscale('log')
@@ -266,7 +234,7 @@ def guess_nu(t, N, K=None, frac=0.1, PLOT=False, PRINT=False):
 	return x[0]
 
 
-def guess_r(t, N, nu=None, K=None):
+def guess_r(t, N, nu=None, K=None, PLOT=False):
 	r"""Guesses the value of *r* from the shape of the growth curve.
 
 	Following [Richards1959]_:
@@ -301,40 +269,88 @@ def guess_r(t, N, nu=None, K=None):
 	----------
 	.. [Richards1959] Richards, F. J. 1959. `A Flexible Growth Function for Empirical Use <http://dx.doi.org/10.1093/jxb/10.2.290>`_. Journal of Experimental Botany
 	"""
+	t, N = np.array(t), np.array(N)
 	if K is None:
 		K = N.max()
 	if nu is None:
 		nu = guess_nu(t, N, K, PLOT=False, PRINT=False)
-
-	idx = N >= K * np.exp(-1) / 4
-	t = t[idx]
-	N = N[idx]
-	N_smooth = smooth(t, N)
-	N_smooth = np.unique(N_smooth)
-	t = np.unique(t)
-	dt = np.gradient(t)[0]
-	dNdt = np.gradient(N_smooth, dt)
-	dNdt_smooth = smooth(t, dNdt)
-	dNdtmax = dNdt_smooth.max()
 	
-	return dNdtmax / (K * nu * (1 + nu)**(-(1 + nu) / nu))
+	# smooth and calculate derivative
+	N_smooth = smooth(t, N) 	
+	# calculate derivative	
+	dNdt = derivative(N_smooth, t)
+	# limit max search
+	idx = N >= K * np.exp(-1) / 4
+	t, dNdt = t[idx], dNdt[idx]
+	i = dNdt.argmax()
+	dNdtmax = dNdt[i]
+	r = dNdtmax / (K * nu * (1 + nu)**(-(1 + nu) / nu))
+	if PLOT:
+		fs = plt.rcParams['figure.figsize']
+		fig, ax = plt.subplots(1, 3, figsize=(fs[0] * 3, fs[1]))
+		ax0, ax1, ax2 = ax
+		
+		N_t = N_smooth(t)
+		ax0.plot(t, N_t, '-k')
+		ax0.axvline(t[i], color='k', ls='--')
+		ax0.axhline(N_t[i], color='k', ls='--')
+		ax0.set_xlabel('Time')
+		ax0.set_ylabel('N')
+		
+		ax1.plot(t, dNdt, '-k')
+		ax1.axvline(t[i], color='k', ls='--')
+		ax1.axhline(dNdt[i], color='k', ls='--')
+		ax1.set_xlabel('Time')
+		ax1.set_ylabel('dN/dt')
+		dN = (dNdt.max() - dNdt.min()) / 10
+		ax1.set_ylim(dNdt.min() - dN, dNdt.max() + dN)
+		
+		rs = dNdt / (K * nu * (1 + nu)**(-(1 + nu) / nu))
+		ax2.plot(t, rs, '-k')
+		ax2.axvline(t[i], color='k', ls='--')
+		ax2.axhline(r, color='k', ls='--')
+		ax2.set_xlabel('Time')
+		ax2.set_ylabel('r')		
+
+		fig.tight_layout()        
+		return r, fig, ax
+	return r
 
 
-def guess_q0_v(t, N, param_guess):
-	r"""Guesses the values of :math:`q_0` and :math:`v` by fitting a model to a curve with other parameters fixed.
-	"""
-	param_fix = {'y0', 'K', 'r', 'nu'}
-	param_guess = dict(param_guess)
-	if 'q0' in param_guess:
-		param_fix.add('q0')
-	if 'v' in param_guess:
-		param_fix.add('v')
-	param_guess['q0'] = param_guess.get('q0', 1)
-	param_guess['v'] = param_guess.get('v', 1)
-	model = BaranyiRoberts()
-	params = model.guess(data=N, t=t, param_guess=param_guess, param_fix=param_fix)
-	result = model.fit(data=N, t=t, params=params)	
-	return result.best_values['q0'], result.best_values['v']
+def guess_q0_v(t, N, param_guess, PLOT=False):
+    r"""Guesses the values of :math:`q_0` and :math:`v` by fitting a model to a curve with other parameters fixed.
+    
+    Parameters
+    ----------
+    t : numpy.ndarray
+        time
+    N : numpy:ndarray
+        `N[i]` is the population size at time `t[i]`
+    param_guess : dict
+        dictionary of parameter guesses for ``K``, ``y0``, ``nu``, ``r`` and possibly ``v``.
+    PLOT : bool, optional
+        if :const:`True`, the function will plot the calculations.
+    
+    Returns
+    -------
+    q0, v : float
+        the guess of :math:`\q_0` and ``v``.
+    fig : matplotlib.figure.Figure
+        if the argument `PLOT` was :const:`True`, the generated figure.
+    ax : matplotlib.axes.Axes
+        if the argument `PLOT` was :const:`True`, the generated axis.
+    """
+    param_guess = dict(param_guess)
+    param_fix = set(param_guess.keys())    
+    param_guess['q0'] = param_guess.get('q0', 1) # default guess is 1
+    param_guess['v'] = param_guess.get('v', 1) # default guess is 1
+    model = curveball.baranyi_roberts_model.BaranyiRoberts()
+    params = model.guess(data=N, t=t, param_guess=param_guess, param_fix=param_fix)
+    result = model.fit(data=N, t=t, params=params)
+    if PLOT:
+        ax = result.plot_fit()
+        return result.best_values['q0'], result.best_values['v'], ax.figure, ax
+    return result.best_values['q0'], result.best_values['v']
 
 
 class BaranyiRoberts(lmfit.model.Model):
@@ -414,7 +430,7 @@ class BaranyiRoberts(lmfit.model.Model):
 				name 	= pname,
 				value 	= param_guess[pname],
 				min 	= param_min.get(pname, MIN_VALUES.get(pname, 0)),
-				max 	= param_max.get(pname, np.inf),
+				max 	= param_max.get(pname, MAX_VALUES.get(pname, np.inf)),
 				vary 	= pname not in param_fix
 			)
 		# if 'q0' in params:

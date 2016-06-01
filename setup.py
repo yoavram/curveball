@@ -47,7 +47,6 @@ setup(
     install_requires=[
         # add your dependencies here
         # remember to use 'package-name>=x.y.z,<x.y+1.0' notation (this way you get bugfixes)
-        # click, numpy, scipy, pyparsing, pytz, six, python-dateutil, matplotlib, pandas, statsmodels, lxml, seaborn, sympy, xlrd, future, lmfit
         'future',
         'click',
         'python-dateutil',
@@ -58,7 +57,7 @@ setup(
         'matplotlib',
         'pandas',
         'seaborn',
-        'statsmodels',
+        'scikit-learn',
         'sympy',
         'lmfit>=0.9.0',
     ],

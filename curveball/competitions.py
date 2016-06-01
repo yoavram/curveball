@@ -14,6 +14,7 @@ import copy
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.integrate import odeint
+from scipy.optimize import curve_fit
 import pandas as pd
 import lmfit
 import curveball
@@ -174,7 +175,7 @@ def double_baranyi_roberts_ode7(y, t, r, K, nu, q0, v):
 
 	.. math::
 
-		\frac{dN_1}{dt} = 0 \;\;\; \frac{dN_2}{dt} = r_2 \alpha_2(t) N_2 \Big(1 - \Big(\frac{N_2}{K_2}\Big)^{\bar{\nu}}\Big)
+		\frac{dN_1}{dt} = 0 \;\;\; \frac{dN_2}{dt} = r_2 \alpha_2(t) N_2 \Big(1 - \Big(\frac{N_2}{K_2}\Big)^{\nu_1}\Big)
 
 	See also
 	--------
@@ -198,6 +199,24 @@ def double_baranyi_roberts_ode8(y, t, r, K, nu, q0, v):
 	curveball.competitions.double_baranyi_roberts_ode0
 	"""
 	dydt = r[0] * y[0] * (1 - ((y[0] + y[1]) / K[0])**nu[0]), r[1] * y[1] * (1 - ((y[0] + y[1]) / K[1])**nu[1])
+	return dydt
+
+
+def double_baranyi_roberts_gimenez_delgado_ode(y, t, r, K, nu, q0, v):
+	r"""A two species Baranyi-Roberts model with competition model inspired by Gimenez and Delgado (2004). 
+	The function calculates the population growth rate at given time points. 
+
+	.. math::
+
+		\frac{dN_i}{dt} = r_i \alpha_i(t) N_i \prod_j{\Big(1 - \Big(\frac{N_j}{K_j}\Big)^{\nu_j}\Big)}
+
+	See also
+	--------
+	curveball.competitions.double_baranyi_roberts_ode0
+	"""
+	alfa = _alfa(t, q0[0], v[0]), _alfa(t, q0[1], v[1])
+	prod = (1 - (y[0]/K[0])**(nu[0])) * (1 - (y[1]/K[1])**(nu[1]))
+	dydt = alfa[0] * r[0] * y[0] * prod, alfa[1] * r[1] * y[1] * prod
 	return dydt
 
 
@@ -310,8 +329,12 @@ def compete(m1, m2, p0=(0.5, 0.5), y0=None, t=None, hours=24, num_of_points=100,
 				warnings.warn("Bootstrap sampling doesn't support params1 and params2 arguments")
 			if df1 is None or df2 is None:
 				raise ValueError("Bootstrap sampling requires kwargs df1 and df2")
-			m1_samples = curveball.models.bootstrap_params(df1, m1.model.__class__, nsamples)
-			m2_samples = curveball.models.bootstrap_params(df2, m2.model.__class__, nsamples)
+			m1_fixed = {pname for pname,p in m1.params.items() if not p.vary}
+			m2_fixed = {pname for pname,p in m2.params.items() if not p.vary}
+			m1_samples = curveball.models.bootstrap_params(df1, m1.model.__class__, nsamples, 
+														   fit_kws={'param_fix': m1_fixed})
+			m2_samples = curveball.models.bootstrap_params(df2, m2.model.__class__, nsamples,
+														   fit_kws={'param_fix': m2_fixed})
 		else:
 			raise ValueError("Unknow sampler method: {0}".format(sampler))
 		min_nsamples = min(len(m1_samples), len(m2_samples))
@@ -360,11 +383,11 @@ def compete(m1, m2, p0=(0.5, 0.5), y0=None, t=None, hours=24, num_of_points=100,
 		y[:,:,i] = odeint(ode, y0=y0, t=t, args=args)
 
 		# DEBUG
-		# _y_,info = odeint(double_baranyi_roberts_ode, y0, t, args=args, full_output=1)        
-		# info['args'] = (y0,) + args
-		# infodict[i] = info
-		# if info['message'] == 'Integration successful.':
-		#    y[:,:,i] = _y_
+		#_y_,info = odeint(double_baranyi_roberts_ode0, y0, t, args=args, full_output=1)        
+		#info['args'] = (y0,) + args
+		#infodict[i] = info
+		#if info['message'] == 'Integration successful.':
+		#   y[:,:,i] = _y_
 
 	if PLOT:
 		if ax is None:
@@ -467,8 +490,8 @@ def fitness_LTEE(y, ref_strain=0, assay_strain=1, t0=0, t1=-1, ci=0):
 		the index of the time point from which to start the calculation of the relative fitness, defaults to 0 (first).
 	t1 : int, optional
 		the index of the time point at which to end the calculation of the relative fitness, defaults to -1 (last).
-	ci : bool, optional
-		if :const:`True`, a confidence interval will be calculated using the third axis of `y` as replicates.
+	ci : float between 0 and 1, optional 
+		if not zero, a confidence interval will be calculated using the third axis of `y` as replicates.
 	
 	Returns
 	-------
@@ -507,3 +530,146 @@ def fitness_LTEE(y, ref_strain=0, assay_strain=1, t0=0, t1=-1, ci=0):
 	else:
 		margin = (1 - ci) * 50
 		return w.mean(), np.percentile(w, margin), np.percentile(w, ci * 100 + margin)
+
+
+def baranyi_roberts_gd(y, t, *args):
+	r"""
+	Fujikawa, Hiroshi, and Mohammad Z Sakha. 2014. Prediction of Microbial Growth in Mixed Culture with a Competition Model. Biocontrol Science 19 (2): 89-92.
+	"""
+	y1, y2 = y
+	K, r, nu, q0, v, a = args
+	r1, r2 = r
+	K1, K2 = K
+	nu1, nu2 = nu
+	q01, q02 = q0
+	v1, v2 = v
+	a1, a2 = a
+	alfa1 = _alfa(t, q01, v1)
+	alfa2 = _alfa(t, q02, v2)
+	dy1dt = r1 * alfa1 * y1 * (1 - (y1/K1)**nu1) * (1 - (y2/K2)**(nu2*a2))
+	dy2dt = r2 * alfa2 * y2 * (1 - (y1/K1)**(nu1*a1)) * (1 - (y2/K2)**nu2)
+	return [dy1dt, dy2dt]
+
+
+def baranyi_roberts_lv(y, t, *args):
+	r"""
+	Fujikawa, Hiroshi, and Mohammad Z Sakha. 2014. Prediction of Microbial Growth in Mixed Culture with a Competition Model. Biocontrol Science 19 (2): 89-92.
+	"""
+	y1, y2 = y
+	K, r, nu, q0, v, a = args
+	r1, r2 = r
+	K1, K2 = K
+	nu1, nu2 = nu
+	q01, q02 = q0
+	v1, v2 = v
+	a1, a2 = a
+	alfa1 = _alfa(t, q01, v1)
+	alfa2 = _alfa(t, q02, v2)
+	Kmax = max(K1**nu1, K2**nu2)
+	dy1dt = r1 * alfa1 * y1 * (1 - (y1/K1)**nu1) * (1 - (y1**a1 + y2**a2)/Kmax)
+	dy2dt = r2 * alfa2 * y2 * (1 - (y2/K2)**nu2) * (1 - (y1**a1 + y2**a2)/Kmax)
+	return [dy1dt, dy2dt]
+
+
+def baranyi_roberts_yr(y, t, *args):
+	y1, y2 = y
+	K, r, nu, q0, v, a = args
+	r1, r2 = r
+	K1, K2 = K
+	nu1, nu2 = nu
+	q01, q02 = q0
+	v1, v2 = v
+	a1, a2 = a
+	alfa1 = _alfa(t, q01, v1)
+	alfa2 = _alfa(t, q02, v2)
+	dy1dt = r1 * alfa1 * y1 * (1 - (y1/K1)**nu1 - (a2 * y2/K2)**nu2)
+	dy2dt = r2 * alfa2 * y2 * (1 - (a1 * y1/K1)**nu1 - (y2/K2)**nu2)
+	return [dy1dt, dy2dt]
+
+
+def baranyi_roberts_yr2(y, t, *args):
+	y1, y2 = y
+	K, r, nu, q0, v, a = args
+	r1, r2 = r
+	K1, K2 = K
+	nu1, nu2 = nu
+	q01, q02 = q0
+	v1, v2 = v
+	a1, a2 = a
+	alfa1 = _alfa(t, q01, v1)
+	alfa2 = _alfa(t, q02, v2)
+	dy1dt = r1 * alfa1 * y1 * (1 - (y1**nu1) / (K1**nu1) - a2 * (y2**nu2) / (K1**nu1))
+	dy2dt = r2 * alfa2 * y2 * (1 - a1 * (y1**nu1) / (K2**nu2) - (y2**nu2) / (K2**nu2))
+	return [dy1dt, dy2dt]
+
+
+
+def fit_and_compete(m1, m2, df_mixed, y0=None, aguess=(1, 1), fixed=False,
+					ode=baranyi_roberts_yr, num_of_points=100, method='nelder',
+					value_var = 'OD', time_var = 'Time',
+					PLOT=False, colors=sns.color_palette('Set1', 3)):
+	K = m1.best_values['K'], m2.best_values['K']
+	r = m1.best_values['r'], m2.best_values['r']
+	nu = m1.best_values.get('nu',1), m2.best_values.get('nu',1)
+	q0 = m1.best_values.get('q0', np.inf), m2.best_values.get('q0', np.inf)
+	v = m1.best_values.get('v', r[0]), m2.best_values.get('v', r[1])
+	if y0 is None:
+		y0 = m1.best_values['y0']/2, m2.best_values['y0']/2
+
+	y_mixed = df_mixed.groupby(time_var)[value_var].mean().as_matrix()
+	y_mixed_std = df_mixed.groupby(time_var)[value_var].std().as_matrix()
+	t_mixed = np.unique(df_mixed[time_var])
+	t = np.linspace(0, t_mixed.max(), num_of_points)
+
+	if fixed:
+		a = aguess
+		a1, a2 = a
+	else:
+		def mixed_model(t, a1, a2):
+		    y = odeint(ode, y0, t, args=(K, r, nu, q0, v, (a1, a2)))
+		    return y.sum(axis=1)
+		model = lmfit.Model(mixed_model)
+
+		params = model.make_params(a1=aguess[0], a2=aguess[1])
+		params['a1'].set(min=1e-1, max=10)
+		params['a2'].set(min=1e-1, max=10)
+
+		result = model.fit(data=y_mixed, t=t_mixed, params=params, weights=1.0 / y_mixed_std, method=method)
+
+		a = result.best_values['a1'], result.best_values['a2']
+		a1, a2 = a
+
+	y = odeint(ode, y0, t, args=(K, r, nu, q0, v, a))
+
+	if PLOT:
+		ysum = y.sum(axis=1)
+		p1 = y[:, 0] / ysum
+		p2 = y[:, 1] / ysum
+		MRSE = ((odeint(ode, y0, t_mixed, args=(K, r, nu, q0, v, a)).sum(axis=1) - y_mixed)**2).mean()
+
+		w, h = plt.rcParams['figure.figsize']
+		fig, ax = plt.subplots(1, 2, figsize=(w * 2, h), sharex=True)
+
+
+		ax[0].plot(t, y[:, 0], color=colors[0])
+		ax[0].plot(t, y[:, 1], color=colors[1])
+		ax[0].plot(t, ysum, color=colors[2])
+		if not fixed:
+			ax[0].plot(t_mixed, result.init_fit, ls='-.', color=colors[2])
+		ax[0].errorbar(t_mixed, y_mixed, y_mixed_std, fmt='o', color=colors[2])
+
+		ax[0].set(xlabel='Time (hour)', ylabel='OD', 
+				  xlim=(-0.5, t.max() + 0.5),
+				  title="MRSE: {:.2g}".format(MRSE))
+
+		ax[1].plot(t, p1, color=colors[0])
+		ax[1].plot(t, p2, color=colors[1])
+		
+		ax[1].set(xlabel='Time (hour)', ylabel='Frequency',
+				  xlim=(-0.5, t.max() + 0.5), ylim=(0, 1),
+				  title="a1={:.2g}, a2={:.2g}".format(*a))
+		
+		sns.despine()
+		fig.tight_layout()
+		return t, y, a, fig, ax
+	return t, y, a

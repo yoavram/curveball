@@ -17,7 +17,7 @@ from warnings import warn
 import numpy as np
 import matplotlib.pyplot as plt
 import collections
-from scipy.stats import chisqprob
+from scipy.stats import chisqprob, linregress
 from scipy.misc import derivative
 import pandas as pd
 import copy
@@ -28,6 +28,7 @@ import seaborn as sns
 sns.set_style("ticks")
 import curveball
 import curveball.baranyi_roberts_model
+from curveball.utils import smooth
 
 
 def is_model(cls):
@@ -66,7 +67,7 @@ def get_models(module):
     return [m[1] for m in inspect.getmembers(module, curveball.models.is_model)]
 
 
-def bootstrap_params(df, model_class, nsamples, unit='Well'):
+def bootstrap_params(df, model_class, nsamples, unit='Well', fit_kws=None):
     """Sample model parameters by fitting the model to resampled data.
 
     The data is bootstraped by drawing growth curves (sampling from the `unit` column in `df`) with replacement.
@@ -81,11 +82,17 @@ def bootstrap_params(df, model_class, nsamples, unit='Well'):
         number of samples to draw
     unit : str, optional
         the name of the column in `df` that identifies a resampling unit, defaults to ``Well``
-
+    fit_kws : dict, optional
+        dict of kwargs for `fit_model`
     Returns
     -------
     pandas.DataFrame
         data frame of samples; each row is a sample, each column is a parameter.
+
+    Raises
+    ------
+    ValueError : if `model_class` isn't a model class
+    ValueError : if `df` is empty
 
     See also
     --------
@@ -94,12 +101,15 @@ def bootstrap_params(df, model_class, nsamples, unit='Well'):
     if not is_model(model_class):
         raise TypeError("Input model_class must be a {0}, but it is {1}".format(lmfit.Model.__name__, 
                                                                                 model_class.__class__.__name__))
+    if df.empty:
+        raise ValueError("Input data frame df is empty")
+    if fit_kws is None: fit_kws = dict()
     unique_wells = df[unit].unique()
     results = [None] * nsamples
     for i in range(nsamples):
         wells = pd.Series(unique_wells).sample(frac=1, replace=True)
         _df = df[df.Well.isin(wells)]
-        results[i] = fit_model(_df, models=model_class, PLOT=False, PRINT=False)[0]
+        results[i] = fit_model(_df, models=model_class, PLOT=False, PRINT=False, **fit_kws)[0]
     param_samples = [m.best_values for m in results]
     param_samples = pd.DataFrame(param_samples)
     return param_samples
@@ -178,20 +188,23 @@ def noisify_lognormal_multiplicative(data, std, random_seed=None):
 
 def randomize(t=12, y0=0.1, K=1.0, r=0.1, nu=1.0, q0=np.inf, v=np.inf, 
         func=curveball.baranyi_roberts_model.baranyi_roberts_function, reps=1, noise_std=0.02, 
-        noise_func=noisify_lognormal_multiplicative, random_seed=None, as_df=True, data_label='OD', time_label='Time'):
+        noise_func=noisify_lognormal_multiplicative, random_seed=None, as_df=True, 
+        data_label='OD', time_label='Time', replicate_label='Well'):
     if isinstance(t, numbers.Number):
         t = np.linspace(0, t)
     y = func(t, y0, K, r, nu, q0, v)
     y.resize((len(t),))
     y = y.repeat(reps)
     y.resize((len(t), reps))
+    well = np.arange(reps).repeat(len(t))#.resize(len(t), reps)
     if noise_std > 0:
         y = noise_func(y, noise_std, random_seed)
     y[y < 0] = 0.0
     y = y.flatten()
     t = t.repeat(reps)
+    well = well.flatten()
     if as_df:
-        return pd.DataFrame({data_label: y, time_label: t})
+        return pd.DataFrame({data_label: y, time_label: t, replicate_label: well})
     else:
         return t, y
 
@@ -270,8 +283,8 @@ def lrtest(m0, m1, alfa=0.05):
     return prefer_m1, pval, D, ddf
 
 
-def find_max_growth(model_fit, after_lag=True):
-    r"""Estimates the maximum population growth rate from the model fit.
+def find_max_growth(model_fit, params=None, after_lag=True):
+    r"""Estimates the maximum population and specific growth rates from the model fit.
 
     The function calculates the maximum population growth rate :math:`a=\max{\frac{dy}{dt}}` 
     as the derivative of the model curve and calculates its maximum. 
@@ -305,6 +318,8 @@ def find_max_growth(model_fit, after_lag=True):
     ----------
     model_fit : lmfit.model.ModelResult
         the result of a model fitting procedure
+    params : lmfit.parameter.Parameters, optional
+        if provided, these parameters will override `model_fit`'s parameters
     after_lag : bool
         if true, only explore the time after the lag phase. Otherwise start at time zero. Defaults to :const:`True`.
 
@@ -321,9 +336,15 @@ def find_max_growth(model_fit, after_lag=True):
     y2 : float
         the population size or density (OD) for which the maximum per capita growth rate is achieved.
     mu : float
-        the the maximum per capita growth rate.
+        the the maximum specific (per capita) growth rate.
+
+    See also
+    --------
+    find_max_growth_ci
     """
-    params = model_fit.params
+    if params is None:
+        params = model_fit.params
+
     y0 = params['y0'].value
     K  = params['K'].value
 
@@ -347,6 +368,175 @@ def find_max_growth(model_fit, after_lag=True):
     y2 = y[i]
     
     return t1, y1, a, t2, y2, mu
+
+
+def find_max_growth_ci(model_fit, param_samples, after_lag=True, ci=0.95):
+    """Estimates a confidence interval for the maximum population/specific growth rates from the model fit.
+    
+    The maximum population/specific growth rate for each parameter sample is calculated.
+    The confidence interval of the rate is the lower and higher percentiles such that 
+    `ci` percent of the random rates are within the confidence interval.
+
+    Parameters
+    ----------
+    model_fit : lmfit.model.ModelResult
+        the result of a model fitting procedure
+    param_samples : pandas.DataFrame
+        parameter samples, generated using :function:`sample_params` or :function:`bootstrap_params`
+    after_lag : bool
+        if true, only explore the time after the lag phase. Otherwise start at time zero. Defaults to :const:`True`        
+    ci : float, optional
+        the fraction of lag durations that should be within the calculated limits. 0 < `ci` <, defaults to 0.95
+    
+    Returns
+    -------
+    low_a, high_a : float
+        the lower and higher boundries of the confidence interval of the the maximum population growth rate in the units of the `model_fit` ``OD``/``Time`` (usually OD/hours).
+    low_mu, high_mu : float
+        the lower and higher boundries of the confidence interval of the the maximum specific growth rate in the units of the `model_fit` 1/``Time`` variable (usually 1/hours).
+
+
+    See also
+    --------
+    find_max_growth
+    """
+    t1, y1, a, t2, y2, mu = find_max_growth(model_fit, after_lag=after_lag)
+    if not 0 <= ci <= 1:
+        raise ValueError("ci must be between 0 and 1")
+    nsamples = param_samples.shape[0]
+    aa = np.zeros(nsamples)
+    mumu = np.zeros(nsamples)    
+    params = copy.deepcopy(model_fit.params)
+    for i in range(param_samples.shape[0]):
+        sample = param_samples.iloc[i,:]
+        for k,v in params.items():
+            if v.vary:
+                params[k].set(value=sample[k])
+        t1, y1, a, t2, y2, mu = find_max_growth(model_fit, params=params, after_lag=after_lag)
+        aa[i] = a
+        mumu[i] = mu
+    
+    margin = (1.0 - ci) * 50.0
+    idx = np.isfinite(aa) & (aa >= 0)
+    if not idx.all():
+        warn("Warning: omitting {0} non-finite growth rate values".format(len(aa) - idx.sum()))
+    aa = aa[idx]
+    low_a = np.percentile(aa, margin)
+    high_a = np.percentile(aa, ci * 100.0 + margin)
+    assert high_a > low_a, aa.tolist()
+    idx = np.isfinite(mumu) & (mumu >= 0)
+    if not idx.all():
+        warn("Warning: omitting {0} non-finite growth rate values".format(len(mumu) - idx.sum()))
+    mumu = mumu[idx]
+    low_mu = np.percentile(mumu, margin)
+    high_mu = np.percentile(mumu, ci * 100.0 + margin)
+    assert high_mu > low_mu, mumu.tolist()
+    return low_a, high_a, low_mu, high_mu
+
+
+def find_min_doubling_time(model_fit, params=None, PLOT=False):
+    """Estimates the minimal doubling time from the model fit.
+
+    The functions evaluates a growth curves based on the model fit and supplied parameters (if any) 
+    and calculates that time required to double the population density at each time point. 
+    It then returns the minimal doubling time.
+
+    Parameters
+    ----------
+    model_fit : lmfit.model.ModelResult
+        the result of a model fitting procedure
+    params : lmfit.parameter.Parameters, optional
+        if provided, these parameters will override `model_fit`'s parameters
+    PLOT : bool, optional
+        if :const:`True`, the function will plot the Cook's distances of the wells and the threshold.
+
+    Returns
+    -------
+    min_dbl : float
+        the minimal time it takes the population density to double.
+    fig : matplotlib.figure.Figure
+        if the argument `PLOT` was :const:`True`, the generated figure.
+    ax : matplotlib.axes.Axes
+        if the argument `PLOT` was :const:`True`, the generated axis.
+    """
+    if params is None:
+        params = model_fit.params
+
+    def f(t): 
+        return model_fit.model.eval(t=t, params=params)
+
+    t1 = model_fit.userkws['t'].max()
+    t = np.linspace(0, t1, 1000)
+    y = f(t)
+
+    def find_point(point):
+        return abs(y - point).argmin()
+
+    imax = find_point(y.max() / 2) + 1
+    doubling_times = np.zeros(imax)
+    for i0, y0 in enumerate(y[:imax]):
+        i1 = find_point(2 * y0)
+        doubling_times[i0] = t[i1] - t[i0]
+    min_dbl = doubling_times.min()
+
+    if PLOT:
+        fig, ax = plt.subplots(1, 1)
+        ax.plot(t[:imax], doubling_times, '-')
+        ax.axhline(min_dbl, ls='--', color='k')
+        ax.set(xlabel='Time', ylabel='Doubling time')
+        sns.despine()
+        return min_dbl, fig, ax
+
+    return min_dbl
+
+
+def find_min_doubling_time_ci(model_fit, param_samples, ci=0.95):
+    """Estimates a confidence interval for the minimal doubling time from the model fit.
+
+    The minimal doubling time for each parameter sample is calculated.
+    The confidence interval of the doubling time is the lower and higher percentiles such that 
+    `ci` percent of the random lag durations are within the confidence interval.
+
+    Parameters
+    ----------
+    model_fit : lmfit.model.ModelResult
+        the result of a model fitting procedure
+    param_samples : pandas.DataFrame
+        parameter samples, generated using :function:`sample_params` or :function:`bootstrap_params`    
+    ci : float, optional
+        the fraction of doubling times that should be within the calculated limits. 0 < `ci` <, defaults to 0.95.
+    
+    Returns
+    -------
+    low, high : float
+        the lower and higher boundries of the confidence interval of the minimal doubling times in the units of the `model_fit` ``Time`` variable (usually hours).
+
+    See also
+    --------
+    find_min_doubling_time
+    """
+    min_dbl = find_min_doubling_time(model_fit)
+    if not 0 <= ci <= 1:
+        raise ValueError("ci must be between 0 and 1")
+    nsamples = param_samples.shape[0]
+    dbls = np.zeros(nsamples)
+    params = copy.deepcopy(model_fit.params)
+    for i in range(param_samples.shape[0]):
+        sample = param_samples.iloc[i,:]
+        for k,v in params.items():
+            if v.vary:
+                params[k].set(value=sample[k])
+        dbls[i] = find_min_doubling_time(model_fit, params=params)
+    
+    margin = (1.0 - ci) * 50.0
+    idx = np.isfinite(dbls) & (dbls >= 0)
+    if not idx.all():
+        warn("Warning: omitting {0} non-finite doubling time values".format(len(dbls) - idx.sum()))
+    dbls = dbls[idx]
+    low = np.percentile(dbls, margin)
+    high = np.percentile(dbls, ci * 100.0 + margin)
+    assert high > low, dbls.tolist()
+    return low, high
 
 
 def find_lag(model_fit, params=None):
@@ -406,11 +596,9 @@ def find_lag(model_fit, params=None):
     return lam
 
 
-def find_lag_ci(model_fit, nsamples=1000, ci=0.95):
+def find_lag_ci(model_fit, param_samples, ci=0.95):
     """Estimates a confidence interval for the lag duration from the model fit.
 
-    The function uses *parameteric bootstrap*:
-    `nsamples` random parameter sets are sampled using :py:func:`sample_params`.
     The lag duration for each parameter sample is calculated.
     The confidence interval of the lag is the lower and higher percentiles such that 
     `ci` percent of the random lag durations are within the confidence interval.
@@ -419,8 +607,8 @@ def find_lag_ci(model_fit, nsamples=1000, ci=0.95):
     ----------
     model_fit : lmfit.model.ModelResult
         the result of a model fitting procedure
-    nsamples : int, optional
-        number of samples, defaults to 1000
+    param_samples : pandas.DataFrame
+        parameter samples, generated using :function:`sample_params` or :function:`bootstrap_params`    
     ci : float, optional
         the fraction of lag durations that should be within the calculated limits. 0 < `ci` <, defaults to 0.95.
     
@@ -437,8 +625,8 @@ def find_lag_ci(model_fit, nsamples=1000, ci=0.95):
     lam = find_lag(model_fit)
     if not 0 <= ci <= 1:
         raise ValueError("ci must be between 0 and 1")
+    nsamples = param_samples.shape[0]
     lags = np.zeros(nsamples)
-    param_samples = sample_params(model_fit, nsamples)
     params = copy.deepcopy(model_fit.params)
     for i in range(param_samples.shape[0]):
         sample = param_samples.iloc[i,:]
@@ -456,7 +644,6 @@ def find_lag_ci(model_fit, nsamples=1000, ci=0.95):
     high = np.percentile(lags, ci * 100.0 + margin)
     assert high > low, lags.tolist()
     return low, high
-
 
 
 def has_lag(model_fits, alfa=0.05, PRINT=False):
@@ -612,7 +799,6 @@ def cooks_distance(df, model_fit, use_weights=True):
         OD = _df.OD.as_matrix()
         weights =  calc_weights(_df) if use_weights else None
         model_fit_i = copy.deepcopy(model_fit)
-        print("**", len(OD), len(time), len(weights))
         model_fit_i.fit(data=OD, t=time, weights=weights)
         D[well] = model_fit_i.chisqr / (p * MSE)
     return D
@@ -664,7 +850,8 @@ def find_outliers(df, model_fit, deviations=2, use_weights=True, ax=None, PLOT=F
         ax.axhline(y=dist_mean, ls='-', color='k')
         ax.axhline(y=dist_mean + deviations * dist_std, ls='--', color='k')
         ax.axhline(y=dist_mean - deviations * dist_std, ls='--', color='k')
-        ax.set_xticks(list(range(len(wells))))
+        ax.set_xticks(range(len(wells)))
+        ax.set_xlim(-0.5, len(wells) - 0.5)
         ax.set_xticklabels(wells, rotation=90)
         ax.set_xlabel('Well')
         ax.set_ylabel("Cook's distance")
@@ -810,6 +997,43 @@ def nvarys(params):
     return len([p for p in params.values() if p.vary])
 
 
+def fit_exponential_growth_phase(t, N, k=2):
+    r"""Fits an exponential model to the exponential growth phase.
+
+    Fits a polynomial p(t)~N, finds tmax the time of the maximum of the derivative dp/dt,
+    and fits a linear function to log(N) around tmax.
+    The resulting slope (a) and intercept (b) are the parameters of the exponential model:
+
+    .. math::
+
+        N(t) = N_0 e^{at}
+
+        N_0 = e^b
+
+    Arguments
+    ---------
+    t : np.ndarray
+        time
+    N : np.ndarray
+        `N[i]` is the population size at time `t[i]`
+    k : int
+        number of points to take around tmax, defaults to 2 for a total of 5 points
+
+    Returns
+    -------
+    slope : float
+        slope of the linear regression, a
+    intercept : float
+        intercept of the linear regression, b
+    """
+    N_smooth = smooth(t, N)
+    dNdt = derivative(N_smooth, t)
+    imax = dNdt.argmax()
+    idx = np.arange(imax - k, imax + k)
+    slope, intercept = linregress(t[idx], np.log(N[idx]))[:2]
+    return slope, intercept
+
+
 def fit_model(df, param_guess=None, param_min=None, param_max=None, param_fix=None, 
               models=None, use_weights=False, use_Dfun=False, method='leastsq', ax=None, PLOT=True, PRINT=True):
     r"""Fit and select a growth model to growth curve data.
@@ -910,7 +1134,9 @@ def fit_model(df, param_guess=None, param_min=None, param_max=None, param_fix=No
         dx = df.Time.max() / 25.0
         columns = min(3, len(results))
         rows = int(np.ceil(len(results) / columns))
-        fig, ax = plt.subplots(rows, columns, sharex=True, sharey=True, figsize=(16, 6))
+        w = max(8, 4 * columns)
+        h = max(6, 3*rows)
+        fig, ax = plt.subplots(rows, columns, sharex=True, sharey=True, figsize=(w, h))
         if not hasattr(ax, '__iter__'):
             ax = np.array(ax, ndmin=2)
         for i,fit in enumerate(results):
