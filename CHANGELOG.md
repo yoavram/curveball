@@ -1,5 +1,20 @@
 # Change log
 
+# v0.2.4
+
+- Bug fixes
+- Fit and compete - fit total OD to total of competition model (699f8b6)
+- Lotka Volterra competition models (started at fbc6dc8)
+- New competitions model based on resource consumption (22d949c)
+- Smoothing is more stable and doesn't require parameters (97c64d4)
+- Fix definition of `q0` in docs
+- Measure minimal doubling time (7ffdd24; suggested by Idan Frumkin)
+- Measure confidence interval for max growth rate, lag, and min doubling time and report in CLI ( 	d95bf3d and further commits afterwards)
+- Improved parameter guess functions (97c64d4, 0cecfaf)
+- Fit exponential model (523b30270ff6cd95d6702ed1b497e3f12655129b)
+- Support for Python 3.5 (4a1c5b8)
+- Moved docs from divshot to netlify (fbe022d)
+
 # v0.2.3
 
 - each growth model is now a separate class
