@@ -212,8 +212,9 @@ def plate(plate_folder, plate_file, output_file, list, show):
 @click.option('--param_fix', type=str, multiple=True, callback=to_set, help='fix a parameter to it\'s initial guess')
 @click.option('--weights/--no-weights', default=True, help="use weights for the fitting procedure")
 @click.option('--ci/--no-ci', default=False, help="find confidence intervals for lag and max growth rate")
+@click.option('--outliers/--no-outliers', default=False, help="find and remove outlier curves")
 @cli.command()
-def analyse(path, output_file, plate_folder, plate_file, blank_strain, ref_strain, max_time, guess, param_min, param_max, param_fix, weights, ci):
+def analyse(path, output_file, plate_folder, plate_file, blank_strain, ref_strain, max_time, guess, param_min, param_max, param_fix, weights, ci, outliers):
 	"""Analyse growth curves data using Curveball.
 
 	To get help for the parameters, run:
@@ -250,7 +251,7 @@ def analyse(path, output_file, plate_folder, plate_file, blank_strain, ref_strai
 	
 	with click.progressbar(files, label='Processing files:', item_show_func=get_filename, color='green') as bar:
 		for filepath in bar:
-			file_results = _process_file(filepath, plate, blank_strain, ref_strain, max_time, guess, param_min, param_max, param_fix, weights, ci)
+			file_results = _process_file(filepath, plate, blank_strain, ref_strain, max_time, guess, param_min, param_max, param_fix, weights, ci, outliers)
 			results.extend(file_results)
 	
 	output_table = pd.DataFrame(results)
@@ -259,7 +260,7 @@ def analyse(path, output_file, plate_folder, plate_file, blank_strain, ref_strai
 		click.secho("Wrote output to %s" % output_file.name, fg='green')
 
 
-def _process_file(filepath, plate, blank_strain, ref_strain, max_time, guess, param_min, param_max, param_fix, weights, ci):
+def _process_file(filepath, plate, blank_strain, ref_strain, max_time, guess, param_min, param_max, param_fix, weights, ci, outliers):
 	"""Analyses a single growth curves file.
 
 	See also
@@ -313,9 +314,21 @@ def _process_file(filepath, plate, blank_strain, ref_strain, max_time, guess, pa
 
 	for strain in strains:
 		strain_df = df[df.Strain == strain]
-		_ = curveball.models.fit_model(strain_df, param_guess=guess, param_min=param_min, param_max=param_max, param_fix=param_fix, use_weights=weights, PLOT=PLOT, PRINT=VERBOSE)
+		_ = curveball.models.fit_model(strain_df, param_guess=guess, param_min=param_min, param_max=param_max, param_fix=param_fix, use_weights=weights, PLOT=PLOT, PRINT=VERBOSE)		
+		if outliers:
+			if PLOT:
+				fit_results,fig,ax = _
+			else:
+				fit_results = _
+			outliers, fig, ax = curveball.models.find_all_outliers(strain_df, fit_results[0], use_weights=weights, PLOT=False)
+			outliers = sum(outliers, [])
+			if VERBOSE:
+				echo_info("Removing outlier curves from wells %s" % (outliers))
+			strain_df = strain_df[~strain_df.Well.isin(outliers)]
+			_ = curveball.models.fit_model(strain_df, param_guess=guess, param_min=param_min, param_max=param_max, param_fix=param_fix, use_weights=weights, PLOT=PLOT, PRINT=VERBOSE)		
+	
 		if PLOT:
-			fit_results,fig,ax = _
+			fit_results, fig, ax = _
 			strain_plot_fn = fn + ('_strain_%s.png' % strain)
 			fig.savefig(strain_plot_fn)
 			echo_info("Wrote strain %s plot to %s" % (strain, click.format_filename(strain_plot_fn)))
