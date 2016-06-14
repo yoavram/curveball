@@ -343,22 +343,30 @@ def _process_file(filepath, plate, blank_strain, ref_strain, max_time, guess, pa
 		res['nu'] = params['nu'].value if 'nu' in params else 1
 		res['q0'] = params['q0'].value if 'q0' in params else 0
 		res['v'] = params['v'].value if 'v' in params else 0
-		res['max_growth_rate'] = curveball.models.find_max_growth(fit)[-1]
-		res['min_doubling_time'] = curveball.models.find_min_doubling_time(fit)
-		res['lag'] = curveball.models.find_lag(fit)
+		res['has_lag'] = curveball.models.has_lag(fit_results)
+		res['has_nu'] = curveball.models.has_nu(fit_results, PRINT=VERBOSE)	
 		if ci:
 			param_samples = curveball.models.bootstrap_params(strain_df, type(fit.model), nsamples=1000)
-			_, _, low, high = curveball.models.find_max_growth_ci(fit, param_samples)
+			_, _, _, low, est, high = curveball.models.find_max_growth_ci(fit, param_samples)
+			res['max_growth_rate'] = est
 			res['max_growth_rate_low'] = low
 			res['max_growth_rate_high'] = high
-			low, high = curveball.models.find_lag_ci(fit, param_samples)
+			low, est, high = curveball.models.find_lag_ci(fit, param_samples)
+			res['lag'] = est
 			res['lag_low'] = low
 			res['lag_high'] = high
-			low, high = curveball.models.find_min_doubling_time_ci(fit, param_samples)
+			low, est, high = curveball.models.find_min_doubling_time_ci(fit, param_samples)
+			res['min_doubling_time'] = est
 			res['min_doubling_time_low'] = low
 			res['min_doubling_time_high'] = high
-		res['has_lag'] = curveball.models.has_lag(fit_results)
-		res['has_nu'] = curveball.models.has_nu(fit_results, PRINT=VERBOSE)
+			low, est, high = curveball.models.find_K_ci(fit, param_samples)
+			res['K'] = est
+			res['K_low'] = low
+			res['K_high'] = high
+		else:
+			res['max_growth_rate'] = curveball.models.find_max_growth(fit)[-1]
+			res['min_doubling_time'] = curveball.models.find_min_doubling_time(fit)
+			res['lag'] = curveball.models.find_lag(fit)
 
 		if strain == ref_strain:
 			ref_fit = fit

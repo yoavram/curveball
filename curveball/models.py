@@ -390,10 +390,10 @@ def find_max_growth_ci(model_fit, param_samples, after_lag=True, ci=0.95):
     
     Returns
     -------
-    low_a, high_a : float
-        the lower and higher boundries of the confidence interval of the the maximum population growth rate in the units of the `model_fit` ``OD``/``Time`` (usually OD/hours).
-    low_mu, high_mu : float
-        the lower and higher boundries of the confidence interval of the the maximum specific growth rate in the units of the `model_fit` 1/``Time`` variable (usually 1/hours).
+    low_a, est_a, high_a : float
+        the estimate, the lower and the higher boundries of the confidence interval of the the maximum population growth rate in the units of the `model_fit` ``OD``/``Time`` (usually OD/hours).
+    low_mu, est_mu, high_mu : float
+        the estimate, the lower, and higher boundries of the confidence interval of the the maximum specific growth rate in the units of the `model_fit` 1/``Time`` variable (usually 1/hours).
 
 
     See also
@@ -417,21 +417,27 @@ def find_max_growth_ci(model_fit, param_samples, after_lag=True, ci=0.95):
         mumu[i] = mu
     
     margin = (1.0 - ci) * 50.0
+
     idx = np.isfinite(aa) & (aa >= 0)
     if not idx.all():
         warn("Warning: omitting {0} non-finite growth rate values".format(len(aa) - idx.sum()))
     aa = aa[idx]
+    est_a = aa.mean()
     low_a = np.percentile(aa, margin)
     high_a = np.percentile(aa, ci * 100.0 + margin)
-    assert high_a > low_a, aa.tolist()
+    assert high_a > est_a, aa.tolist()
+    assert est_a > low_a, aa.tolist()
+
     idx = np.isfinite(mumu) & (mumu >= 0)
     if not idx.all():
         warn("Warning: omitting {0} non-finite growth rate values".format(len(mumu) - idx.sum()))
     mumu = mumu[idx]
+    est_mu = mumu.mean()
     low_mu = np.percentile(mumu, margin)
     high_mu = np.percentile(mumu, ci * 100.0 + margin)
-    assert high_mu > low_mu, mumu.tolist()
-    return low_a, high_a, low_mu, high_mu
+    assert high_mu > est_mu, mumu.tolist()
+    assert est_mu > low_mu, mumu.tolist()
+    return low_a, est_a, high_a, low_mu, est_mu, high_mu
 
 
 def find_min_doubling_time(model_fit, params=None, PLOT=False):
@@ -508,8 +514,8 @@ def find_min_doubling_time_ci(model_fit, param_samples, ci=0.95):
     
     Returns
     -------
-    low, high : float
-        the lower and higher boundries of the confidence interval of the minimal doubling times in the units of the `model_fit` ``Time`` variable (usually hours).
+    low, est, high : float
+        the estimate, the lower, and higher boundries of the confidence interval of the minimal doubling times in the units of the `model_fit` ``Time`` variable (usually hours).
 
     See also
     --------
@@ -535,8 +541,48 @@ def find_min_doubling_time_ci(model_fit, param_samples, ci=0.95):
     dbls = dbls[idx]
     low = np.percentile(dbls, margin)
     high = np.percentile(dbls, ci * 100.0 + margin)
-    assert high > low, dbls.tolist()
-    return low, high
+    est = dbls.mean()
+    assert high > est, dbls.tolist()
+    assert est > low, dbls.tolist()
+    return low, est, high
+
+
+def find_K_ci(model_fit, param_samples, ci=0.95):
+    """Estimates a confidence interval for ``K``, the maximum population density from the model fit.
+
+    The confidence interval of the doubling time is the lower and higher percentiles such that 
+    `ci` percent of the max densities are within the confidence interval.
+
+    Parameters
+    ----------
+    model_fit : lmfit.model.ModelResult
+        the result of a model fitting procedure
+    param_samples : pandas.DataFrame
+        parameter samples, generated using :function:`sample_params` or :function:`bootstrap_params`    
+    ci : float, optional
+        the fraction of doubling times that should be within the calculated limits. 0 < `ci` <, defaults to 0.95.
+    
+    Returns
+    -------
+    low, est, high : float
+        the estimate, the lower, and the higher boundries of the confidence interval of the maximum population density.
+    
+    """
+    if not 0 <= ci <= 1:
+        raise ValueError("ci must be between 0 and 1")    
+    Ks = param_samples['K']    
+    
+    margin = (1.0 - ci) * 50.0
+    idx = np.isfinite(Ks) & (Ks >= 0)
+    if not idx.all():
+        warn("Warning: omitting {0} non-finite K values".format(len(Ks) - idx.sum()))
+    Ks = Ks[idx]
+    low = np.percentile(Ks, margin)
+    high = np.percentile(Ks, ci * 100.0 + margin)
+    est = Ks.mean()
+    assert high > est, Ks.tolist()
+    assert est > low, Ks.tolist()
+    return low, est, high
 
 
 def find_lag(model_fit, params=None):
@@ -614,8 +660,8 @@ def find_lag_ci(model_fit, param_samples, ci=0.95):
     
     Returns
     -------
-    low, high : float
-        the lower and higher boundries of the confidence interval of the lag phase duration in the units of the `model_fit` ``Time`` variable (usually hours).
+    low, est, high : float
+        the estimate, the lower, and the higher boundries of the confidence interval of the lag phase duration in the units of the `model_fit` ``Time`` variable (usually hours).
 
     See also
     --------
@@ -642,8 +688,10 @@ def find_lag_ci(model_fit, param_samples, ci=0.95):
     lags = lags[idx]
     low = np.percentile(lags, margin)
     high = np.percentile(lags, ci * 100.0 + margin)
-    assert high > low, lags.tolist()
-    return low, high
+    est = lags.mean()
+    assert high > est, lags.tolist()
+    assert est > low, lags.tolist()
+    return low, est, high
 
 
 def has_lag(model_fits, alfa=0.05, PRINT=False):
