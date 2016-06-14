@@ -225,6 +225,32 @@ class ModelSelectionTestCase(TestCase):
 		self.assertTrue(mean_residual(models[0]) < NOISE_STD)
 
 
+class FindKTestCase(TestCase):
+	_multiprocess_can_split_ = True
+
+	def setUp(self):
+		if CI:
+			self.folder = tempfile.mkdtemp()
+		else:
+			self.folder = '.'
+
+
+	def tearDown(self):
+		plt.close("all")
+		if CI:
+			shutil.rmtree(self.folder)
+
+	
+	def test_find_lag_ci_logistic(self):
+		df = curveball.models.randomize(t=12, y0=0.1, K=1, r=0.75, nu=1, reps=REPS, noise_std=NOISE_STD, random_seed=RANDOM_SEED, as_df=True)
+		model = curveball.baranyi_roberts_model.Logistic()
+		params = model.guess(data=df.OD, t=df.Time)
+		result = model.fit(data=df.OD, t=df.Time, params=params)
+		param_samples = curveball.models.bootstrap_params(df, type(result.model), 100)
+		K_low, K_est, K_high = curveball.models.find_K_ci(result, param_samples)
+		self.assertTrue(K_low < K_est < K_high, "K is {0}, K CI is ({1},{2})".format(K_est, K_low, K_high))
+
+
 class FindLagTestCase(TestCase):
 	_multiprocess_can_split_ = True
 
@@ -255,10 +281,9 @@ class FindLagTestCase(TestCase):
 		model = curveball.baranyi_roberts_model.Logistic()
 		params = model.guess(data=df.OD, t=df.Time)
 		result = model.fit(data=df.OD, t=df.Time, params=params)
-		lam = curveball.models.find_lag(result)
 		param_samples = curveball.models.bootstrap_params(df, type(result.model), 100)
-		lam_low, lam_high = curveball.models.find_lag_ci(result, param_samples)
-		self.assertTrue(lam_low < lam < lam_high, "Lambda is {2}, Lambda CI is ({0},{1})".format(lam, lam_low, lam_high))
+		lam_low, lam_est, lam_high = curveball.models.find_lag_ci(result, param_samples)
+		self.assertTrue(lam_low < lam_est < lam_high, "Lambda is {0}, Lambda CI is ({1},{2})".format(lam_est, lam_low, lam_high))
 
 
 	def test_find_lag_richards(self):
@@ -336,10 +361,9 @@ class FindDoublingTimeTestCase(TestCase):
 		model = curveball.baranyi_roberts_model.Logistic()
 		params = model.guess(data=df.OD, t=df.Time)
 		result = model.fit(data=df.OD, t=df.Time, params=params)
-		lam = curveball.models.find_min_doubling_time(result)
 		param_samples = curveball.models.bootstrap_params(df, type(result.model), 100)
-		lam_low, lam_high = curveball.models.find_min_doubling_time_ci(result, param_samples)
-		self.assertTrue(lam_low < lam < lam_high, "Lambda is {2}, Lambda CI is ({0},{1})".format(lam, lam_low, lam_high))
+		low, est, high = curveball.models.find_min_doubling_time_ci(result, param_samples)
+		self.assertTrue(low < est < high, "Doubling time is {2}, CI is ({0},{1})".format(est, low, high))
 
 
 class FindMaxGrowthTestCase(TestCase):
@@ -382,11 +406,10 @@ class FindMaxGrowthTestCase(TestCase):
 		model = curveball.baranyi_roberts_model.Logistic()
 		model_fit = model.fit(df.OD, t=df.Time, y0=y0, K=K, r=r)
 		  
-		t1,y1,a,t2,y2,mu = curveball.models.find_max_growth(model_fit)
 		param_samples = curveball.models.bootstrap_params(df, type(model_fit.model), 100)
-		a_low, a_high, mu_low, mu_high = curveball.models.find_max_growth_ci(model_fit, param_samples)
-		self.assertTrue(a_low < a < a_high, "a is {2}, a CI is ({0},{1})".format(a_low, a_high, a))
-		self.assertTrue(mu_low < mu < mu_high, "mu is {2}, mu CI is ({0},{1})".format(mu_low, mu_high, mu))
+		a_low, a_est, a_high, mu_low, mu_est, mu_high = curveball.models.find_max_growth_ci(model_fit, param_samples)
+		self.assertTrue(a_low < a_est < a_high, "a is {2}, a CI is ({0},{1})".format(a_low, a_high, a_est))
+		self.assertTrue(mu_low < mu_est < mu_high, "mu is {2}, mu CI is ({0},{1})".format(mu_low, mu_high, mu_est))
 
 
 	def test_find_max_growth_logistic_lag(self):
