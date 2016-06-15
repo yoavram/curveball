@@ -400,7 +400,6 @@ def find_max_growth_ci(model_fit, param_samples, after_lag=True, ci=0.95):
     --------
     find_max_growth
     """
-    t1, y1, a, t2, y2, mu = find_max_growth(model_fit, after_lag=after_lag)
     if not 0 <= ci <= 1:
         raise ValueError("ci must be between 0 and 1")
     nsamples = param_samples.shape[0]
@@ -521,7 +520,6 @@ def find_min_doubling_time_ci(model_fit, param_samples, ci=0.95):
     --------
     find_min_doubling_time
     """
-    min_dbl = find_min_doubling_time(model_fit)
     if not 0 <= ci <= 1:
         raise ValueError("ci must be between 0 and 1")
     nsamples = param_samples.shape[0]
@@ -667,8 +665,7 @@ def find_lag_ci(model_fit, param_samples, ci=0.95):
     --------
     find_lag
     has_lag    
-    """
-    lam = find_lag(model_fit)
+    """    
     if not 0 <= ci <= 1:
         raise ValueError("ci must be between 0 and 1")
     nsamples = param_samples.shape[0]
@@ -682,9 +679,15 @@ def find_lag_ci(model_fit, param_samples, ci=0.95):
         lags[i] = find_lag(model_fit, params=params)
     
     margin = (1.0 - ci) * 50.0
-    idx = np.isfinite(lags) & (lags >= 0)
+    idx = np.isfinite(lags)
     if not idx.all():
         warn("Warning: omitting {0} non-finite lag values".format(len(lags) - idx.sum()))
+    lags = lags[idx]
+    idx = (lags >= 0)
+    if not idx.all():
+        warn("Warning: omitting {0} negative lag values".format(len(lags) - idx.sum()))
+    if not idx.any(): # no legal lag values left
+        return np.nan, np.nan, np.nan
     lags = lags[idx]
     low = np.percentile(lags, margin)
     high = np.percentile(lags, ci * 100.0 + margin)
