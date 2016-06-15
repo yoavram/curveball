@@ -3,7 +3,7 @@
 # v0.2.5
 
 - When using a `find_*_ci` function, it now also returns an estimate - the average of all samples (bug fix). 
-- Adde `find_K_ci` to find the confidence interval of the K parameter (closes #131)
+- Added `find_K_ci` to find the confidence interval of the K parameter (closes #131)
 
 # v0.2.4
 
