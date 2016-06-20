@@ -198,4 +198,4 @@ to pull the code, install dependencies, and test the code.
 If the tests succeed, Travis-CI will **build the package and deploy it to Anaconda.org**,
 but only on tagged commits from the `master` branch.
 
-Travis-CI will also **build the documentation and deploy it to [divshot.io](https://curveball.divshot.io)**.
+Travis-CI will also **build the documentation and deploy it to [netlify](https://curveball.netlify.com)**.
