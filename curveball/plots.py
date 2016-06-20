@@ -418,7 +418,7 @@ def plot_sample_fit(model_fit, param_samples, fit_kws=None, data_kws=None, sampl
 	ax = model_fit.plot_fit(init_kws={'ls': ''}, fit_kws=_fit_kws, data_kws=_data_kws)
 	for i in range(nsamples):
 		sample = param_samples.iloc[i, :]
-		params = copy.deepcopy(model_fit.params)
+		params = model_fit.params.copy()
 		for k, v in params.items():
 			if v.vary:
 				params[k].set(value=sample[k])
