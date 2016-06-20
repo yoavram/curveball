@@ -27,7 +27,7 @@ setup(
     url='https://github.com/yoavram/curveball',
     license='MIT',
     classifiers=[
-        'Development Status :: 1 - Planning',
+        'Development Status :: 3 - Alpha',
         'Intended Audience :: Developers',
         'Intended Audience :: End Users/Desktop',
         'Intended Audience :: Science/Research',
@@ -69,7 +69,8 @@ setup(
         ],
         'docs': [
             'sphinx>=1.3.0',
-            'numpydoc'
+            'numpydoc',
+            'sphinx_rtd_theme'
         ]
     },
     entry_points={

@@ -17,7 +17,7 @@ Dependencies
 -  matplotlib
 -  seaborn
 -  lmfit
--  statsmodels
+-  scikit-learn
 -  sympy
 -  xlrd
 -  lxml
