@@ -331,6 +331,7 @@ def compete(m1, m2, p0=(0.5, 0.5), y0=None, t=None, hours=24, num_of_points=100,
 				raise ValueError("Bootstrap sampling requires kwargs df1 and df2")
 			m1_fixed = {pname for pname,p in m1.params.items() if not p.vary}
 			m2_fixed = {pname for pname,p in m2.params.items() if not p.vary}
+			# FIXME bootstrap_params has changed
 			m1_samples = curveball.models.bootstrap_params(df1, m1.model.__class__, nsamples, 
 														   fit_kws={'param_fix': m1_fixed})
 			m2_samples = curveball.models.bootstrap_params(df2, m2.model.__class__, nsamples,
@@ -608,13 +609,15 @@ def fit_and_compete(m1, m2, df_mixed, y0=None, aguess=(1, 1), fixed=False,
 					ode=baranyi_roberts_yr, num_of_points=100, method='nelder',
 					value_var = 'OD', time_var = 'Time',
 					PLOT=False, colors=sns.color_palette('Set1', 3)):
-	K = m1.best_values['K'], m2.best_values['K']
-	r = m1.best_values['r'], m2.best_values['r']
-	nu = m1.best_values.get('nu',1), m2.best_values.get('nu',1)
-	q0 = m1.best_values.get('q0', np.inf), m2.best_values.get('q0', np.inf)
-	v = m1.best_values.get('v', r[0]), m2.best_values.get('v', r[1])
+	best_values1 = m1.best_values if hasattr(m1, 'best_values') else m1
+	best_values2 = m2.best_values if hasattr(m2, 'best_values') else m2
+	K = best_values1['K'], best_values2['K']
+	r = best_values1['r'], best_values2['r']
+	nu = best_values1.get('nu',1), best_values2.get('nu',1)
+	q0 = best_values1.get('q0', np.inf), best_values2.get('q0', np.inf)
+	v = best_values1.get('v', r[0]), best_values2.get('v', r[1])
 	if y0 is None:
-		y0 = m1.best_values['y0']/2, m2.best_values['y0']/2
+		y0 = best_values1['y0']/2, best_values2['y0']/2
 
 	y_mixed = df_mixed.groupby(time_var)[value_var].mean().as_matrix()
 	y_mixed_std = df_mixed.groupby(time_var)[value_var].std().as_matrix()
@@ -673,3 +676,5 @@ def fit_and_compete(m1, m2, df_mixed, y0=None, aguess=(1, 1), fixed=False,
 		fig.tight_layout()
 		return t, y, a, fig, ax
 	return t, y, a
+
+
