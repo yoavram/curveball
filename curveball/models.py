@@ -161,7 +161,7 @@ def sample_params(model_fit, nsamples, params=None, covar=None):
     if params is None:
         params = model_fit.params
     else:
-        _params = copy.copy(model_fit.params)
+        _params = model_fit.params.copy()
         for pname, pvalue in params.items():
             _params[pname].value = pvalue
         params = _params
@@ -427,7 +427,7 @@ def find_max_growth_ci(model_fit, param_samples, after_lag=True, ci=0.95):
     mumu = np.zeros(nsamples)        
     for i in range(param_samples.shape[0]):
         sample = param_samples.iloc[i,:]
-        params = copy.deepcopy(model_fit.params)
+        params = model_fit.params.copy()
         for k,v in params.items():
             if v.vary:
                 params[k].set(value=sample[k])
@@ -689,7 +689,7 @@ def find_lag_ci(model_fit, param_samples, ci=0.95):
     lags = np.zeros(nsamples)    
     for i in range(param_samples.shape[0]):
         sample = param_samples.iloc[i,:]
-        params = copy.deepcopy(model_fit.params)
+        params = model_fit.params.copy()
         for k,v in params.items():
             if v.vary:
                 params[k].set(value=sample[k])
@@ -1018,7 +1018,10 @@ def calc_weights(df, PLOT=False):
             raise ValueError("NaN weights are illegal, indices: {0}".format(idx))
         # if any weight is infinite, change to the max
         idx = np.isinf(weights)
-        if idx.any():
+        if idx.all():
+            warn("All weights are infinite, proceeding without weights)")
+            weights = None
+        elif idx.any():
             warn("Found infinite weight, changing to maximum ({0} occurences)".format(idx.sum()))
             weights[idx] = weights[~idx].max()
     if PLOT:
