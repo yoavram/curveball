@@ -678,3 +678,53 @@ def fit_and_compete(m1, m2, df_mixed, y0=None, aguess=(1, 1), fixed=False,
 	return t, y, a
 
 
+def fit_and_compete_ci(param_samples1, param_samples2, df_mixed, ci=0.95, 
+	colors=('g', 'r'), line_kws=None, ci_kws=None, ax=None, PLOT=False):
+	if line_kws is None:
+		line_kws = dict()
+	if ci_kws is None:
+		ci_kws = dict(color='gray', alpha=0.5)
+	nsamples = param_samples1.shape[0]
+	assert param_samples1.shape[0] == param_samples2.shape[0], "Parameters samples should have the same length"
+	t = [None] * nsamples
+	y = [None] * nsamples
+	a = [None] * nsamples
+	for i in range(nsamples):
+	    sample1 = param_samples1.iloc[i, :]
+	    sample2 = param_samples2.iloc[i, :]
+	    t[i], y[i], a[i] = curveball.competitions.fit_and_compete(sample1, sample2, df_mixed)
+	
+	t = np.array(t)
+	y = np.array(y)
+	a = np.array(a)
+	f1 = y[:, :, 0] / y.sum(axis=2)
+	f2 = y[:, :, 1] / y.sum(axis=2)
+	f = np.array((f1, f2)).T
+
+	margin = (1.0 - ci) * 50.0
+
+	low_f = np.percentile(f, margin, axis=1)
+	high_f = np.percentile(f, ci * 100.0 + margin, axis=1)
+	avg_f = f.mean(axis=1)
+
+	low_a = np.percentile(a, margin, axis=0)
+	avg_a = a.mean(axis=0)
+	high_a = np.percentile(a, ci * 100.0 + margin, axis=0)
+
+	if PLOT:
+		if ax is None:
+			fig, ax = plt.subplots()
+		else:
+			fig = ax.figure
+		ax.fill_between(t[0, :], low_f[:, 0], high_f[:, 0], **ci_kws)
+		ax.plot(t[0,:], avg_f[:, 0], color=colors[0], **line_kws)
+
+		ax.fill_between(t[0, :], low_f[:, 1], high_f[:, 1], **ci_kws)
+		ax.plot(t[0,:], avg_f[:, 1], color=colors[1], **line_kws)
+
+		ax.set(xlabel='Time', ylabel='Frequency')
+		fig.tight_layout()
+		sns.despine()
+		return low_a, avg_a, high_a, low_f, avg_f, high_f, fig, ax
+
+	return low_a, avg_a, high_a, low_f, avg_f, high_f
