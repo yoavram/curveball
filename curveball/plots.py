@@ -422,7 +422,7 @@ def plot_sample_fit(model_fit, param_samples, fit_kws=None, data_kws=None, sampl
 		for k, v in params.items():
 			if v.vary:
 				params[k].set(value=sample[k])
-			plt.plot(t, f(params), **_sample_kws)
+		plt.plot(t, f(params), **_sample_kws)
 	ax.legend().set_visible(False)
 	ax.set(ylabel='OD', xlabel='Time', title='')
 
