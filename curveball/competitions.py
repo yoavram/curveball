@@ -678,7 +678,7 @@ def fit_and_compete(m1, m2, df_mixed, y0=None, aguess=(1, 1), fixed=False,
 	return t, y, a
 
 
-def fit_and_compete_ci(param_samples1, param_samples2, df_mixed, ci=0.95, 
+def fit_and_compete_ci(param_samples1, param_samples2, df_mixed, y0=None, ci=0.95,
 	colors=('g', 'r'), line_kws=None, ci_kws=None, ax=None, PLOT=False):
 	if line_kws is None:
 		line_kws = dict()
@@ -692,7 +692,7 @@ def fit_and_compete_ci(param_samples1, param_samples2, df_mixed, ci=0.95,
 	for i in range(nsamples):
 	    sample1 = param_samples1.iloc[i, :]
 	    sample2 = param_samples2.iloc[i, :]
-	    t[i], y[i], a[i] = curveball.competitions.fit_and_compete(sample1, sample2, df_mixed)
+	    t[i], y[i], a[i] = curveball.competitions.fit_and_compete(sample1, sample2, df_mixed, y0=y0)
 	
 	t = np.array(t)
 	y = np.array(y)
