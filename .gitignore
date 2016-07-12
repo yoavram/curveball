@@ -82,3 +82,6 @@ notebooks/Untitled*.ipynb
 
 # divshot
 .divshot-cache
+
+# pycharm
+.idea
