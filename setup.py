@@ -59,7 +59,7 @@ setup(
         'seaborn',
         'scikit-learn',
         'sympy',
-        'lmfit>=0.9.0',
+        'lmfit>=0.9.3',
     ],
     extras_require={
         'tests': [

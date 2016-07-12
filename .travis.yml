@@ -24,6 +24,7 @@ before_install:
   - export PATH=$HOME/miniconda2/bin:$PATH
   - conda update --yes -q conda pip
   - conda config --add channels yoavram
+  - conda config --add channels conda-forge
   - conda config --set always_yes true
   - conda config --set anaconda_upload no
   - pip install codecov | cat
