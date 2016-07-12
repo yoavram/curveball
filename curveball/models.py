@@ -428,7 +428,7 @@ def find_max_growth_ci(model_fit, param_samples, after_lag=True, ci=0.95):
     for i in range(param_samples.shape[0]):
         sample = param_samples.iloc[i,:]
         params = model_fit.params.copy()
-        for k,v in params.items():
+        for k, v in params.items():
             if v.vary:
                 params[k].set(value=sample[k])
         t1, y1, a, t2, y2, mu = find_max_growth(model_fit, params=params, after_lag=after_lag)
