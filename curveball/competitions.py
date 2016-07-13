@@ -33,13 +33,13 @@ def double_baranyi_roberts_ode0(y, t, r, K, nu, q0, v):
 	.. math::
 
 		\frac{dN_i}{dt} = r_i \alpha_i(t) N_i \Big(1 - \Big(\frac{\sum_{j}{N_j}}{K_i}\Big)^{\nu_i}\Big)
-	
+
 	- :math:`N_i`: population size of strain *i*.
 	- :math:`r_i`: initial per capita growth rate of strain *i*
 	- :math:`K_i`: maximum population size of strain *i*
 	- :math:`\nu_i`: curvature of the logsitic term of strain *i*
 	- :math:`\alpha_i(t)= \frac{q_{0,i}}{q_{0,i} + e^{-v_i t}}`
-	- :math:`q_{0,i}`: initial adjustment of strain *i* to current environment 
+	- :math:`q_{0,i}`: initial adjustment of strain *i* to current environment
 	- :math:`v_i`: adjustment rate of strain *i*
 
 	Parameters
@@ -126,7 +126,7 @@ def double_baranyi_roberts_ode4(y, t, r, K, nu, q0, v):
 
 	.. math::
 
-		\frac{dN_i}{dt} = r_i \alpha_i(t) N_i 
+		\frac{dN_i}{dt} = r_i \alpha_i(t) N_i
 
 	See also
 	--------
@@ -203,8 +203,8 @@ def double_baranyi_roberts_ode8(y, t, r, K, nu, q0, v):
 
 
 def double_baranyi_roberts_gimenez_delgado_ode(y, t, r, K, nu, q0, v):
-	r"""A two species Baranyi-Roberts model with competition model inspired by Gimenez and Delgado (2004). 
-	The function calculates the population growth rate at given time points. 
+	r"""A two species Baranyi-Roberts model with competition model inspired by Gimenez and Delgado (2004).
+	The function calculates the population growth rate at given time points.
 
 	.. math::
 
@@ -221,21 +221,21 @@ def double_baranyi_roberts_gimenez_delgado_ode(y, t, r, K, nu, q0, v):
 
 
 def compete(m1, m2, p0=(0.5, 0.5), y0=None, t=None, hours=24, num_of_points=100, 
-			nsamples=1, lag_phase=True, ode=double_baranyi_roberts_ode1, 
-			params1=None, params2=None, ci=95, colors=None, ax=None, PLOT=False, 
+			nsamples=1, lag_phase=True, ode=double_baranyi_roberts_ode1,
+			params1=None, params2=None, ci=95, colors=None, ax=None, PLOT=False,
 			sampler='covar', df1=None, df2=None):
 	"""Simulate competitions between two strains using growth parameters estimated
 	by fitting growth models to growth curves data.
 
-	Integrates a 2-dimensional ODE system given by `ode` 
+	Integrates a 2-dimensional ODE system given by `ode`
 	with parameters extracted from :py:class:`lmfit.model.ModelResult` instances `m1` and `m2`.
 	This implementation includes plotting (if required by `PLOT`);
 	resampling from the distribution of model parameters (when `nsamples` > 1);
-	changing the ODE system (by providing a different function in `ode`); 
+	changing the ODE system (by providing a different function in `ode`);
 	and more.
 
-	The function competes two strains/species; 
-	therefore it expects two :py:class:`lmfit.model.ModelResult` objects, 
+	The function competes two strains/species;
+	therefore it expects two :py:class:`lmfit.model.ModelResult` objects,
 	two initial values in `y0`, etc.
 
 	Parameters
@@ -243,7 +243,7 @@ def compete(m1, m2, p0=(0.5, 0.5), y0=None, t=None, hours=24, num_of_points=100,
 	m1, m2 : lmfit.model.ModelResult
 		model fitting results of growth models defined in :py:mod:`curveball.models`.
 	p0, y0 : tuple, optional
-		`p0` is the initial relative frequencies; `y0` is the initial population sizes. 
+		`p0` is the initial relative frequencies; `y0` is the initial population sizes.
 		if `y0` is given than ``y0[0]`` and ``y0[0]`` are the initial population size for `m1` and `m2`, respectively.
 		if `y0` is not given, then it will be set to the average estimated `y0` in `m1` and `m2` multiplied by `p0`.
 	t : numpy.ndarray or None, optional
@@ -253,16 +253,16 @@ def compete(m1, m2, p0=(0.5, 0.5), y0=None, t=None, hours=24, num_of_points=100,
 	num_of_points : int, optional
 		if `t` is not given, determines the number of time points to use, defaults to 100.
 	nsamples : int, optional
-		how many replicates of the competition should be simulated; 
-		if `nsamples` = 1, only one competition is simulated with the estimated parameters; 
-		otherwise `nsamples` competitions are simulated with parameters drawn from a parameter distribution 
+		how many replicates of the competition should be simulated;
+		if `nsamples` = 1, only one competition is simulated with the estimated parameters;
+		otherwise `nsamples` competitions are simulated with parameters drawn from a parameter distribution
 		determined by `sampler`. Defaults to 1.
 	lag_phase : bool, optional
 		if `True`, use lag phase as given by `m1` and `m2`. Otherwise, override the lag phase parameters to prevent a lag phase. Defaults to :const:`True`.
 	ode : func, optional
 		an ordinary differential systems system defined by a function that accepts ``y``, ``t``, and additional arguments, and returns the derivate of ``y`` with respect to ``t``. Defaults to :py:func:`.double_baranyi_roberts_ode0`.
 	params1, params2 : dict, optional
-		dictionaries of model parameter values; if given, overrides values from `m1` and `m2`.	
+		dictionaries of model parameter values; if given, overrides values from `m1` and `m2`.
 	ci : float, optional
 		confidence interval size, in (0, 100), only applicable when `PLOT` is :const:`True`, defaults to 95%.
 	colors : sequence of str, optional
@@ -272,7 +272,7 @@ def compete(m1, m2, p0=(0.5, 0.5), y0=None, t=None, hours=24, num_of_points=100,
 	PLOT : bool, optional
 		if :const:`True`, the function will plot the curves of *y* as a function of *t*. Defaults to :const:`False`.
 	sampler : str, optional
-		if ``covar``, the parameters will be sampled using the covariance matrix (:py:func:`curveball.models.sample_params`); 
+		if ``covar``, the parameters will be sampled using the covariance matrix (:py:func:`curveball.models.sample_params`);
 		if ``bootstrap`` the parameters will be sampled by resampling the growth curves (:py:func:`curveball.models.bootstrap_params`).
 	df1, df2 : pandas.DataFrame, optional
 		the data frames used to fit `m1` and `m2`, only used when `sampler` is ``bootstrap``.
@@ -282,7 +282,7 @@ def compete(m1, m2, p0=(0.5, 0.5), y0=None, t=None, hours=24, num_of_points=100,
 	t : numpy.ndarray
 		1d (or 2d, if `nsamples`>1) array of time points, in hours.
 	y: numpy.ndarray
-		2d (or 3d, if `nsamples`>1) array of strain frequencies. 
+		2d (or 3d, if `nsamples`>1) array of strain frequencies.
 		First axis is time, second axis is strain, third axis (if applicable) is sample.
 	fig : matplotlib.figure.Figure
 		figure object.
@@ -332,7 +332,7 @@ def compete(m1, m2, p0=(0.5, 0.5), y0=None, t=None, hours=24, num_of_points=100,
 			m1_fixed = {pname for pname,p in m1.params.items() if not p.vary}
 			m2_fixed = {pname for pname,p in m2.params.items() if not p.vary}
 			# FIXME bootstrap_params has changed
-			m1_samples = curveball.models.bootstrap_params(df1, m1.model.__class__, nsamples, 
+			m1_samples = curveball.models.bootstrap_params(df1, m1.model.__class__, nsamples,
 														   fit_kws={'param_fix': m1_fixed})
 			m2_samples = curveball.models.bootstrap_params(df2, m2.model.__class__, nsamples,
 														   fit_kws={'param_fix': m2_fixed})
@@ -364,15 +364,15 @@ def compete(m1, m2, p0=(0.5, 0.5), y0=None, t=None, hours=24, num_of_points=100,
 
 	y = np.empty((len(t), 2, nsamples))
 	#infodict = [None]*nsamples # DEBUG
-	
-	# simulate the ode for each param sample	
+
+	# simulate the ode for each param sample
 	for i in range(nsamples):
 		if y0 is None:
 			p0 = p0[0] / (p0[0] + p0[1]), p0[1] / (p0[0] + p0[1])
 			y0 = m1_samples.iloc[i]['y0'] * p0[0], m2_samples.iloc[i]['y0'] * p0[1]
 		r = m1_samples.iloc[i]['r'], m2_samples.iloc[i]['r']
 		K = m1_samples.iloc[i]['K'], m2_samples.iloc[i]['K']
-		nu = m1_samples.iloc[i].get('nu', 1.0), m2_samples.iloc[i].get('nu', 1.0)		
+		nu = m1_samples.iloc[i].get('nu', 1.0), m2_samples.iloc[i].get('nu', 1.0)
 		if lag_phase:
 			q0 = m1_samples.iloc[i].get('q0', np.inf), m2_samples.iloc[i].get('q0', np.inf)
 			v = m1_samples.iloc[i].get('v', r[0]), m2_samples.iloc[i].get('v', r[1])
@@ -384,7 +384,7 @@ def compete(m1, m2, p0=(0.5, 0.5), y0=None, t=None, hours=24, num_of_points=100,
 		y[:,:,i] = odeint(ode, y0=y0, t=t, args=args)
 
 		# DEBUG
-		#_y_,info = odeint(double_baranyi_roberts_ode0, y0, t, args=args, full_output=1)        
+		#_y_,info = odeint(double_baranyi_roberts_ode0, y0, t, args=args, full_output=1)
 		#info['args'] = (y0,) + args
 		#infodict[i] = info
 		#if info['message'] == 'Integration successful.':
@@ -395,7 +395,7 @@ def compete(m1, m2, p0=(0.5, 0.5), y0=None, t=None, hours=24, num_of_points=100,
 			fig,ax = plt.subplots(1, 1)
 		else:
 			fig = ax.get_figure()
-		
+
 		df = pd.DataFrame()
 		for i in range(y.shape[1]):
 			_df = pd.DataFrame(y[:,i,:])
@@ -403,10 +403,10 @@ def compete(m1, m2, p0=(0.5, 0.5), y0=None, t=None, hours=24, num_of_points=100,
 			_df = pd.melt(_df, id_vars='Time', var_name='Replicate', value_name='y')
 			_df['Strain'] = i
 			df = pd.concat((df, _df))
-		
+
 		if colors is not None:
 			colors = {i:c for i,c in enumerate(colors)}
-		sns.tsplot(df, time='Time', unit='Replicate', condition='Strain', value='y', 
+		sns.tsplot(df, time='Time', unit='Replicate', condition='Strain', value='y',
 						ci=ci, color=colors, ax=ax)
 		ax.set_xlabel('Time (hour)')
 		ax.set_ylabel('OD')
@@ -416,7 +416,7 @@ def compete(m1, m2, p0=(0.5, 0.5), y0=None, t=None, hours=24, num_of_points=100,
 
 
 def selection_coefs_ts(t, y, ax=None, PLOT=False):
-	r"""Calculate selection coefficient according to the following formula[2]_, 	
+	r"""Calculate selection coefficient according to the following formula[2]_,
 	where :math:`A(t), B(t)` are population densities of assay strain *A* and reference strain *B* at time *t*:
 
 	.. math::
@@ -430,7 +430,7 @@ def selection_coefs_ts(t, y, ax=None, PLOT=False):
 	y : numpy.ndarray
 		array of population densities, as produced by :py:func:`compete`, where the first axis is time and the second axis is strain.
 	ax : matplotlib.axes.Axes, optional
-		if `PLOT` is :const:`True`, an axes to plot into; if not provided, a new one is created.    
+		if `PLOT` is :const:`True`, an axes to plot into; if not provided, a new one is created.
 	PLOT : bool, optional
 		if :const:`True`, the function will plot the curve of *s* as a function of *t*.
 
@@ -445,12 +445,12 @@ def selection_coefs_ts(t, y, ax=None, PLOT=False):
 
 	Notes
 	-----
-	This formula assumes that the frequencies of the strains follow a logistic curve. 
+	This formula assumes that the frequencies of the strains follow a logistic curve.
 	Lag phases, interactions, etc. may cause this formula to become irrelevant.
 
 	References
 	----------
-	.. [12] Chevin, L-M. 2011. `On Measuring Selection in Experimental Evolution <http://dx.doi.org/10.1098/rsbl.2010.0580>`_. Biology Letters.	
+	.. [12] Chevin, L-M. 2011. `On Measuring Selection in Experimental Evolution <http://dx.doi.org/10.1098/rsbl.2010.0580>`_. Biology Letters.
 	"""
 	svals = np.gradient(np.log(y[:,0] / y[:,1]), t)
 	svals[np.isinf(svals)] = svals[np.isfinite(svals)].max()
@@ -462,7 +462,7 @@ def selection_coefs_ts(t, y, ax=None, PLOT=False):
 			fig = ax.get_figure()
 		ax.plot(t, svals)
 		ax.set_ylabel('Selection coefficient')
-		ax.set_xlabel('Time (hour)')		
+		ax.set_xlabel('Time (hour)')
 		sns.despine()
 		return svals,fig,ax
 
@@ -487,13 +487,13 @@ def fitness_LTEE(y, ref_strain=0, assay_strain=1, t0=0, t1=-1, ci=0):
 		the index of the reference strain within `y`. This strain's fitness is set to 1 by definition. Defaults to 0 (first).
 	assay_strain : int, optional
 		the index of the assay strain within `y`. The result will be the fitness of this strain relative to the fitness of the reference strain. Defaults to 1 (second).
-	t0 : int, optional 
+	t0 : int, optional
 		the index of the time point from which to start the calculation of the relative fitness, defaults to 0 (first).
 	t1 : int, optional
 		the index of the time point at which to end the calculation of the relative fitness, defaults to -1 (last).
-	ci : float between 0 and 1, optional 
+	ci : float between 0 and 1, optional
 		if not zero, a confidence interval will be calculated using the third axis of `y` as replicates.
-	
+
 	Returns
 	-------
 	w : float
@@ -629,8 +629,8 @@ def fit_and_compete(m1, m2, df_mixed, y0=None, aguess=(1, 1), fixed=False,
 		a1, a2 = a
 	else:
 		def mixed_model(t, a1, a2):
-		    y = odeint(ode, y0, t, args=(K, r, nu, q0, v, (a1, a2)))
-		    return y.sum(axis=1)
+			y = odeint(ode, y0, t, args=(K, r, nu, q0, v, (a1, a2)))
+			return y.sum(axis=1)
 		model = lmfit.Model(mixed_model)
 
 		params = model.make_params(a1=aguess[0], a2=aguess[1])
@@ -661,17 +661,17 @@ def fit_and_compete(m1, m2, df_mixed, y0=None, aguess=(1, 1), fixed=False,
 			ax[0].plot(t_mixed, result.init_fit, ls='-.', color=colors[2])
 		ax[0].errorbar(t_mixed, y_mixed, y_mixed_std, fmt='o', color=colors[2])
 
-		ax[0].set(xlabel='Time (hour)', ylabel='OD', 
+		ax[0].set(xlabel='Time (hour)', ylabel='OD',
 				  xlim=(-0.5, t.max() + 0.5),
 				  title="MRSE: {:.2g}".format(MRSE))
 
 		ax[1].plot(t, p1, color=colors[0])
 		ax[1].plot(t, p2, color=colors[1])
-		
+
 		ax[1].set(xlabel='Time (hour)', ylabel='Frequency',
 				  xlim=(-0.5, t.max() + 0.5), ylim=(0, 1),
 				  title="a1={:.2g}, a2={:.2g}".format(*a))
-		
+
 		sns.despine()
 		fig.tight_layout()
 		return t, y, a, fig, ax
@@ -690,15 +690,16 @@ def fit_and_compete_ci(param_samples1, param_samples2, df_mixed, y0=None, ci=0.9
 	y = [None] * nsamples
 	a = [None] * nsamples
 	for i in range(nsamples):
-	    sample1 = param_samples1.iloc[i, :]
-	    sample2 = param_samples2.iloc[i, :]
-	    t[i], y[i], a[i] = curveball.competitions.fit_and_compete(sample1, sample2, df_mixed, y0=y0)
-	
+		sample1 = param_samples1.iloc[i, :]
+		sample2 = param_samples2.iloc[i, :]
+		t[i], y[i], a[i] = curveball.competitions.fit_and_compete(sample1, sample2, df_mixed, y0=y0)
+
 	t = np.array(t)
 	y = np.array(y)
 	a = np.array(a)
-	f1 = y[:, :, 0] / y.sum(axis=2)
-	f2 = y[:, :, 1] / y.sum(axis=2)
+	ysum = y.sum(axis=2)
+	f1 = y[:, :, 0] / ysum
+	f2 = y[:, :, 1] / ysum
 	f = np.array((f1, f2)).T
 
 	margin = (1.0 - ci) * 50.0

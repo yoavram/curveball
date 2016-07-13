@@ -106,8 +106,7 @@ def bootstrap_params(df, model_result, nsamples, unit='Well', fit_kws=None):
     if df.empty:
         raise ValueError("Input data frame df is empty")
         
-    fixed_params = {pname: param.value for pname, param in model_result.params.items() if not param.vary}
-    if fit_kws is None: 
+    if fit_kws is None:
         fit_kws = {}
     if not 'param_fix' in fit_kws:
         fit_kws['param_fix'] = {pname for pname, param in model_result.params.items() if not param.vary}
@@ -130,7 +129,6 @@ def bootstrap_params(df, model_result, nsamples, unit='Well', fit_kws=None):
                                                PLOT=False, PRINT=False, 
                                                **fit_kws)[0]
         param_samples[i] = model_fit.best_values
-        param_samples[i].update(fixed_params)
     return pd.DataFrame(param_samples)
 
 
@@ -428,7 +426,7 @@ def find_max_growth_ci(model_fit, param_samples, after_lag=True, ci=0.95):
     for i in range(param_samples.shape[0]):
         sample = param_samples.iloc[i,:]
         params = model_fit.params.copy()
-        for k, v in params.items():
+        for k,v in params.items():
             if v.vary:
                 params[k].set(value=sample[k])
         t1, y1, a, t2, y2, mu = find_max_growth(model_fit, params=params, after_lag=after_lag)
