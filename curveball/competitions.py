@@ -44,24 +44,24 @@ def double_baranyi_roberts_ode0(y, t, r, K, nu, q0, v):
 
 	Parameters
 	----------
-	y : float
+	y : float, float
 		population size
 	t : float
 		time, usually in hours
-	r : float
+	r : float, float
 		initial per capita growth rate
-	K : float
+	K : float, float
 		maximum population size (:math:`K>0`)
-	nu : float
+	nu : float, float
 		curvature of the logsitic term (:math:`\nu>0`)
-	q0 : float
+	q0 : float, float
 		initial adjustment to current environment (:math:`0<q_0<1`)
-	v : float
+	v : float, float
 		adjustment rate (:math:`v>0`)
 
 	Returns
 	-------
-	float
+	float, float
 		population growth rate.
 
 	References
