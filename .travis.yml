@@ -22,8 +22,10 @@ before_install:
   - chmod +x miniconda.sh
   - ./miniconda.sh -b
   - export PATH=$HOME/miniconda2/bin:$PATH
+  - export MPLBACKEND=agg
   - conda update --yes -q conda pip
   - conda config --add channels yoavram
+  - conda config --add channels conda-forge
   - conda config --set always_yes true
   - conda config --set anaconda_upload no
   - pip install codecov | cat

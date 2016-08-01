@@ -12,6 +12,8 @@ from __future__ import absolute_import
 import warnings
 # catch warning caused by seaborn v0.6.0
 warnings.filterwarnings(action="ignore", message="axes.color_cycle is deprecated and replaced with axes.prop_cycle; please use the latter.")
+# catch warning caused by seaborn v0.7
+warnings.filterwarnings(action="ignore", message="The `IPython.html` package has been deprecated. You should import from `notebook` instead. `IPython.html.widgets` has moved to `ipywidgets`.")
 
 __license__ = u'MIT'
 from ._version import get_versions

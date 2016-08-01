@@ -17,7 +17,7 @@ Dependencies
 -  matplotlib
 -  seaborn
 -  lmfit
--  statsmodels
+-  scikit-learn
 -  sympy
 -  xlrd
 -  lxml
@@ -43,7 +43,7 @@ available for free on Windows, OS X, and Linux.
 After installing Anaconda, open a terminal or command line, and write the following commands to install the dependencies:
 
 >>> conda update --yes conda
->>> conda install -c https://conda.anaconda.org/t/yo-766bbd1c-8edd-4b45-abea-85cf58129278/yoavram curveball 
+>>> conda install -c conda-forge -c https://conda.anaconda.org/t/yo-766bbd1c-8edd-4b45-abea-85cf58129278/yoavram curveball
 
 .. tip::
 
@@ -70,7 +70,7 @@ Updating
 
 To update Curveball:
 
->>> conda update -c https://conda.anaconda.org/t/yo-766bbd1c-8edd-4b45-abea-85cf58129278/yoavram curveball 
+>>> conda update -c conda-forge -c https://conda.anaconda.org/t/yo-766bbd1c-8edd-4b45-abea-85cf58129278/yoavram curveball
 
 
 Dependencies versions

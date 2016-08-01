@@ -67,7 +67,7 @@ def get_models(module):
     return [m[1] for m in inspect.getmembers(module, curveball.models.is_model)]
 
 
-def bootstrap_params(df, model_class, nsamples, unit='Well', fit_kws=None):
+def bootstrap_params(df, model_result, nsamples, unit='Well', fit_kws=None):
     """Sample model parameters by fitting the model to resampled data.
 
     The data is bootstraped by drawing growth curves (sampling from the `unit` column in `df`) with replacement.
@@ -76,8 +76,8 @@ def bootstrap_params(df, model_class, nsamples, unit='Well', fit_kws=None):
     ----------
     df : pandas.DataFrame
         the data to fit
-    model_class : class
-        the class of the model to use, a subclass of :py:class:`lmfit.model.Model`
+    model_result : lmfit.model.ModelResult
+        result of fitting a :py:class:`lmfit.model.Model` to data in ``df``
     nsamples : int
         number of samples to draw
     unit : str, optional
@@ -91,28 +91,45 @@ def bootstrap_params(df, model_class, nsamples, unit='Well', fit_kws=None):
 
     Raises
     ------
-    ValueError : if `model_class` isn't a model class
+    ValueError : if `model_result` isn't an instance of :py:class:`lmfit.model.ModelResult`
     ValueError : if `df` is empty
 
     See also
     --------
     sample_params
     """
-    if not is_model(model_class):
-        raise TypeError("Input model_class must be a {0}, but it is {1}".format(lmfit.Model.__name__, 
-                                                                                model_class.__class__.__name__))
+    if not isinstance(model_result, lmfit.model.ModelResult):
+        raise TypeError(
+            "Input model_class must be a {0}, but it is {1}".format(
+                lmfit.model.ModelResult.__name__, 
+                model_result.__class__.__name__))
     if df.empty:
         raise ValueError("Input data frame df is empty")
-    if fit_kws is None: fit_kws = dict()
-    unique_wells = df[unit].unique()
-    results = [None] * nsamples
+        
+    if fit_kws is None:
+        fit_kws = {}
+    if not 'param_fix' in fit_kws:
+        fit_kws['param_fix'] = {pname for pname, param in model_result.params.items() if not param.vary}
+    if not 'param_max' in fit_kws:
+        fit_kws['param_max'] = {pname: param.max for pname, param in model_result.params.items()}
+    if not 'param_max' in fit_kws:
+        fit_kws['param_min'] = {pname: param.min for pname, param in model_result.params.items()}
+    model_class = type(model_result.model)
+
+    unique_units = pd.Series(df[unit].unique())
+    grouped = df.groupby(unit)
+    param_samples = [None] * nsamples
+
     for i in range(nsamples):
-        wells = pd.Series(unique_wells).sample(frac=1, replace=True)
-        _df = df[df.Well.isin(wells)]
-        results[i] = fit_model(_df, models=model_class, PLOT=False, PRINT=False, **fit_kws)[0]
-    param_samples = [m.best_values for m in results]
-    param_samples = pd.DataFrame(param_samples)
-    return param_samples
+        sampled_units = unique_units.sample(frac=1, replace=True)
+        _df = pd.concat(grouped.get_group(grp_id) for grp_id in sampled_units.values)
+        assert (_df[unit].unique() == sampled_units.unique()).all()
+        assert _df.shape == df.shape    
+        model_fit = curveball.models.fit_model(_df, models=model_class, 
+                                               PLOT=False, PRINT=False, 
+                                               **fit_kws)[0]
+        param_samples[i] = model_fit.best_values
+    return pd.DataFrame(param_samples)
 
 
 def sample_params(model_fit, nsamples, params=None, covar=None):
@@ -142,7 +159,7 @@ def sample_params(model_fit, nsamples, params=None, covar=None):
     if params is None:
         params = model_fit.params
     else:
-        _params = copy.copy(model_fit.params)
+        _params = model_fit.params.copy()
         for pname, pvalue in params.items():
             _params[pname].value = pvalue
         params = _params
@@ -349,6 +366,7 @@ def find_max_growth(model_fit, params=None, after_lag=True):
     K  = params['K'].value
 
     t0 = find_lag(model_fit) if after_lag else 0
+    t0 = max(t0, 0)
     t1 = model_fit.userkws['t'].max()
     t = np.linspace(t0, t1)     
     def f(t): 
@@ -400,15 +418,14 @@ def find_max_growth_ci(model_fit, param_samples, after_lag=True, ci=0.95):
     --------
     find_max_growth
     """
-    t1, y1, a, t2, y2, mu = find_max_growth(model_fit, after_lag=after_lag)
     if not 0 <= ci <= 1:
         raise ValueError("ci must be between 0 and 1")
     nsamples = param_samples.shape[0]
     aa = np.zeros(nsamples)
-    mumu = np.zeros(nsamples)    
-    params = copy.deepcopy(model_fit.params)
+    mumu = np.zeros(nsamples)        
     for i in range(param_samples.shape[0]):
         sample = param_samples.iloc[i,:]
+        params = model_fit.params.copy()
         for k,v in params.items():
             if v.vary:
                 params[k].set(value=sample[k])
@@ -425,8 +442,8 @@ def find_max_growth_ci(model_fit, param_samples, after_lag=True, ci=0.95):
     est_a = aa.mean()
     low_a = np.percentile(aa, margin)
     high_a = np.percentile(aa, ci * 100.0 + margin)
-    assert high_a > est_a, aa.tolist()
-    assert est_a > low_a, aa.tolist()
+    assert high_a >= est_a or np.allclose(est_a, high_a), aa.tolist()
+    assert est_a >= low_a or np.allclose(est_a, low_a), aa.tolist()
 
     idx = np.isfinite(mumu) & (mumu >= 0)
     if not idx.all():
@@ -435,8 +452,8 @@ def find_max_growth_ci(model_fit, param_samples, after_lag=True, ci=0.95):
     est_mu = mumu.mean()
     low_mu = np.percentile(mumu, margin)
     high_mu = np.percentile(mumu, ci * 100.0 + margin)
-    assert high_mu > est_mu, mumu.tolist()
-    assert est_mu > low_mu, mumu.tolist()
+    assert high_mu >= est_mu or np.allclose(est_mu, high_mu), mumu.tolist()
+    assert est_mu >= low_mu or np.allclose(est_mu, low_mu), mumu.tolist()
     return low_a, est_a, high_a, low_mu, est_mu, high_mu
 
 
@@ -467,7 +484,6 @@ def find_min_doubling_time(model_fit, params=None, PLOT=False):
     """
     if params is None:
         params = model_fit.params
-
     def f(t): 
         return model_fit.model.eval(t=t, params=params)
 
@@ -521,17 +537,16 @@ def find_min_doubling_time_ci(model_fit, param_samples, ci=0.95):
     --------
     find_min_doubling_time
     """
-    min_dbl = find_min_doubling_time(model_fit)
     if not 0 <= ci <= 1:
         raise ValueError("ci must be between 0 and 1")
     nsamples = param_samples.shape[0]
-    dbls = np.zeros(nsamples)
-    params = copy.deepcopy(model_fit.params)
+    dbls = np.zeros(nsamples)    
     for i in range(param_samples.shape[0]):
         sample = param_samples.iloc[i,:]
-        for k,v in params.items():
+        params = model_fit.params.copy()
+        for k, v in params.items():
             if v.vary:
-                params[k].set(value=sample[k])
+                v.value = sample[k]
         dbls[i] = find_min_doubling_time(model_fit, params=params)
     
     margin = (1.0 - ci) * 50.0
@@ -542,12 +557,12 @@ def find_min_doubling_time_ci(model_fit, param_samples, ci=0.95):
     low = np.percentile(dbls, margin)
     high = np.percentile(dbls, ci * 100.0 + margin)
     est = dbls.mean()
-    assert high > est, dbls.tolist()
-    assert est > low, dbls.tolist()
+    assert high >= est or np.allclose(est, high), dbls.tolist()
+    assert est >= low or np.allclose(est, low), dbls.tolist()
     return low, est, high
 
 
-def find_K_ci(model_fit, param_samples, ci=0.95):
+def find_K_ci(param_samples, ci=0.95):
     """Estimates a confidence interval for ``K``, the maximum population density from the model fit.
 
     The confidence interval of the doubling time is the lower and higher percentiles such that 
@@ -555,8 +570,6 @@ def find_K_ci(model_fit, param_samples, ci=0.95):
 
     Parameters
     ----------
-    model_fit : lmfit.model.ModelResult
-        the result of a model fitting procedure
     param_samples : pandas.DataFrame
         parameter samples, generated using :function:`sample_params` or :function:`bootstrap_params`    
     ci : float, optional
@@ -580,8 +593,8 @@ def find_K_ci(model_fit, param_samples, ci=0.95):
     low = np.percentile(Ks, margin)
     high = np.percentile(Ks, ci * 100.0 + margin)
     est = Ks.mean()
-    assert high > est, Ks.tolist()
-    assert est > low, Ks.tolist()
+    assert high >= est or np.allclose(est, high), Ks.tolist()
+    assert est >= low or np.allclose(est, low), Ks.tolist()
     return low, est, high
 
 
@@ -667,30 +680,35 @@ def find_lag_ci(model_fit, param_samples, ci=0.95):
     --------
     find_lag
     has_lag    
-    """
-    lam = find_lag(model_fit)
+    """    
     if not 0 <= ci <= 1:
         raise ValueError("ci must be between 0 and 1")
     nsamples = param_samples.shape[0]
-    lags = np.zeros(nsamples)
-    params = copy.deepcopy(model_fit.params)
+    lags = np.zeros(nsamples)    
     for i in range(param_samples.shape[0]):
         sample = param_samples.iloc[i,:]
+        params = model_fit.params.copy()
         for k,v in params.items():
             if v.vary:
                 params[k].set(value=sample[k])
         lags[i] = find_lag(model_fit, params=params)
     
     margin = (1.0 - ci) * 50.0
-    idx = np.isfinite(lags) & (lags >= 0)
+    idx = np.isfinite(lags)
     if not idx.all():
         warn("Warning: omitting {0} non-finite lag values".format(len(lags) - idx.sum()))
+    lags = lags[idx]
+    idx = (lags >= 0)
+    if not idx.all():
+        warn("Warning: omitting {0} negative lag values".format(len(lags) - idx.sum()))
+    if not idx.any(): # no legal lag values left
+        return np.nan, np.nan, np.nan
     lags = lags[idx]
     low = np.percentile(lags, margin)
     high = np.percentile(lags, ci * 100.0 + margin)
     est = lags.mean()
-    assert high > est, lags.tolist()
-    assert est > low, lags.tolist()
+    assert high >= est or np.allclose(est, high), lags.tolist()
+    assert est >= low or np.allclose(est, low), lags.tolist()
     return low, est, high
 
 
@@ -998,7 +1016,10 @@ def calc_weights(df, PLOT=False):
             raise ValueError("NaN weights are illegal, indices: {0}".format(idx))
         # if any weight is infinite, change to the max
         idx = np.isinf(weights)
-        if idx.any():
+        if idx.all():
+            warn("All weights are infinite, proceeding without weights)")
+            weights = None
+        elif idx.any():
             warn("Found infinite weight, changing to maximum ({0} occurences)".format(idx.sum()))
             weights[idx] = weights[~idx].max()
     if PLOT:

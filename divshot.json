@@ -1,6 +1,0 @@
-{
-  "name": "curveball",
-  "root": "docs/_build/html",
-  "clean_urls": false,
-  "error_page": "error.html"
-}

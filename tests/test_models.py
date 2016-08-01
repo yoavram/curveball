@@ -246,8 +246,8 @@ class FindKTestCase(TestCase):
 		model = curveball.baranyi_roberts_model.Logistic()
 		params = model.guess(data=df.OD, t=df.Time)
 		result = model.fit(data=df.OD, t=df.Time, params=params)
-		param_samples = curveball.models.bootstrap_params(df, type(result.model), 100)
-		K_low, K_est, K_high = curveball.models.find_K_ci(result, param_samples)
+		param_samples = curveball.models.bootstrap_params(df, result, 100)
+		K_low, K_est, K_high = curveball.models.find_K_ci(param_samples)
 		self.assertTrue(K_low < K_est < K_high, "K is {0}, K CI is ({1},{2})".format(K_est, K_low, K_high))
 
 
@@ -281,7 +281,7 @@ class FindLagTestCase(TestCase):
 		model = curveball.baranyi_roberts_model.Logistic()
 		params = model.guess(data=df.OD, t=df.Time)
 		result = model.fit(data=df.OD, t=df.Time, params=params)
-		param_samples = curveball.models.bootstrap_params(df, type(result.model), 100)
+		param_samples = curveball.models.bootstrap_params(df, result, 100)
 		lam_low, lam_est, lam_high = curveball.models.find_lag_ci(result, param_samples)
 		self.assertTrue(lam_low < lam_est < lam_high, "Lambda is {0}, Lambda CI is ({1},{2})".format(lam_est, lam_low, lam_high))
 
@@ -361,7 +361,7 @@ class FindDoublingTimeTestCase(TestCase):
 		model = curveball.baranyi_roberts_model.Logistic()
 		params = model.guess(data=df.OD, t=df.Time)
 		result = model.fit(data=df.OD, t=df.Time, params=params)
-		param_samples = curveball.models.bootstrap_params(df, type(result.model), 100)
+		param_samples = curveball.models.bootstrap_params(df, result, 10)
 		low, est, high = curveball.models.find_min_doubling_time_ci(result, param_samples)
 		self.assertTrue(low < est < high, "Doubling time is {2}, CI is ({0},{1})".format(est, low, high))
 
@@ -406,7 +406,7 @@ class FindMaxGrowthTestCase(TestCase):
 		model = curveball.baranyi_roberts_model.Logistic()
 		model_fit = model.fit(df.OD, t=df.Time, y0=y0, K=K, r=r)
 		  
-		param_samples = curveball.models.bootstrap_params(df, type(model_fit.model), 100)
+		param_samples = curveball.models.bootstrap_params(df, model_fit, 100)
 		a_low, a_est, a_high, mu_low, mu_est, mu_high = curveball.models.find_max_growth_ci(model_fit, param_samples)
 		self.assertTrue(a_low < a_est < a_high, "a is {2}, a CI is ({0},{1})".format(a_low, a_high, a_est))
 		self.assertTrue(mu_low < mu_est < mu_high, "mu is {2}, mu CI is ({0},{1})".format(mu_low, mu_high, mu_est))
@@ -704,8 +704,10 @@ class SamplingTestCase(TestCase):
 	def test_bootstrap_params(self):
 		plate = pd.read_csv('plate_templates/G-RG-R.csv')
 		df = curveball.ioutils.read_tecan_xlsx('data/Tecan_280715.xlsx', plate=plate)
-		model = curveball.baranyi_roberts_model.BaranyiRoberts
-		sample_params = curveball.models.bootstrap_params(df, model, 10)
+		model_result = curveball.models.fit_model(
+			df, models=curveball.baranyi_roberts_model.BaranyiRoberts, 
+			PLOT=False, PRINT=False)[0]
+		sample_params = curveball.models.bootstrap_params(df, model_result, 10)
 		self.assertIsInstance(sample_params, pd.DataFrame)
 		self.assertEquals(sample_params.shape, (10, 6))
 

@@ -10,6 +10,7 @@
 from __future__ import division
 from builtins import range
 from past.utils import old_div
+import copy
 import numpy as np
 import scipy.stats
 import matplotlib as mpl
@@ -378,3 +379,52 @@ def plot_residuals(df, time='Time', value='OD', resid_func=lambda x: x - x.mean(
 	fig.tight_layout()
 	sns.despine()	
 	return fig, ax
+
+
+def plot_sample_fit(model_fit, param_samples, fit_kws=None, data_kws=None, sample_kws=None):
+	"""Plot of sampled curve fits.
+
+	The function will plot the main model fit and the sampled curve fits based on a table of sample parameters.
+
+
+	Parameters
+	----------
+	model_fit : lmfit.ModelResult
+		the result of a model fitting procedure.
+	param_samples : pandas.DataFrame
+		data frame of samples; each row is one sample, each column is one parameter.
+	fit_kws, data_kws, sample_kws : dict
+		dictionaries of plot directives for the fit, data, and sampled fit curves.
+
+	Returns
+	-------
+	fig : matplotlib.figure.Figure
+		figure object
+	ax : numpy.ndarray
+		array of axis objects.
+	"""
+	t = np.linspace(0, model_fit.userkws['t'].max())
+	def f(params):
+		return model_fit.model.eval(t=t, params=params)
+
+	nsamples = param_samples.shape[0]
+	_fit_kws = dict(linewidth=5)
+	if fit_kws: _fit_kws.update(fit_kws)
+	_data_kws = dict(marker='.')
+	if data_kws: _data_kws.update(data_kws)
+	_sample_kws = dict(linestyle='--', color='gray', alpha=1/np.sqrt(nsamples))
+	if sample_kws: _sample_kws.update(sample_kws)
+
+	ax = model_fit.plot_fit(init_kws={'ls': ''}, fit_kws=_fit_kws, data_kws=_data_kws)
+	for i in range(nsamples):
+		sample = param_samples.iloc[i, :]
+		params = model_fit.params.copy()
+		for k, v in params.items():
+			if v.vary:
+				params[k].set(value=sample[k])
+		plt.plot(t, f(params), **_sample_kws)
+	ax.legend().set_visible(False)
+	ax.set(ylabel='OD', xlabel='Time', title='')
+
+	sns.despine()
+	return ax.figure, ax
