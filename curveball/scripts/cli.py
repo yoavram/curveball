@@ -210,10 +210,11 @@ def plate(plate_folder, plate_file, output_file, list, show):
 @click.option('--param_min', type=(str, float), multiple=True, callback=to_dict, help='set the minimum allowed value for a parameter')
 @click.option('--param_max', type=(str, float), multiple=True, callback=to_dict, help='set the maximum allowed value for a parameter')
 @click.option('--param_fix', type=str, multiple=True, callback=to_set, help='fix a parameter to it\'s initial guess')
-@click.option('--weights/--no-weights', default=True, help="use weights for the fitting procedure")
+@click.option('--weights/--no-weights', default=False, help="use weights for the fitting procedure")
 @click.option('--ci/--no-ci', default=False, help="find confidence intervals for lag and max growth rate")
+@click.option('--nsamples', default=1000, help="number of bootstrap samples to use, only applicable when using --ci")
 @cli.command()
-def analyse(path, output_file, plate_folder, plate_file, blank_strain, ref_strain, max_time, guess, param_min, param_max, param_fix, weights, ci):
+def analyse(path, output_file, plate_folder, plate_file, blank_strain, ref_strain, max_time, guess, param_min, param_max, param_fix, weights, ci, nsamples):
 	"""Analyse growth curves data using Curveball.
 
 	To get help for the parameters, run:
@@ -250,7 +251,7 @@ def analyse(path, output_file, plate_folder, plate_file, blank_strain, ref_strai
 	
 	with click.progressbar(files, label='Processing files:', item_show_func=get_filename, color='green') as bar:
 		for filepath in bar:
-			file_results = _process_file(filepath, plate, blank_strain, ref_strain, max_time, guess, param_min, param_max, param_fix, weights, ci)
+			file_results = _process_file(filepath, plate, blank_strain, ref_strain, max_time, guess, param_min, param_max, param_fix, weights, ci, nsamples)
 			results.extend(file_results)
 	
 	output_table = pd.DataFrame(results)
@@ -259,7 +260,7 @@ def analyse(path, output_file, plate_folder, plate_file, blank_strain, ref_strai
 		click.secho("Wrote output to %s" % output_file.name, fg='green')
 
 
-def _process_file(filepath, plate, blank_strain, ref_strain, max_time, guess, param_min, param_max, param_fix, weights, ci):
+def _process_file(filepath, plate, blank_strain, ref_strain, max_time, guess, param_min, param_max, param_fix, weights, ci, nsamples):
 	"""Analyses a single growth curves file.
 
 	See also
@@ -349,7 +350,7 @@ def _process_file(filepath, plate, blank_strain, ref_strain, max_time, guess, pa
 		res['min_doubling_time'] = curveball.models.find_min_doubling_time(fit)
 		res['lag'] = curveball.models.find_lag(fit)
 		if ci:
-			param_samples = curveball.models.bootstrap_params(strain_df, fit, nsamples=1000)
+			param_samples = curveball.models.bootstrap_params(strain_df, fit, nsamples=nsamples)
 			_, _, _, low, est, high = curveball.models.find_max_growth_ci(fit, param_samples)
 			res['max_growth_rate_low'] = low
 			res['max_growth_rate_high'] = high			
@@ -359,7 +360,7 @@ def _process_file(filepath, plate, blank_strain, ref_strain, max_time, guess, pa
 			low, est, high = curveball.models.find_min_doubling_time_ci(fit, param_samples)
 			res['min_doubling_time_low'] = low
 			res['min_doubling_time_high'] = high
-			low, est, high = curveball.models.find_K_ci(fit, param_samples)
+			low, est, high = curveball.models.find_K_ci(param_samples)
 			res['K_low'] = low
 			res['K_high'] = high
 
@@ -377,7 +378,7 @@ def _process_file(filepath, plate, blank_strain, ref_strain, max_time, guess, pa
 			else:
 				t,y = _
 			res['w'] = curveball.competitions.fitness_LTEE(y, assay_strain=0, ref_strain=1)
-
+			# TODO CI for w
 		results.append(res)
 		plt.clf()
 	return results
