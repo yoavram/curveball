@@ -45,7 +45,6 @@ setup(
                   ('plate_templates', ['plate_templates/checkerboard.csv', 'plate_templates/G-RG-R.csv']),
     ],
     install_requires=[
-        # add your dependencies here
         # remember to use 'package-name>=x.y.z,<x.y+1.0' notation (this way you get bugfixes)
         'future',
         'click',
@@ -56,7 +55,7 @@ setup(
         'scipy',
         'matplotlib',
         'pandas',
-        'seaborn',
+        'seaborn>=0.7.1',
         'scikit-learn',
         'sympy',
         'lmfit>=0.9.3',

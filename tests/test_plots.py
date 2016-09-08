@@ -49,21 +49,21 @@ class PlotsTestCase(TestCase):
 	def test_plot_wells(self):
 		df = pd.read_csv(pkg_resources.resource_filename("data", "Tecan_210115.csv"))
 		g = curveball.plots.plot_wells(df, output_filename=self.output_filename)
-		self.assertIsInstance(g, sns.Grid)
+		self.assertIsInstance(g, sns.axisgrid.Grid)
 		self.check_image()
 
 
 	def test_plot_strains(self):
 		df = pd.read_csv(pkg_resources.resource_filename("data", "Tecan_210115.csv"))
 		g = curveball.plots.plot_strains(df, output_filename=self.output_filename)
-		self.assertIsInstance(g, sns.Grid)
+		self.assertIsInstance(g, sns.axisgrid.Grid)
 		self.check_image()
 
 
 	def test_plot_strains_no_output(self):
 		df = pd.read_csv(pkg_resources.resource_filename("data", "Tecan_210115.csv"))
 		g = curveball.plots.plot_strains(df)
-		self.assertIsInstance(g, sns.Grid)
+		self.assertIsInstance(g, sns.axisgrid.Grid)
 		with self.assertRaises(IOError):
 			self.check_image()
 
@@ -85,7 +85,7 @@ class PlotsTestCase(TestCase):
 	def test_plot_params_distribution(self):
 		df = pd.DataFrame(np.random.normal(0, 1, size=(100, 4)), columns=list('ABCD'))
 		g = curveball.plots.plot_params_distribution(df)
-		self.assertIsInstance(g, sns.Grid)
+		self.assertIsInstance(g, sns.axisgrid.Grid)
 
 	
 	def test_plot_residuals(self):
