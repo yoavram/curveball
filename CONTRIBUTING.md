@@ -75,7 +75,7 @@ make html && open _build/html/index.html
 ```
 ### Review changes
 
-When you are finished changing the source code (or docs), check that everything is commited:
+When you are finished changing the source code (or docs), check that everything is committed:
 
 ```
 git status
@@ -101,7 +101,7 @@ git rebase -i HEAD~#
 
 Replace `#` with the number of commits you want to rebase (read the instructions in the editor that opens up).
 
-If all changes are commited and you are sure you are interested in all the commits, you can continue.
+If all changes are committed and you are sure you are interested in all the commits, you can continue.
 
 ### Run tests locally
 
@@ -140,7 +140,7 @@ The build will fail if any dependencies are missing.
 
 ### Test the build
 
-Now create a new environment using `conda` and try to install Curveball from the pacakge you just built (replace `PYTHON_VERSION` with the Python version you are using, either 2.7 or 3.4):
+Now create a new environment using `conda` and try to install Curveball from the package you just built (replace `PYTHON_VERSION` with the Python version you are using, either 2.7 or 3.4):
 
 ```
 conda create -n test python=PYTHON_VERSION
@@ -168,14 +168,14 @@ The release process includes several stages:
 - test locally or using continuous integration
 - adding the changes to the change log
 - declaring a new version
-- building and deploying the package to a pacakge index
+- building and deploying the package to a package index
 - building and deploying the documentation
 
 A more elaborate scheme can be found [here](https://khmer.readthedocs.org/en/v1.1/release.html).
 
 #### Adding changes to the change log
 
-Before delcaring a new verison you should describe the changes made since the last version.
+Before declaring a new version you should describe the changes made since the last version.
 Call `git log vV.. --oneline --decorate`, replacing `V` with the tag of the last version, 
 to see all the commit logs since the last version; then edit `CHANGELOG.md`.
 
