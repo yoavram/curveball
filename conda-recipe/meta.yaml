@@ -31,7 +31,6 @@ requirements:
     - setuptools
     - future
     - click
-    - python-dateutil
     - lxml
     - xlrd
     - numpy
@@ -48,7 +47,6 @@ requirements:
     - python
     - future
     - click
-    - python-dateutil
     - lxml
     - xlrd
     - numpy
