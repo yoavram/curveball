@@ -471,7 +471,7 @@ def find_min_doubling_time(model_fit, params=None, PLOT=False):
     params : lmfit.parameter.Parameters, optional
         if provided, these parameters will override `model_fit`'s parameters
     PLOT : bool, optional
-        if :const:`True`, the function will plot the Cook's distances of the wells and the threshold.
+        if :const:`True`, the function will plot the Cook's distances of the wells and the threshold. # FIXME
 
     Returns
     -------
@@ -1178,6 +1178,7 @@ def fit_model(df, param_guess=None, param_min=None, param_max=None, param_fix=No
     time = df.Time.as_matrix()
     OD = df.OD.as_matrix()
     weights =  calc_weights(df) if use_weights else None
+    # TODO why should we use weights if we use the whole data set?
     ODerr = df.groupby('Time').OD.transform(lambda x: np.repeat(x.std(), len(x))).as_matrix()
    
     if models is None:
