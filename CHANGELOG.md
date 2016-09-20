@@ -2,6 +2,7 @@
 
 ## v0.2.8
 
+- Removed central estimation in `curveball.models.*_ci` functions.
 - Build with conda-build version 1; version 2 caused problems on travis-ci (see [PR #1342](https://github.com/conda/conda-build/pull/1342)).
 - Removed python-dateutil dependency.
 

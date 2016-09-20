@@ -408,10 +408,10 @@ def find_max_growth_ci(model_fit, param_samples, after_lag=True, ci=0.95):
     
     Returns
     -------
-    low_a, est_a, high_a : float
-        the estimate, the lower and the higher boundries of the confidence interval of the the maximum population growth rate in the units of the `model_fit` ``OD``/``Time`` (usually OD/hours).
-    low_mu, est_mu, high_mu : float
-        the estimate, the lower, and higher boundries of the confidence interval of the the maximum specific growth rate in the units of the `model_fit` 1/``Time`` variable (usually 1/hours).
+    low_a, high_a : float
+        the lower and the higher boundaries of the confidence interval of the the maximum population growth rate in the units of the `model_fit` ``OD``/``Time`` (usually OD/hours).
+    low_mu, high_mu : float
+        the lower and the higher boundaries of the confidence interval of the the maximum specific growth rate in the units of the `model_fit` 1/``Time`` variable (usually 1/hours).
 
 
     See also
@@ -429,32 +429,28 @@ def find_max_growth_ci(model_fit, param_samples, after_lag=True, ci=0.95):
         for k,v in params.items():
             if v.vary:
                 params[k].set(value=sample[k])
-        t1, y1, a, t2, y2, mu = find_max_growth(model_fit, params=params, after_lag=after_lag)
+        _, _, a, _, _, mu = find_max_growth(model_fit, params=params, after_lag=after_lag)
         aa[i] = a
         mumu[i] = mu
-    
+
     margin = (1.0 - ci) * 50.0
 
     idx = np.isfinite(aa) & (aa >= 0)
     if not idx.all():
         warn("Warning: omitting {0} non-finite growth rate values".format(len(aa) - idx.sum()))
     aa = aa[idx]
-    est_a = aa.mean()
     low_a = np.percentile(aa, margin)
     high_a = np.percentile(aa, ci * 100.0 + margin)
-    assert high_a >= est_a or np.allclose(est_a, high_a), aa.tolist()
-    assert est_a >= low_a or np.allclose(est_a, low_a), aa.tolist()
+    assert high_a >= low_a, aa.tolist()
 
     idx = np.isfinite(mumu) & (mumu >= 0)
     if not idx.all():
         warn("Warning: omitting {0} non-finite growth rate values".format(len(mumu) - idx.sum()))
     mumu = mumu[idx]
-    est_mu = mumu.mean()
     low_mu = np.percentile(mumu, margin)
     high_mu = np.percentile(mumu, ci * 100.0 + margin)
-    assert high_mu >= est_mu or np.allclose(est_mu, high_mu), mumu.tolist()
-    assert est_mu >= low_mu or np.allclose(est_mu, low_mu), mumu.tolist()
-    return low_a, est_a, high_a, low_mu, est_mu, high_mu
+    assert high_mu >= low_mu, mumu.tolist()
+    return low_a, high_a, low_mu, high_mu
 
 
 def find_min_doubling_time(model_fit, params=None, PLOT=False):
@@ -530,8 +526,8 @@ def find_min_doubling_time_ci(model_fit, param_samples, ci=0.95):
     
     Returns
     -------
-    low, est, high : float
-        the estimate, the lower, and higher boundries of the confidence interval of the minimal doubling times in the units of the `model_fit` ``Time`` variable (usually hours).
+    low, high : float
+        the lower and the higher boundaries of the confidence interval of the minimal doubling times in the units of the `model_fit` ``Time`` variable (usually hours).
 
     See also
     --------
@@ -548,7 +544,7 @@ def find_min_doubling_time_ci(model_fit, param_samples, ci=0.95):
             if v.vary:
                 v.value = sample[k]
         dbls[i] = find_min_doubling_time(model_fit, params=params)
-    
+
     margin = (1.0 - ci) * 50.0
     idx = np.isfinite(dbls) & (dbls >= 0)
     if not idx.all():
@@ -556,10 +552,8 @@ def find_min_doubling_time_ci(model_fit, param_samples, ci=0.95):
     dbls = dbls[idx]
     low = np.percentile(dbls, margin)
     high = np.percentile(dbls, ci * 100.0 + margin)
-    est = dbls.mean()
-    assert high >= est or np.allclose(est, high), dbls.tolist()
-    assert est >= low or np.allclose(est, low), dbls.tolist()
-    return low, est, high
+    assert high >= low, dbls.tolist()
+    return low, high
 
 
 def find_K_ci(param_samples, ci=0.95):
@@ -577,8 +571,8 @@ def find_K_ci(param_samples, ci=0.95):
     
     Returns
     -------
-    low, est, high : float
-        the estimate, the lower, and the higher boundries of the confidence interval of the maximum population density.
+    low, high : float
+        the lower and the higher boundaries of the confidence interval of the maximum population density.
     
     """
     if not 0 <= ci <= 1:
@@ -592,10 +586,8 @@ def find_K_ci(param_samples, ci=0.95):
     Ks = Ks[idx]
     low = np.percentile(Ks, margin)
     high = np.percentile(Ks, ci * 100.0 + margin)
-    est = Ks.mean()
-    assert high >= est or np.allclose(est, high), Ks.tolist()
-    assert est >= low or np.allclose(est, low), Ks.tolist()
-    return low, est, high
+    assert high >= low, Ks.tolist()
+    return low, high
 
 
 def find_lag(model_fit, params=None):
@@ -673,8 +665,8 @@ def find_lag_ci(model_fit, param_samples, ci=0.95):
     
     Returns
     -------
-    low, est, high : float
-        the estimate, the lower, and the higher boundries of the confidence interval of the lag phase duration in the units of the `model_fit` ``Time`` variable (usually hours).
+    low, high : float
+        the lower and the higher boundaries of the confidence interval of the lag phase duration in the units of the `model_fit` ``Time`` variable (usually hours).
 
     See also
     --------
@@ -692,7 +684,7 @@ def find_lag_ci(model_fit, param_samples, ci=0.95):
             if v.vary:
                 params[k].set(value=sample[k])
         lags[i] = find_lag(model_fit, params=params)
-    
+
     margin = (1.0 - ci) * 50.0
     idx = np.isfinite(lags)
     if not idx.all():
@@ -706,10 +698,8 @@ def find_lag_ci(model_fit, param_samples, ci=0.95):
     lags = lags[idx]
     low = np.percentile(lags, margin)
     high = np.percentile(lags, ci * 100.0 + margin)
-    est = lags.mean()
-    assert high >= est or np.allclose(est, high), lags.tolist()
-    assert est >= low or np.allclose(est, low), lags.tolist()
-    return low, est, high
+    assert high >= low, lags.tolist()
+    return low, high
 
 
 def has_lag(model_fits, alfa=0.05, PRINT=False):
