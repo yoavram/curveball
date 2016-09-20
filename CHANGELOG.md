@@ -1,5 +1,10 @@
 # Change log
 
+## v0.2.8
+
+- Build with conda-build version 1; version 2 caused problems on travis-ci (see [PR #1342](https://github.com/conda/conda-build/pull/1342)).
+- Removed python-dateutil dependency.
+
 ## v0.2.7
 
 - Fixed bug: `find_K_ci` was called with wrong args in `cli.py`.
