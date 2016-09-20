@@ -23,16 +23,17 @@ before_install:
   - ./miniconda.sh -b
   - export PATH=$HOME/miniconda2/bin:$PATH
   - export MPLBACKEND=agg
+  - conda install -q -y python=$TRAVIS_PYTHON_VERSION
   - conda update --yes -q conda pip
   - conda config --add channels yoavram
   - conda config --add channels conda-forge
   - conda config --set always_yes true
   - conda config --set anaconda_upload no
-  - pip install codecov | cat
 
 # Install packages
 install:
-  - conda install -q python=$TRAVIS_PYTHON_VERSION requests conda-build jinja2 anaconda-client atlas numpy scipy matplotlib python-dateutil pandas scikit-learn lxml seaborn sympy xlrd lmfit coverage nose pillow
+  - conda install -q requests conda-build=1 jinja2 anaconda-client atlas numpy scipy matplotlib pandas scikit-learn lxml seaborn sympy xlrd lmfit coverage nose pillow
+  - pip install codecov | cat
   - conda build -q conda-recipe
   - conda install --use-local -q curveball
 

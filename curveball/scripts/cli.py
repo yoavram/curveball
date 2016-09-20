@@ -351,16 +351,16 @@ def _process_file(filepath, plate, blank_strain, ref_strain, max_time, guess, pa
 		res['lag'] = curveball.models.find_lag(fit)
 		if ci:
 			param_samples = curveball.models.bootstrap_params(strain_df, fit, nsamples=nsamples)
-			_, _, _, low, est, high = curveball.models.find_max_growth_ci(fit, param_samples)
+			_, _, low, high = curveball.models.find_max_growth_ci(fit, param_samples)
 			res['max_growth_rate_low'] = low
 			res['max_growth_rate_high'] = high			
-			low, est, high = curveball.models.find_lag_ci(fit, param_samples)
+			low, high = curveball.models.find_lag_ci(fit, param_samples)
 			res['lag_low'] = low
 			res['lag_high'] = high			
-			low, est, high = curveball.models.find_min_doubling_time_ci(fit, param_samples)
+			low, high = curveball.models.find_min_doubling_time_ci(fit, param_samples)
 			res['min_doubling_time_low'] = low
 			res['min_doubling_time_high'] = high
-			low, est, high = curveball.models.find_K_ci(param_samples)
+			low, high = curveball.models.find_K_ci(param_samples)
 			res['K_low'] = low
 			res['K_high'] = high
 

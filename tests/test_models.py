@@ -11,7 +11,7 @@ from __future__ import division
 from builtins import str
 from past.utils import old_div
 from unittest import TestCase, main
-from nose.plugins.skip import SkipTest
+
 import sys
 import os
 import types
@@ -241,13 +241,14 @@ class FindKTestCase(TestCase):
 			shutil.rmtree(self.folder)
 
 	
-	def test_find_lag_ci_logistic(self):
+	def test_find_K_ci_logistic(self):
 		df = curveball.models.randomize(t=12, y0=0.1, K=1, r=0.75, nu=1, reps=REPS, noise_std=NOISE_STD, random_seed=RANDOM_SEED, as_df=True)
 		model = curveball.baranyi_roberts_model.Logistic()
 		params = model.guess(data=df.OD, t=df.Time)
-		result = model.fit(data=df.OD, t=df.Time, params=params)
-		param_samples = curveball.models.bootstrap_params(df, result, 100)
-		K_low, K_est, K_high = curveball.models.find_K_ci(param_samples)
+		model_fit = model.fit(data=df.OD, t=df.Time, params=params)
+		param_samples = curveball.models.bootstrap_params(df, model_fit, 100)
+		K_est = model_fit.params['K'].value
+		K_low, K_high = curveball.models.find_K_ci(param_samples)
 		self.assertTrue(K_low < K_est < K_high, "K is {0}, K CI is ({1},{2})".format(K_est, K_low, K_high))
 
 
@@ -280,9 +281,10 @@ class FindLagTestCase(TestCase):
 		df = curveball.models.randomize(t=12, y0=0.1, K=1, r=0.75, nu=1, reps=REPS, noise_std=NOISE_STD, random_seed=RANDOM_SEED, as_df=True)
 		model = curveball.baranyi_roberts_model.Logistic()
 		params = model.guess(data=df.OD, t=df.Time)
-		result = model.fit(data=df.OD, t=df.Time, params=params)
-		param_samples = curveball.models.bootstrap_params(df, result, 100)
-		lam_low, lam_est, lam_high = curveball.models.find_lag_ci(result, param_samples)
+		model_fit = model.fit(data=df.OD, t=df.Time, params=params)
+		param_samples = curveball.models.bootstrap_params(df, model_fit, 100)
+		lam_est = curveball.models.find_lag(model_fit)
+		lam_low, lam_high = curveball.models.find_lag_ci(model_fit, param_samples)
 		self.assertTrue(lam_low < lam_est < lam_high, "Lambda is {0}, Lambda CI is ({1},{2})".format(lam_est, lam_low, lam_high))
 
 
@@ -360,9 +362,10 @@ class FindDoublingTimeTestCase(TestCase):
 		df = curveball.models.randomize(t=12, y0=0.1, K=1, r=0.75, nu=1, reps=REPS, noise_std=NOISE_STD, random_seed=RANDOM_SEED, as_df=True)
 		model = curveball.baranyi_roberts_model.Logistic()
 		params = model.guess(data=df.OD, t=df.Time)
-		result = model.fit(data=df.OD, t=df.Time, params=params)
-		param_samples = curveball.models.bootstrap_params(df, result, 10)
-		low, est, high = curveball.models.find_min_doubling_time_ci(result, param_samples)
+		model_fit = model.fit(data=df.OD, t=df.Time, params=params)
+		est = curveball.models.find_min_doubling_time(model_fit)
+		param_samples = curveball.models.bootstrap_params(df, model_fit, 10)
+		low, high = curveball.models.find_min_doubling_time_ci(model_fit, param_samples)
 		self.assertTrue(low < est < high, "Doubling time is {2}, CI is ({0},{1})".format(est, low, high))
 
 
@@ -407,7 +410,8 @@ class FindMaxGrowthTestCase(TestCase):
 		model_fit = model.fit(df.OD, t=df.Time, y0=y0, K=K, r=r)
 		  
 		param_samples = curveball.models.bootstrap_params(df, model_fit, 100)
-		a_low, a_est, a_high, mu_low, mu_est, mu_high = curveball.models.find_max_growth_ci(model_fit, param_samples)
+		_, _, a_est, _, _, mu_est = curveball.models.find_max_growth(model_fit)
+		a_low, a_high, mu_low, mu_high = curveball.models.find_max_growth_ci(model_fit, param_samples)
 		self.assertTrue(a_low < a_est < a_high, "a is {2}, a CI is ({0},{1})".format(a_low, a_high, a_est))
 		self.assertTrue(mu_low < mu_est < mu_high, "mu is {2}, mu CI is ({0},{1})".format(mu_low, mu_high, mu_est))
 
