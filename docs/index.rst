@@ -52,7 +52,7 @@ Quickstart
 
 Install `Anaconda <https://www.continuum.io/downloads>`_, then run:
 
->>> conda install -c https://conda.anaconda.org/t/yo-766bbd1c-8edd-4b45-abea-85cf58129278/yoavram curveball 
+>>> conda install -c conda-forge -c https://conda.anaconda.org/t/yo-da810497-67a1-4fe5-8971-f7fe1ef53f39/yoavram curveball
 >>> curveball --help
 
 For more detailed instructions, Proceed to the :doc:`Installation instructions <install>` and then to the :doc:`tutorial`.
