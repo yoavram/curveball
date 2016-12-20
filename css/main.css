@@ -1,7 +1,8 @@
-body{
+body {
 	background: #e14f43;
 	padding-top:40px;
 	color:#fff;
+	font-family:'Gloria Hallelujah', cursive;
 }
 
 .main {
@@ -9,16 +10,37 @@ body{
 	max-width:100%;
 	margin:0 auto;
 	background:rgba(0,0,0,0.05);
-	padding-bottom:30px;
+	padding-bottom:20px;
 	border-radius:5px;
 	overflow: hidden;
 }
 
-.b{
- font-size: 70px;
+a,
+a:link,
+a:visited,
+a:hover,
+a:active { 
+	color: #fff;
+	text-decoration: none;
+}
+
+a:hover {
+	font-weight: bolder;
+}
+
+.abstract {
+	font-family:'Merriweather', serif;
+	color:#fff;
+	text-align:left;
+	background: #e14f43;
+	border-width: 0;
+}
+
+.b {
+	font-size: 70px;
 }
 .text-center{
-text-align:center;
+	text-align:center;
 }
 
 .logo{
@@ -41,25 +63,14 @@ text-align:center;
 	margin-right:15px;
 }
 
-/* ==========================================================================
-   Social Links
-   ========================================================================== */
-#social {
-	width: 100%;
-	padding-top: 20px;
+footer {
+    padding: 20px 0;
 }
 
-#social i {
-	font-size: 80px;
-	color:#fff;
+p.copyright {
+    margin: 10px 0 0 0;
 }
 
-#social .col-md-3:hover{
-	background-color: #62c462;
+.text-muted {	
+	color: rgba(255, 255, 255, 0.25);
 }
-
-#social .col-md-3 {
-	padding:30px;
-}
-   
-   
