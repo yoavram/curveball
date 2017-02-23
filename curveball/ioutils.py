@@ -143,7 +143,7 @@ def read_tecan_xlsx(filename, label=u'OD', sheets=None, max_time=None, plate=Non
     if isinstance(label, string_types):
         label = [label]
     if sheets is None:
-            sheets = range(wb.nsheets)
+        sheets = range(wb.nsheets)
     if PRINT: print("Reading {0} worksheets from workbook {1}".format(len(sheets), filename))
     label_dataframes = []
     for lbl in label:
@@ -156,7 +156,7 @@ def read_tecan_xlsx(filename, label=u'OD', sheets=None, max_time=None, plate=Non
         
             for i in range(sh.nrows):
                 ## FOR row
-                row = sh.row_values(i)                
+                row = sh.row_values(i)
                 if row[0].startswith(u'Date'):
                     if isinstance(row[1], string_types):
                         date = ''.join(row[1:])
@@ -478,5 +478,61 @@ def read_sunrise_xlsx(filename, label=u'OD', max_time=None, plate=None):
     if max_time is not None:
         df = df[df.Time <= max_time]
     df.sort([u'Row', u'Col', u'Time'], inplace=True)
+    _fix_dtypes(df)
+    return df
+
+
+def read_biotek_xlsx(filename, max_time=None, plate=None, PRINT=False):
+    wb = xlrd.open_workbook(filename)
+    for sh_i in range(wb.nsheets):
+        sh = wb.sheet_by_index(sh_i)
+        if sh.nrows > 0:
+            break
+    else: # all sheets are empty
+        warnings.warn('All sheets are empty in {}'.format(filename))
+        return pd.DataFrame()
+
+    if PRINT:
+        print("Reading worksheet {0} with {2} lines from workbook {1}".format(sh_i, filename, sh.nrows))
+
+    in_data = False
+    data = []
+    dfs = []
+    i = 0
+    while i < sh.nrows:
+        row = sh.row_values(i)
+        if not in_data and row[1] == 'Time':
+            columns = row[1:]
+            in_data = True
+        elif in_data and row[1] != '':
+            row[1] *= 24 # days -> hours
+            data.append(row[1:])
+        elif in_data and row[1] == '':
+            in_data = False
+            df = pd.DataFrame(data, columns=columns)
+            df = pd.melt(df, [u'Time', u'T° 600'], var_name=u'Well', value_name=u'OD')
+            dfs.append(df)
+        i += 1
+    df = pd.concat(dfs )
+
+    df[u'Row'] = [x[0] for x in df.Well]
+    df[u'Col'] = [int(x[1:]) for x in df.Well]
+
+    min_time = df.Time.min()
+    if PRINT:
+        print("Starting time", min_time)
+    if max_time is not None:
+        df = df[df.Time <= max_time]
+    df.sort_values([u'Row', u'Col', u'Time'], inplace=True)
+
+    if df.shape[0] == 0: # no dataframes
+        return pd.DataFrame()
+
+    if plate is None:
+        df[u'Strain'] = u'0'
+        df[u'Color'] = u'#000000'
+    else:
+        df = pd.merge(df, plate, on=(u'Row', u'Col'))
+    if PRINT: print("Read {0} records from workbook".format(df.shape[0]))
     _fix_dtypes(df)
     return df
