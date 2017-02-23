@@ -32,7 +32,7 @@ before_install:
 
 # Install packages
 install:
-  - conda install -q requests conda-build=1 jinja2 anaconda-client atlas numpy scipy matplotlib pandas scikit-learn lxml seaborn sympy xlrd lmfit coverage nose pillow
+  - conda install -q requests conda-build=1 jinja2 anaconda-client atlas numpy scipy matplotlib pandas scikit-learn lxml seaborn sympy xlrd lmfit coverage nose pillow webcolors
   - pip install codecov | cat
   - conda build -q conda-recipe
   - conda install --use-local -q curveball

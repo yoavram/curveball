@@ -57,6 +57,7 @@ requirements:
     - scikit-learn
     - sympy
     - lmfit
+    - webcolors
 
 test:
   # Python imports

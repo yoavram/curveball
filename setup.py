@@ -58,6 +58,7 @@ setup(
         'scikit-learn',
         'sympy',
         'lmfit>=0.9.3',
+        'webcolors'
     ],
     extras_require={
         'tests': [
