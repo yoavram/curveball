@@ -52,7 +52,7 @@ def _fix_dtypes(df):
             df[col] = df[col].astype(str)
     
 
-def read_curveball_csv(filename, plate=None):
+def read_curveball_csv(filename, max_time=None, plate=None):
     """Reads growth measurements from a Curveball csv (comma separated values) file.
 
     Parameters
@@ -75,6 +75,8 @@ def read_curveball_csv(filename, plate=None):
         df[u'Strain'] = u'0'
     if plate is None and 'Color' not in df.columns:
         df[u'Color'] = u'#000000'
+    if max_time is not None:
+        df = df[df.Time <= max_time]
     _fix_dtypes(df)
     return df
 
