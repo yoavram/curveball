@@ -16,12 +16,10 @@ from builtins import map
 from builtins import range
 from six import string_types
 from past.utils import old_div
-import xlrd
 import numpy as np
 import pandas as pd
 from string import ascii_uppercase
 from scipy.io import loadmat
-from lxml import etree
 import re
 import datetime
 import dateutil.parser
@@ -139,6 +137,7 @@ def read_tecan_xlsx(filename, label=u'OD', sheets=None, max_time=None, plate=Non
     >>> df.shape
     (8544, 9)
     """
+    import xlrd
     wb = xlrd.open_workbook(filename)
     dateandtime = datetime.datetime.now() # default
 
@@ -352,6 +351,7 @@ def read_tecan_xml(filename, label=u'OD', max_time=None, plate=None):
     -----
     This function was adapted from `choderalab/assaytools <https://github.com/choderalab/assaytools/blob/908471e7976e207df3f9b0e31b2a89f84da40607/AssayTools/platereader.py>`_ (licensed under LGPL).
     """
+    from lxml import etree
     dataframes = []
     for filename in glob(filename):
         # Parse XML file into nodes.
@@ -429,6 +429,7 @@ def read_sunrise_xlsx(filename, label=u'OD', max_time=None, plate=None):
         - ``Strain`` (:py:class:`str`): if a `plate` was given, this is the strain name corresponding to the well from the plate.
         - ``Color`` (:py:class:`str`, hex format): if a `plate` was given, this is the strain color corresponding to the well from the plate.
     """
+    import xlrd
     dataframes = []
     files = glob(filename)
     if not files:
@@ -485,6 +486,7 @@ def read_sunrise_xlsx(filename, label=u'OD', max_time=None, plate=None):
 
 
 def read_biotek_xlsx(filename, max_time=None, plate=None, PRINT=False):
+    import xlrd
     wb = xlrd.open_workbook(filename)
     for sh_i in range(wb.nsheets):
         sh = wb.sheet_by_index(sh_i)

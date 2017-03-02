@@ -86,26 +86,26 @@ class BioTekXLSXTestCase(TestCase):
         self.assertEquals(df.columns.tolist(), ['Time', u'T\xb0 600', 'Well', 'OD', 'Row', 'Col', 'Strain', 'Color'])
 
 
-class XMLTestCase(TestCase):
-    def setUp(self):        
-        self.zip_filename = pkg_resources.resource_filename("data", "Tecan_210115.xlsx")
-        self.zip_filename = os.path.join("data", "20130211_dh.zip")
-        self.folder = tempfile.mkdtemp()
-        self.zipfile = zipfile.ZipFile(self.zip_filename)
-        self.zipfile.extractall(self.folder)
-        self.plate = pd.read_csv(pkg_resources.resource_filename("plate_templates", "checkerboard.csv"))
+# class XMLTestCase(TestCase):
+#     def setUp(self):        
+#         self.zip_filename = pkg_resources.resource_filename("data", "Tecan_210115.xlsx")
+#         self.zip_filename = os.path.join("data", "20130211_dh.zip")
+#         self.folder = tempfile.mkdtemp()
+#         self.zipfile = zipfile.ZipFile(self.zip_filename)
+#         self.zipfile.extractall(self.folder)
+#         self.plate = pd.read_csv(pkg_resources.resource_filename("plate_templates", "checkerboard.csv"))
 
 
-    def tearDown(self):
-        shutil.rmtree(self.folder)
+#     def tearDown(self):
+#         shutil.rmtree(self.folder)
 
 
-    def test_read_tecan_xml_with_plate(self):
-        df = curveball.ioutils.read_tecan_xml(os.path.join(self.folder, "*.xml"), 'OD', plate=self.plate)
-        self.assertIsNotNone(df)
-        self.assertIsInstance(df, pd.DataFrame)
-        self.assertEquals(df.shape, (2016, 8))
-        self.assertEquals(df.columns.tolist() , ['OD', 'Well', 'Row', 'Col', 'Time', 'Filename', 'Strain', 'Color'])    
+#     def test_read_tecan_xml_with_plate(self):
+#         df = curveball.ioutils.read_tecan_xml(os.path.join(self.folder, "*.xml"), 'OD', plate=self.plate)
+#         self.assertIsNotNone(df)
+#         self.assertIsInstance(df, pd.DataFrame)
+#         self.assertEquals(df.shape, (2016, 8))
+#         self.assertEquals(df.columns.tolist() , ['OD', 'Well', 'Row', 'Col', 'Time', 'Filename', 'Strain', 'Color'])    
 
 
 class SunriseTestCase(TestCase):
