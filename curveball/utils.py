@@ -10,7 +10,12 @@
 from __future__ import print_function
 from __future__ import division
 from builtins import str
+from builtins import range
+import warnings
+from distutils.version import LooseVersion
 
+import requests
+import click
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
@@ -109,3 +114,32 @@ def color_name_to_hex(name, default='#000000'):
         return webcolors.name_to_hex(name)
     except ValueError:
         return default
+
+
+def check_version(repository='pypi', pkg='curveball', owner='yoavram'):
+    from curveball import __version__ as cur_ver
+    if repository == 'pypi':
+        url = 'http://pypi.python.org/pypi/{pkg}/json'.format(pkg=pkg)
+        cmd = 'python -m pip install --upgrade {pkg}'.format(pkg=pkg)
+        version_extractor = lambda d: d['info']['version']
+    elif repository == 'anaconda':
+        url = 'http://api.anaconda.org/package/{owner}/{pkg}'.format(pkg=pkg, owner=owner)
+        cmd = 'conda update -c {owner} {pkg}'.format(pkg=pkg, owner=owner)
+        version_extractor = lambda d: d['latest_version']
+    else:
+        raise ValueError("Unknown repository: {}".format(repository))
+
+    try:
+        r = requests.get(url)
+    except Exception as e:
+        warnings.warn("Couldn't establish connection to {}: {}".format(repository, e))
+        return
+    if not r.ok:
+        warnings.warn("Couldn't establish connection to {}: {}".format(repository, r.reason))
+        return
+
+    repo_ver = version_extractor(r.json())
+    if LooseVersion(repo_ver) > LooseVersion(cur_ver):
+            msg = "You are using {pkg} version {cur_ver}, however version {repo_ver} is available.\nYou should consider upgrading via the '{cmd}' command."
+            msg = msg.format(cmd=cmd, pkg=pkg, cur_ver=cur_ver, repo_ver=repo_ver)
+            click.secho(msg, fg='red')
