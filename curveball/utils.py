@@ -10,6 +10,12 @@
 from __future__ import print_function
 from __future__ import division
 from builtins import str
+from builtins import range
+import site
+import os
+import json
+import datetime
+import platform
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -19,6 +25,10 @@ import sklearn.preprocessing
 import sklearn.pipeline
 import sklearn.grid_search
 import webcolors
+import mixpanel
+
+from curveball import __version__
+CFG_FILENAME = os.environ.get('CURVEBALL_CFG_NAME', 'curveball.json')
 
 
 def smooth(x, y, PLOT=False, **kwargs):
@@ -84,6 +94,7 @@ def smooth(x, y, PLOT=False, **kwargs):
 
     return predict
 
+<<<<<<< HEAD
 
 def color_name_to_hex(name, default='#000000'):
     """Convert a color name to a hex values.
@@ -109,3 +120,43 @@ def color_name_to_hex(name, default='#000000'):
         return webcolors.name_to_hex(name)
     except ValueError:
         return default
+
+
+def read_config(fname=None):
+    if fname is None:
+        fname = CFG_FILENAME
+    try:
+        with open(os.path.join(site.getuserbase(), CFG_FILENAME), 'r') as f:
+            return json.load(f)
+    except FileNotFoundError:
+        return {}
+
+def write_config(cfg, fname=None):
+    if fname is None:
+        fname = CFG_FILENAME
+    with open(os.path.join(site.getuserbase(), CFG_FILENAME), 'w') as f:
+        json.dump(cfg, f)
+
+def generate_cfg_value(key):
+    if key == 'uid': 
+        return str(uuid.uuid4())
+    if key == 'token':
+        return ''
+
+def get_cfg_value(key):
+    cfg = read_config()
+    if key not in cfg:
+        cfg[key] = generate_cfg_value(key)
+        write_config(cfg)
+    return cfg[key]
+
+def track(fcn, **kwargs):
+    uid = get_cfg_value('uid')
+    token = get_cfg_value('token')
+    if not token:
+        warnings.warn("Tracking failed, missing token")
+    mx = Mixpanel(token)
+    kwargs['datetime'] = datetime.datetime.now()
+    kwargs['version'] = __version__
+    kwargs['platform'] = platform.platform()
+    mp.track(uid, fcn.__name__, kwargs)
