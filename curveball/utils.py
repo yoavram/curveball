@@ -10,7 +10,6 @@
 from __future__ import print_function
 from __future__ import division
 from builtins import str
-from builtins import range
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -19,6 +18,7 @@ import sklearn.linear_model
 import sklearn.preprocessing
 import sklearn.pipeline
 import sklearn.grid_search
+import webcolors
 
 
 def smooth(x, y, PLOT=False, **kwargs):
@@ -83,3 +83,29 @@ def smooth(x, y, PLOT=False, **kwargs):
         return predict, fig, ax
 
     return predict
+
+
+def color_name_to_hex(name, default='#000000'):
+    """Convert a color name to a hex values.
+
+    Does not attempt to convert names that already start with '#'.
+
+    Parameters
+    ----------
+    name : str
+        color name to convert, i.e. "red"
+    default : str
+        the default color in case name is invalid, default value is "#000000".
+
+    Returns
+    -------
+    str
+        hex value corresponding to name
+    """
+    try:
+        name = str(name)
+        if name.startswith('#'):
+            return name
+        return webcolors.name_to_hex(name)
+    except ValueError:
+        return default

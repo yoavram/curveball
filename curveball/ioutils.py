@@ -16,12 +16,10 @@ from builtins import map
 from builtins import range
 from six import string_types
 from past.utils import old_div
-import xlrd
 import numpy as np
 import pandas as pd
 from string import ascii_uppercase
 from scipy.io import loadmat
-from lxml import etree
 import re
 import datetime
 import dateutil.parser
@@ -52,7 +50,7 @@ def _fix_dtypes(df):
             df[col] = df[col].astype(str)
     
 
-def read_curveball_csv(filename, plate=None):
+def read_curveball_csv(filename, max_time=None, plate=None):
     """Reads growth measurements from a Curveball csv (comma separated values) file.
 
     Parameters
@@ -75,6 +73,8 @@ def read_curveball_csv(filename, plate=None):
         df[u'Strain'] = u'0'
     if plate is None and 'Color' not in df.columns:
         df[u'Color'] = u'#000000'
+    if max_time is not None:
+        df = df[df.Time <= max_time]
     _fix_dtypes(df)
     return df
 
@@ -137,13 +137,14 @@ def read_tecan_xlsx(filename, label=u'OD', sheets=None, max_time=None, plate=Non
     >>> df.shape
     (8544, 9)
     """
+    import xlrd
     wb = xlrd.open_workbook(filename)
     dateandtime = datetime.datetime.now() # default
 
     if isinstance(label, string_types):
         label = [label]
     if sheets is None:
-            sheets = range(wb.nsheets)
+        sheets = range(wb.nsheets)
     if PRINT: print("Reading {0} worksheets from workbook {1}".format(len(sheets), filename))
     label_dataframes = []
     for lbl in label:
@@ -156,7 +157,7 @@ def read_tecan_xlsx(filename, label=u'OD', sheets=None, max_time=None, plate=Non
         
             for i in range(sh.nrows):
                 ## FOR row
-                row = sh.row_values(i)                
+                row = sh.row_values(i)
                 if row[0].startswith(u'Date'):
                     if isinstance(row[1], string_types):
                         date = ''.join(row[1:])
@@ -350,6 +351,7 @@ def read_tecan_xml(filename, label=u'OD', max_time=None, plate=None):
     -----
     This function was adapted from `choderalab/assaytools <https://github.com/choderalab/assaytools/blob/908471e7976e207df3f9b0e31b2a89f84da40607/AssayTools/platereader.py>`_ (licensed under LGPL).
     """
+    from lxml import etree
     dataframes = []
     for filename in glob(filename):
         # Parse XML file into nodes.
@@ -427,6 +429,7 @@ def read_sunrise_xlsx(filename, label=u'OD', max_time=None, plate=None):
         - ``Strain`` (:py:class:`str`): if a `plate` was given, this is the strain name corresponding to the well from the plate.
         - ``Color`` (:py:class:`str`, hex format): if a `plate` was given, this is the strain color corresponding to the well from the plate.
     """
+    import xlrd
     dataframes = []
     files = glob(filename)
     if not files:
@@ -478,5 +481,62 @@ def read_sunrise_xlsx(filename, label=u'OD', max_time=None, plate=None):
     if max_time is not None:
         df = df[df.Time <= max_time]
     df.sort([u'Row', u'Col', u'Time'], inplace=True)
+    _fix_dtypes(df)
+    return df
+
+
+def read_biotek_xlsx(filename, max_time=None, plate=None, PRINT=False):
+    import xlrd
+    wb = xlrd.open_workbook(filename)
+    for sh_i in range(wb.nsheets):
+        sh = wb.sheet_by_index(sh_i)
+        if sh.nrows > 0:
+            break
+    else: # all sheets are empty
+        warnings.warn('All sheets are empty in {}'.format(filename))
+        return pd.DataFrame()
+
+    if PRINT:
+        print("Reading worksheet {0} with {2} lines from workbook {1}".format(sh_i, filename, sh.nrows))
+
+    in_data = False
+    data = []
+    dfs = []
+    i = 0
+    while i < sh.nrows:
+        row = sh.row_values(i)
+        if not in_data and row[1] == 'Time':
+            columns = row[1:]
+            in_data = True
+        elif in_data and row[1] != '':
+            row[1] *= 24 # days -> hours
+            data.append(row[1:])
+        elif in_data and row[1] == '':
+            in_data = False
+            df = pd.DataFrame(data, columns=columns)
+            df = pd.melt(df, [u'Time', u'T° 600'], var_name=u'Well', value_name=u'OD')
+            dfs.append(df)
+        i += 1
+    df = pd.concat(dfs )
+
+    df[u'Row'] = [x[0] for x in df.Well]
+    df[u'Col'] = [int(x[1:]) for x in df.Well]
+
+    min_time = df.Time.min()
+    if PRINT:
+        print("Starting time", min_time)
+    if max_time is not None:
+        df = df[df.Time <= max_time]
+    df.sort_values([u'Row', u'Col', u'Time'], inplace=True)
+
+    if df.shape[0] == 0: # no dataframes
+        return pd.DataFrame()
+
+    if plate is None:
+        df[u'Strain'] = u'0'
+        df[u'Color'] = u'#000000'
+    else:
+        df = pd.merge(df, plate, on=(u'Row', u'Col'))
+    if PRINT: print("Read {0} records from workbook".format(df.shape[0]))
     _fix_dtypes(df)
     return df

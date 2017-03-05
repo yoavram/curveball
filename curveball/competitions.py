@@ -452,7 +452,7 @@ def selection_coefs_ts(t, y, ax=None, PLOT=False):
 	----------
 	.. [12] Chevin, L-M. 2011. `On Measuring Selection in Experimental Evolution <http://dx.doi.org/10.1098/rsbl.2010.0580>`_. Biology Letters.
 	"""
-	svals = np.gradient(np.log(y[:,0] / y[:,1]), t)
+	svals = np.gradient(np.log(y[:,0] / y[:,1]), t[1] - t[0])
 	svals[np.isinf(svals)] = svals[np.isfinite(svals)].max()
 
 	if PLOT:

@@ -41,7 +41,7 @@ setup(
     ],
     packages=find_packages(),
     include_package_data=True,
-    data_files=[('data', ['data/Tecan_280715.xlsx', 'data/Tecan_210115.xlsx', 'data/Tecan_210115.csv', 'data/20130211_dh.zip', 'data/plate_9_OD.mat', 'data/Sunrise_180515_0916.xlsx']),
+    data_files=[('data', ['data/Tecan_280715.xlsx', 'data/Tecan_210115.xlsx', 'data/Tecan_210115.csv', 'data/20130211_dh.zip', 'data/plate_9_OD.mat', 'data/Sunrise_180515_0916.xlsx', 'data/BioTekSynergy.xlsx']),
                   ('plate_templates', ['plate_templates/checkerboard.csv', 'plate_templates/G-RG-R.csv']),
     ],
     install_requires=[
@@ -58,6 +58,7 @@ setup(
         'scikit-learn',
         'sympy',
         'lmfit>=0.9.3',
+        'webcolors'
     ],
     extras_require={
         'tests': [

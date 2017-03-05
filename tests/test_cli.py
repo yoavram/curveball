@@ -152,6 +152,7 @@ class AnalysisTestCase(TestCase):
 		self.files = pkg_resources.resource_listdir('data', '')
 		self.files = [fn for fn in self.files if os.path.splitext(fn)[-1] in ['.xlsx', '.mat']]
 		self.files = [fn for fn in self.files if not fn.lower().startswith('sunrise')]
+		self.files = [fn for fn in self.files if not fn.lower().startswith('biotek')]
 		self.files.sort()
 		self.runner = CliRunner()
 		self.ctx = self.setup_with_context_manager(self.runner.isolated_filesystem())
@@ -159,6 +160,7 @@ class AnalysisTestCase(TestCase):
 		self.assertTrue(os.path.exists(self.dirpath))
 		self.assertTrue(os.path.isdir(self.dirpath))
 
+		print("files:", self.files)
 		for fn in self.files:
 			src = pkg_resources.resource_filename('data', fn)
 			shutil.copy(src, '.')

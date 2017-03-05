@@ -76,5 +76,6 @@ dependencies:
   - statsmodels==0.6.1
   - sympy==1.0
   - wheel==0.29.0
+  - webcolors==1.7
 prefix: /Users/yoavram/miniconda3/envs/test
 
