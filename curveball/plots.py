@@ -277,8 +277,14 @@ def _plot_fitted_histogram(data, rv=scipy.stats.norm, color='k', label=None, alp
 	nbins = min(100, len(data))
 	n, bins, patches = ax.hist(data, bins=nbins, color=color, alpha=alpha, normed=1)
 	ax.plot(bins, rv_inst.pdf(bins), color='k', lw=2)
-	ax.annotate(r'$\mu={:.2g}, \sigma={:.2g}$'.format(rv_inst.mean(), rv_inst.std()), 
-		xy=(bins[len(bins)/2], np.max(n)), xycoords="data", horizontalalignment='center', fontsize=plt.rcParams['axes.labelsize'])
+	ax.annotate(
+		r'$\mu={:.2g}, \sigma={:.2g}$'.format(rv_inst.mean(), 
+		rv_inst.std()), 
+		xy=(bins[len(bins)//2], np.max(n)), 
+		xycoords="data", 
+		horizontalalignment='center', 
+		fontsize=plt.rcParams['axes.labelsize']
+	)
 	return fig, ax
 
 
