@@ -332,9 +332,9 @@ def compete(m1, m2, p0=(0.5, 0.5), y0=None, t=None, hours=24, num_of_points=100,
             m1_fixed = {pname for pname,p in m1.params.items() if not p.vary}
             m2_fixed = {pname for pname,p in m2.params.items() if not p.vary}
             # FIXME bootstrap_params has changed
-            m1_samples = curveball.models.bootstrap_params(df1, m1.model.__class__, nsamples,
+            m1_samples = curveball.models.bootstrap_params(df1, m1, nsamples,
                                                            fit_kws={'param_fix': m1_fixed})
-            m2_samples = curveball.models.bootstrap_params(df2, m2.model.__class__, nsamples,
+            m2_samples = curveball.models.bootstrap_params(df2, m2, nsamples,
                                                            fit_kws={'param_fix': m2_fixed})
         else:
             raise ValueError("Unknow sampler method: {0}".format(sampler))
