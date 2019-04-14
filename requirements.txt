@@ -1,6 +1,5 @@
 certifi==2016.8.31
 click==6.6
-curveball==0.2.7
 cycler==0.10.0
 emcee==2.2.1
 fastcache==1.0.2
