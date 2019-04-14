@@ -574,7 +574,7 @@ def baranyi_roberts_lv(y, t, *args):
     return [dy1dt, dy2dt]
 
 
-def baranyi_roberts_yr(y, t, *args):
+def baranyi_roberts_yr2(y, t, *args):
     y1, y2 = y
     K, r, nu, q0, v, a = args
     r1, r2 = r
@@ -590,7 +590,7 @@ def baranyi_roberts_yr(y, t, *args):
     return [dy1dt, dy2dt]
 
 
-def baranyi_roberts_yr2(y, t, *args):
+def baranyi_roberts_yr(y, t, *args):
     y1, y2 = y
     K, r, nu, q0, v, a = args
     r1, r2 = r
@@ -605,6 +605,9 @@ def baranyi_roberts_yr2(y, t, *args):
     dy2dt = r2 * alfa2 * y2 * (1 - a1 * (y1**nu1) / (K2**nu2) - (y2**nu2) / (K2**nu2))
     return [dy1dt, dy2dt]
 
+
+def baranyi_roberts_yr_a1(y, t, *args):
+    return baranyi_roberts_yr(y, t, *args, (1, 1))
 
 
 def fit_and_compete(m1, m2, df_mixed, y0=None, aguess=(1, 1), fixed=False,
