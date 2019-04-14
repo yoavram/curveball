@@ -81,7 +81,8 @@ def smooth(x, y, PLOT=False, **kwargs):
         ax.set(xlabel='x', ylabel='y')
         sns.despine()
         return predict, fig, ax
-
+    if kwargs.get('PRINT'):
+        print(model)
     return predict
 
 
