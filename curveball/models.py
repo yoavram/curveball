@@ -456,7 +456,7 @@ def find_max_growth_ci(model_fit, param_samples, after_lag=True, ci=0.95):
 def find_min_doubling_time(model_fit, params=None, PLOT=False):
     """Estimates the minimal doubling time from the model fit.
 
-    The functions evaluates a growth curves based on the model fit and supplied parameters (if any) 
+    The function evaluates a growth curves based on the model fit and supplied parameters (if any) 
     and calculates that time required to double the population density at each time point. 
     It then returns the minimal doubling time.
 
