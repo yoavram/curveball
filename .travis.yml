@@ -8,30 +8,35 @@
 # This file is modified from https://gist.github.com/dan-blanchard/7045057
 language: python
 python:
-  - 2.7
-  - 3.5
-  - 3.6
+  - "2.7"
+  - "3.5"
+  - "3.6"  
 notifications:
   email: 
     - yoav@yoavram.com
 
 # Setup anaconda
-before_install:
-  - git fetch --unshallow
-  - wget http://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh
-  - chmod +x miniconda.sh
-  - ./miniconda.sh -b
-  - export PATH=$HOME/miniconda3/bin:$PATH
-  - export MPLBACKEND=agg
-  - conda config --add channels conda-forge
-  - conda config --set always_yes true
-  - conda config --set anaconda_upload no
-  - conda install -q python=$TRAVIS_PYTHON_VERSION
-  - conda update -q conda pip
-
-# Install packages
 install:
-  - conda install -q requests conda-build=1 conda=3 jinja2 anaconda-client atlas numpy scipy matplotlib pandas scikit-learn lxml seaborn sympy xlrd lmfit coverage nose pillow webcolors
+  - sudo apt-get update
+  - git fetch --unshallow
+  # We do this conditionally because it saves us some downloading if the
+  # version is the same.
+  - if [[ "$TRAVIS_PYTHON_VERSION" == "2.7" ]]; then
+      wget https://repo.continuum.io/miniconda/Miniconda2-latest-Linux-x86_64.sh -O miniconda.sh;
+    else
+      wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh;
+    fi  
+  - bash miniconda.sh -b -p $HOME/miniconda
+  - export PATH=$HOME/miniconda/bin:$PATH
+  - hash -r
+  - conda config --add channels conda-forge
+  - conda config --set always_yes yes --set changeps1 no
+  - conda config --set anaconda_upload no
+  - conda update -q conda pip
+  # Useful for debugging any issues with conda
+  - conda info -a
+  - conda create -q -n travis-env python=$TRAVIS_PYTHON_VERSION requests conda-build=1 conda=3 jinja2 anaconda-client atlas numpy scipy matplotlib pandas scikit-learn lxml seaborn sympy xlrd lmfit coverage nose pillow webcolors
+  - conda activate travis-env
   - pip install codecov | cat
   - conda build -q conda-recipe
   - conda install --use-local -q curveball
