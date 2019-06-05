@@ -1,78 +1,55 @@
-# This file is part of curveball.
-# https://github.com/yoavram/curveball
-
-# Licensed under the MIT license:
-# http://www.opensource.org/licenses/MIT-license
-# Copyright (c) 2015, Yoav Ram <yoav@yoavram.com>
-
-# This file is modified from https://gist.github.com/dan-blanchard/7045057
 language: python
 python:
-  - "2.7"
-  - "3.5"
-  - "3.6"  
+- '2.7'
+- '3.5'
+- '3.6'
 notifications:
-  email: 
-    - yoav@yoavram.com
-
-# Setup anaconda
+  email:
+  - yoav@yoavram.com
 install:
-  - sudo apt-get update
-  - git fetch --unshallow
-  # We do this conditionally because it saves us some downloading if the
-  # version is the same.
-  - if [[ "$TRAVIS_PYTHON_VERSION" == "2.7" ]]; then
-      wget https://repo.continuum.io/miniconda/Miniconda2-latest-Linux-x86_64.sh -O miniconda.sh;
-    else
-      wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh;
-    fi  
-  - bash miniconda.sh -b -p $HOME/miniconda
-  - export PATH=$HOME/miniconda/bin:$PATH
-  - hash -r
-  - conda config --add channels conda-forge
-  - conda config --set always_yes yes --set changeps1 no
-  - conda config --set anaconda_upload no
-  - conda update -q conda pip
-  # Useful for debugging any issues with conda
-  - conda info -a
-  - conda create -q -n travis-env python=$TRAVIS_PYTHON_VERSION requests conda-build=1 conda=3 jinja2 anaconda-client atlas numpy scipy matplotlib pandas scikit-learn lxml seaborn sympy xlrd lmfit coverage nose pillow webcolors
-  - conda activate travis-env
-  - pip install codecov | cat
-  - conda build -q conda-recipe
-  - conda install --use-local -q curveball
-
-# Run test
+- sudo apt-get update
+- git fetch --unshallow
+- if [[ "$TRAVIS_PYTHON_VERSION" == "2.7" ]]; then wget https://repo.continuum.io/miniconda/Miniconda2-latest-Linux-x86_64.sh
+  -O miniconda.sh; else wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh
+  -O miniconda.sh; fi
+- bash miniconda.sh -b -p $HOME/miniconda
+- export PATH=$HOME/miniconda/bin:$PATH
+- hash -r
+- conda config --add channels conda-forge
+- conda config --set always_yes yes --set changeps1 no
+- conda config --set anaconda_upload no
+- conda update -q conda pip
+- conda info -a
+- conda create -q -n travis-env python=$TRAVIS_PYTHON_VERSION requests conda-build=1
+  conda=3 jinja2 anaconda-client atlas numpy scipy matplotlib pandas scikit-learn
+  lxml seaborn sympy xlrd lmfit coverage nose pillow webcolors wheel twine setuptools
+- conda activate travis-env
+- python -m pip install codecov | cat
+- python setup.py install
 script:
-  - curveball --version
-  - nosetests tests --with-coverage --cover-package=curveball
-
+- curveball --version
+- nosetests tests --with-coverage --cover-package=curveball
 after_success:
-# Code coverage
-  - codecov --token=$CODECOV_TOKEN
-# Deploy to Anaconda.org (conditions inside script)
-  - chmod +x ./deploy_anaconda.sh
-
+- codecov --token=$CODECOV_TOKEN
+- chmod +x ./deploy_anaconda.sh
 before_deploy:
-# Build docs
-  - pip install --upgrade sphinx sphinx-rtd-theme numpydoc | cat
-  - cd docs
-  - make html
-  - cd ..
-# Install netlify
-  - npm install -g netlify-cli
-
+- python -m pip install --upgrade sphinx sphinx-rtd-theme numpydoc | cat
+- cd docs
+- make html
+- cd ..
+- npm install -g netlify-cli
 deploy:
-# Deploy to netlify.com
   - provider: script
     script: netlify deploy -p docs/_build/html --access-token $NETLIFY_TOKEN
     on:
       repo: yoavram/curveball
       branch: master
     skip_cleanup: true
-# Deploy to Anaconda.org
-  - provider: script
-    script: ./deploy_anaconda.sh
+ - provider: pypi
     on:
       tags: true
       repo: yoavram/curveball
     skip_cleanup: true
+    user: yoavram
+    password:
+      secure: MoPwYyCGlXUu9q8/XN/qDbPYk8VFvPYZRVeG+mV6R2H0OMOUCBKGPEfKmoNLkTbUED6CDiamq9rnkNB2JP0s8vxce0fXWosiICcwZiGlE9MmcPAK3nzwXWZyIaz2QXzL869sQBU1eZ9DaROL/lcqpbTmFe2ETghIdsShq5UZq6aWoFOSYcSDcdxZg0kcY0eAt6Dv8DaB3X6gmpDLISsv2tM7Lwq9UOmJ612zzpthT8S+iJtJoOHg89DOhwrNy63//ngFFOIHnvuAb71+7V/GBhRI8OcXHc0edT9dKUtxFJcRCA7erA5dKQjy8X9sakIkCSa74Wdy3jrhSRD8mpe3/E581dsPMr1OFdj/G0GHTFU9hcINwhhza84TQszYNIr3j+MqwuYy8THQ8OCPyLYSsgBYfH8z+vn8I6jIsnyLVGe8FUYuS89WlP9XpRBYhFI9/z5CxbAZPFprfF45QPJ1i9sq5fymkyT9Qjq7/mhxYO81NDpxcmiaxVgvg03LpqILz4Z0vCILkBbcRDr1cp/qflFqrVofKaJlEvnuUO31IKkYUBeEcHDf5ZeABesogWdV6nJ8mirt/Rwb6qHACOM3OcLjt033ImcXUSJ8px119P7cBkdwR1Yipq0OPnaosdkqz7GMO4VfE1GHt13qfrH7TAIkBxUrNDfeh6MPWztUD5Q=
