@@ -6,9 +6,8 @@
 Curveball: Predicting competition results from growth curves
 ============================================================
 
-|Anaconda| |Install| |Supported Python versions| |License| 
-|Build Status| |Docs| |codecov.io| 
-|Code Issues| |Join the chat at https://gitter.im/yoavram/curveball|
+|Anaconda| |Latest| |Install| |License| 
+|Supported Python versions| |Build Status| |Docs| |codecov.io| 
 
 **Author**: `Yoav Ram <http://www.yoavram.com>`_
 
@@ -40,11 +39,17 @@ basic familiarity with the **Python programming language** is recommended for us
 .. note::
    
    This documentation provides technical details on using Curveball.
-   For more information on the theoretical and computational aspects of Curveball, read the preprint:
+   For more information on the theoretical and computational aspects of Curveball, read the paper:
 
    .. pull-quote::
 
-      Ram et al. 2015. `Predicting competition results from growth curves <https://dx.doi.org/10.1101/022640>`_. *bioRxiv*. doi:10.1101/022640.
+      Ram, Dellus-Gur, Bibi, Karkare, Obolski, Feldman, Cooper, Berman, Hadany. (2019) Predicting microbial relative growth in a mixed culture from growth curve data. *PNAS*.
+
+   or the preprint:
+
+   .. pull-quote::
+
+      Ram et al. (2015) `Predicting competition results from growth curves <https://dx.doi.org/10.1101/022640>`_. *bioRxiv*. doi:10.1101/022640.
 
 
 Quickstart
@@ -102,6 +107,8 @@ Resources:
 
 .. |Anaconda| image:: https://anaconda.org/yoavram/curveball/badges/version.svg   
    :target: https://anaconda.org/yoavram/curveball
+.. |Latest| image:: https://anaconda.org/yoavram/curveball/badges/latest_release_date.svg
+   :target: https://anaconda.org/yoavram/curveball
 .. |Install| image:: https://anaconda.org/yoavram/curveball/badges/installer/conda.svg   
    :target: https://anaconda.org/yoavram/curveball
 .. |Supported Python versions| image:: https://img.shields.io/pypi/pyversions/curveball.svg
@@ -114,9 +121,5 @@ Resources:
    :target: https://curveball.netlify.com
 .. |codecov.io| image:: http://codecov.io/github/yoavram/curveball/coverage.svg?branch=master&token=PV0HysT5gx
    :target: http://codecov.io/github/yoavram/curveball?branch=master
-.. |Code Issues| image:: https://www.quantifiedcode.com/api/v1/project/fb3dfaa863494b8fa9e3242c542304f6/badge.svg
-   :target: https://www.quantifiedcode.com/app/project/fb3dfaa863494b8fa9e3242c542304f6
-.. |Join the chat at https://gitter.im/yoavram/curveball| image:: https://badges.gitter.im/Join%20Chat.svg
-   :target: https://gitter.im/yoavram/curveball?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge
 
 Logo `designed by Freepik <http://www.freepik.com/free-vector/ball-of-wool_762106.htm>`_.
