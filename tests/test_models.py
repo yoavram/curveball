@@ -364,7 +364,7 @@ class FindDoublingTimeTestCase(TestCase):
 		params = model.guess(data=df.OD, t=df.Time)
 		model_fit = model.fit(data=df.OD, t=df.Time, params=params)
 		est = curveball.models.find_min_doubling_time(model_fit)
-		param_samples = curveball.models.bootstrap_params(df, model_fit, 10)
+		param_samples = curveball.models.bootstrap_params(df, model_fit, 100)
 		low, high = curveball.models.find_min_doubling_time_ci(model_fit, param_samples)
 		self.assertTrue(low < est < high, "Doubling time is {2}, CI is ({0},{1})".format(est, low, high))
 
