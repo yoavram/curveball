@@ -1,0 +1,6 @@
+- Push to [github](https://github.com/yoavram/curveball).
+- [travis-ci](https://travis-ci.com/yoavram/curveball) then 
+    - builds the code with `conda build`
+    - pushes code coverage to [codecov](https://codecov.io/gh/yoavram/curveball) using python package `codecov`
+    - builds docs with sphinx and deploys docs to [netlify](https://app.netlify.com/sites/curveball) using npm package `netlify-cli`
+    - deploys to [anaconda.org](https://anaconda.org/yoavram/curveball) using `deploy_anaconda.sh` that uses `anaconda-client`
