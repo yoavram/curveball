@@ -17,7 +17,7 @@ import matplotlib as mpl
 import matplotlib.pyplot as plt
 try:
 	from pandas.plotting import lag_plot # py3.6
-except ModuleNotFoundError:
+except ImportError:
 	from pandas.tools.plotting import lag_plot # py3.5
 import seaborn as sns
 sns.set_style("ticks")

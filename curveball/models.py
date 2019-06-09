@@ -17,7 +17,12 @@ from warnings import warn
 import numpy as np
 import matplotlib.pyplot as plt
 import collections
-from scipy.stats import chisqprob, linregress
+try:
+	from scipy.stats.distributions import chi2
+	chisqprob = chi2.sf
+except ImportError:
+	from scipy.stats import chisqprob
+from scipy.stats import linregress
 from scipy.misc import derivative
 import pandas as pd
 import copy
