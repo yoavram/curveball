@@ -1,0 +1,945 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>curveball.competitions &mdash; Curveball 0.2.12+18.g2933f0b documentation</title>
+  
+
+  
+  
+    <link rel="shortcut icon" href="../../_static/favicon.ico"/>
+  
+  
+  
+
+  
+  <script type="text/javascript" src="../../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../../_static/jquery.js"></script>
+        <script type="text/javascript" src="../../_static/underscore.js"></script>
+        <script type="text/javascript" src="../../_static/doctools.js"></script>
+        <script type="text/javascript" src="../../_static/language_data.js"></script>
+        <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> Curveball
+          
+
+          
+            
+            <img src="../../_static/logo_200px.png" class="logo" alt="Logo"/>
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.2.12+18.g2933f0b
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorial.html">Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../ioutils.html">I/O Utils</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../plots.html">Plots</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../models.html">Growth Models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../likelihood.html">Likelihood</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../competitions.html">Competition Models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../cli.html">CLI</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../troubleshooting.html">Troubleshooting</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Curveball</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+        
+      <li>curveball.competitions</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for curveball.competitions</h1><div class="highlight"><pre>
+<span></span><span class="ch">#!/usr/bin/env python</span>
+<span class="c1"># -*- coding: utf-8 -*-</span>
+
+<span class="c1"># This file is part of curveball.</span>
+<span class="c1"># https://github.com/yoavram/curveball</span>
+
+<span class="c1"># Licensed under the MIT license:</span>
+<span class="c1"># http://www.opensource.org/licenses/MIT-license</span>
+<span class="c1"># Copyright (c) 2015, Yoav Ram &lt;yoav@yoavram.com&gt;</span>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="n">division</span>
+<span class="kn">from</span> <span class="nn">builtins</span> <span class="k">import</span> <span class="nb">range</span>
+<span class="kn">import</span> <span class="nn">warnings</span>
+<span class="kn">import</span> <span class="nn">copy</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="kn">from</span> <span class="nn">scipy.integrate</span> <span class="k">import</span> <span class="n">odeint</span>
+<span class="kn">from</span> <span class="nn">scipy.optimize</span> <span class="k">import</span> <span class="n">curve_fit</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">import</span> <span class="nn">lmfit</span>
+<span class="kn">import</span> <span class="nn">curveball</span>
+<span class="kn">import</span> <span class="nn">seaborn</span> <span class="k">as</span> <span class="nn">sns</span>
+<span class="n">sns</span><span class="o">.</span><span class="n">set_style</span><span class="p">(</span><span class="s2">&quot;ticks&quot;</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">_alfa</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">q0</span><span class="p">,</span> <span class="n">v</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">isinf</span><span class="p">(</span><span class="n">q0</span><span class="p">)</span> <span class="ow">or</span> <span class="n">np</span><span class="o">.</span><span class="n">isinf</span><span class="p">(</span><span class="n">v</span><span class="p">):</span>
+        <span class="k">return</span> <span class="mf">1.0</span>
+    <span class="k">return</span> <span class="n">q0</span> <span class="o">/</span> <span class="p">(</span><span class="n">q0</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">v</span> <span class="o">*</span> <span class="n">t</span><span class="p">))</span>
+
+<div class="viewcode-block" id="double_baranyi_roberts_ode0"><a class="viewcode-back" href="../../competitions.html#curveball.competitions.double_baranyi_roberts_ode0">[docs]</a><span class="k">def</span> <span class="nf">double_baranyi_roberts_ode0</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">K</span><span class="p">,</span> <span class="n">nu</span><span class="p">,</span> <span class="n">q0</span><span class="p">,</span> <span class="n">v</span><span class="p">):</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;A two species Baranyi-Roberts model [1]_. The function calculates the population growth rate at given time points.</span>
+
+<span class="sd">    .. math::</span>
+
+<span class="sd">        \frac{dN_i}{dt} = r_i \alpha_i(t) N_i \Big(1 - \Big(\frac{\sum_{j}{N_j}}{K_i}\Big)^{\nu_i}\Big)</span>
+
+<span class="sd">    - :math:`N_i`: population size of strain *i*.</span>
+<span class="sd">    - :math:`r_i`: initial per capita growth rate of strain *i*</span>
+<span class="sd">    - :math:`K_i`: maximum population size of strain *i*</span>
+<span class="sd">    - :math:`\nu_i`: curvature of the logsitic term of strain *i*</span>
+<span class="sd">    - :math:`\alpha_i(t)= \frac{q_{0,i}}{q_{0,i} + e^{-v_i t}}`</span>
+<span class="sd">    - :math:`q_{0,i}`: initial adjustment of strain *i* to current environment</span>
+<span class="sd">    - :math:`v_i`: adjustment rate of strain *i*</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    y : float, float</span>
+<span class="sd">        population size</span>
+<span class="sd">    t : float</span>
+<span class="sd">        time, usually in hours</span>
+<span class="sd">    r : float, float</span>
+<span class="sd">        initial per capita growth rate</span>
+<span class="sd">    K : float, float</span>
+<span class="sd">        maximum population size (:math:`K&gt;0`)</span>
+<span class="sd">    nu : float, float</span>
+<span class="sd">        curvature of the logsitic term (:math:`\nu&gt;0`)</span>
+<span class="sd">    q0 : float, float</span>
+<span class="sd">        initial adjustment to current environment (:math:`0&lt;q_0&lt;1`)</span>
+<span class="sd">    v : float, float</span>
+<span class="sd">        adjustment rate (:math:`v&gt;0`)</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    float, float</span>
+<span class="sd">        population growth rate.</span>
+
+<span class="sd">    References</span>
+<span class="sd">    ----------</span>
+<span class="sd">    .. [1] Baranyi, J., Roberts, T. A., 1994. `A dynamic approach to predicting bacterial growth in food &lt;www.ncbi.nlm.nih.gov/pubmed/7873331&gt;`_. Int. J. Food Microbiol.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">alfa</span> <span class="o">=</span> <span class="n">_alfa</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">q0</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">v</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="n">_alfa</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">q0</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">v</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+    <span class="n">dydt</span> <span class="o">=</span> <span class="n">alfa</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">r</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">y</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="p">((</span><span class="n">y</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">y</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="o">/</span> <span class="n">K</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">**</span><span class="n">nu</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="n">alfa</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">r</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">y</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="p">((</span><span class="n">y</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">y</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="o">/</span> <span class="n">K</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span><span class="o">**</span><span class="n">nu</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+    <span class="k">return</span> <span class="n">dydt</span></div>
+
+
+<div class="viewcode-block" id="double_baranyi_roberts_ode1"><a class="viewcode-back" href="../../competitions.html#curveball.competitions.double_baranyi_roberts_ode1">[docs]</a><span class="k">def</span> <span class="nf">double_baranyi_roberts_ode1</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">K</span><span class="p">,</span> <span class="n">nu</span><span class="p">,</span> <span class="n">q0</span><span class="p">,</span> <span class="n">v</span><span class="p">):</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;A two species Baranyi-Roberts model. The function calculates the population growth rate at given time points.</span>
+
+<span class="sd">    .. math::</span>
+
+<span class="sd">        \frac{dN_i}{dt} = r_i \alpha_i(t) N_i \Big(1 - \Big(\sum_{j}{\frac{N_j}{K_j}}\Big)^{\nu_i}\Big)</span>
+
+<span class="sd">    See also</span>
+<span class="sd">    --------</span>
+<span class="sd">    curveball.competitions.double_baranyi_roberts_ode0</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">alfa</span> <span class="o">=</span> <span class="n">_alfa</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">q0</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">v</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="n">_alfa</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">q0</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">v</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+    <span class="n">dydt</span> <span class="o">=</span> <span class="n">alfa</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">r</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">y</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="p">(</span><span class="n">y</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">/</span> <span class="n">K</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">y</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">/</span> <span class="n">K</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span><span class="o">**</span><span class="n">nu</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="n">alfa</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">r</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">y</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="p">(</span><span class="n">y</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">/</span> <span class="n">K</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">y</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">/</span><span class="n">K</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span><span class="o">**</span><span class="n">nu</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+    <span class="k">return</span> <span class="n">dydt</span></div>
+
+
+<div class="viewcode-block" id="double_baranyi_roberts_ode2"><a class="viewcode-back" href="../../competitions.html#curveball.competitions.double_baranyi_roberts_ode2">[docs]</a><span class="k">def</span> <span class="nf">double_baranyi_roberts_ode2</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">K</span><span class="p">,</span> <span class="n">nu</span><span class="p">,</span> <span class="n">q0</span><span class="p">,</span> <span class="n">v</span><span class="p">):</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;A two species Baranyi-Roberts model. The function calculates the population growth rate at given time points.</span>
+
+<span class="sd">    .. math::</span>
+
+<span class="sd">        \frac{dN_i}{dt} = r_i \alpha_i(t) N_i \Big(1 - \sum_{j}{\Big(\frac{N_j}{K_j}\Big)^{\nu_j}}\Big)</span>
+
+<span class="sd">    See also</span>
+<span class="sd">    --------</span>
+<span class="sd">    curveball.competitions.double_baranyi_roberts_ode0</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">alfa</span> <span class="o">=</span> <span class="n">_alfa</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">q0</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">v</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="n">_alfa</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">q0</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">v</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+    <span class="n">dydt</span> <span class="o">=</span> <span class="n">alfa</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">r</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">y</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="p">(</span><span class="n">y</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">/</span> <span class="n">K</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">**</span><span class="n">nu</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="p">(</span><span class="n">y</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">/</span> <span class="n">K</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span><span class="o">**</span><span class="n">nu</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span> <span class="n">alfa</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">r</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">y</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="p">(</span><span class="n">y</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">/</span> <span class="n">K</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">**</span><span class="n">nu</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="p">(</span><span class="n">y</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">/</span> <span class="n">K</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span><span class="o">**</span><span class="n">nu</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+    <span class="k">return</span> <span class="n">dydt</span></div>
+
+
+<div class="viewcode-block" id="double_baranyi_roberts_ode3"><a class="viewcode-back" href="../../competitions.html#curveball.competitions.double_baranyi_roberts_ode3">[docs]</a><span class="k">def</span> <span class="nf">double_baranyi_roberts_ode3</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">K</span><span class="p">,</span> <span class="n">nu</span><span class="p">,</span> <span class="n">q0</span><span class="p">,</span> <span class="n">v</span><span class="p">):</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;A two species Baranyi-Roberts model. The function calculates the population growth rate at given time points.</span>
+
+<span class="sd">    .. math::</span>
+
+<span class="sd">        \frac{dN_i}{dt} = r_i \alpha_i(t) N_i \Big( 1 - \Big(\frac{\sum_j{N_j}}{\bar{K}}\Big)^{\nu_i} \Big)</span>
+
+<span class="sd">    See also</span>
+<span class="sd">    --------</span>
+<span class="sd">    curveball.competitions.double_baranyi_roberts_ode0</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">alfa</span> <span class="o">=</span> <span class="n">_alfa</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">q0</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">v</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="n">_alfa</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">q0</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">v</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+    <span class="n">Kmean</span> <span class="o">=</span> <span class="p">(</span><span class="n">K</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">y</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">K</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">y</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="o">/</span> <span class="p">(</span><span class="n">y</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">y</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+    <span class="n">dydt</span> <span class="o">=</span> <span class="n">alfa</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">r</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">y</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="p">((</span><span class="n">y</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">y</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="o">/</span> <span class="n">Kmean</span><span class="p">)</span><span class="o">**</span><span class="n">nu</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="n">alfa</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">r</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">y</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="p">((</span><span class="n">y</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">y</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="o">/</span> <span class="n">Kmean</span><span class="p">)</span><span class="o">**</span><span class="n">nu</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+    <span class="k">return</span> <span class="n">dydt</span></div>
+
+<div class="viewcode-block" id="double_baranyi_roberts_ode4"><a class="viewcode-back" href="../../competitions.html#curveball.competitions.double_baranyi_roberts_ode4">[docs]</a><span class="k">def</span> <span class="nf">double_baranyi_roberts_ode4</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">K</span><span class="p">,</span> <span class="n">nu</span><span class="p">,</span> <span class="n">q0</span><span class="p">,</span> <span class="n">v</span><span class="p">):</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;A two species Baranyi-Roberts model. The function calculates the population growth rate at given time points.</span>
+
+<span class="sd">    .. math::</span>
+
+<span class="sd">        \frac{dN_i}{dt} = r_i \alpha_i(t) N_i</span>
+
+<span class="sd">    See also</span>
+<span class="sd">    --------</span>
+<span class="sd">    curveball.competitions.double_baranyi_roberts_ode0</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">alfa</span> <span class="o">=</span> <span class="n">_alfa</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">q0</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">v</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="n">_alfa</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">q0</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">v</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+    <span class="n">dydt</span> <span class="o">=</span> <span class="n">alfa</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">r</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">y</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">alfa</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">r</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">y</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">dydt</span></div>
+
+
+<div class="viewcode-block" id="double_baranyi_roberts_ode5"><a class="viewcode-back" href="../../competitions.html#curveball.competitions.double_baranyi_roberts_ode5">[docs]</a><span class="k">def</span> <span class="nf">double_baranyi_roberts_ode5</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">K</span><span class="p">,</span> <span class="n">nu</span><span class="p">,</span> <span class="n">q0</span><span class="p">,</span> <span class="n">v</span><span class="p">):</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;A two species Baranyi-Roberts model. The function calculates the population growth rate at given time points.</span>
+
+<span class="sd">    .. math::</span>
+
+<span class="sd">        \frac{dN_i}{dt} = r_i \alpha_i(t) N_i \Big( 1 - \Big(\frac{N_i}{K_i}\Big)^{\nu_i}\Big)</span>
+
+<span class="sd">    See also</span>
+<span class="sd">    --------</span>
+<span class="sd">    curveball.competitions.double_baranyi_roberts_ode0</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">alfa</span> <span class="o">=</span> <span class="n">_alfa</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">q0</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">v</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="n">_alfa</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">q0</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">v</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+    <span class="n">dydt</span> <span class="o">=</span> <span class="n">alfa</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">r</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">y</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="p">(</span><span class="n">y</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">/</span><span class="n">K</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">**</span><span class="n">nu</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="n">alfa</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">r</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">y</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="p">(</span><span class="n">y</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">/</span><span class="n">K</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span><span class="o">**</span><span class="n">nu</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+    <span class="k">return</span> <span class="n">dydt</span></div>
+
+
+<div class="viewcode-block" id="double_baranyi_roberts_ode6"><a class="viewcode-back" href="../../competitions.html#curveball.competitions.double_baranyi_roberts_ode6">[docs]</a><span class="k">def</span> <span class="nf">double_baranyi_roberts_ode6</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">K</span><span class="p">,</span> <span class="n">nu</span><span class="p">,</span> <span class="n">q0</span><span class="p">,</span> <span class="n">v</span><span class="p">):</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;A two species Baranyi-Roberts model. The function calculates the population growth rate at given time points.</span>
+
+<span class="sd">    .. math::</span>
+
+<span class="sd">        \frac{dN_i}{dt} = r_i \alpha_i(t) N_i \Big(1 - \Big(\frac{\sum_j{N_j}}{K_i}\Big)^{\bar{\nu}}\Big)</span>
+
+<span class="sd">    See also</span>
+<span class="sd">    --------</span>
+<span class="sd">    curveball.competitions.double_baranyi_roberts_ode0</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">alfa</span> <span class="o">=</span> <span class="n">_alfa</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">q0</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">v</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="n">_alfa</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">q0</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">v</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+    <span class="n">numean</span> <span class="o">=</span> <span class="p">(</span><span class="n">nu</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">*</span><span class="n">y</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">nu</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">*</span><span class="n">y</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="o">/</span> <span class="p">(</span><span class="n">y</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">y</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+    <span class="n">dydt</span> <span class="o">=</span> <span class="n">alfa</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">r</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">y</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="p">((</span><span class="n">y</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">+</span><span class="n">y</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span><span class="o">/</span><span class="n">K</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">**</span><span class="n">numean</span><span class="p">),</span> <span class="n">alfa</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">r</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">y</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="p">((</span><span class="n">y</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">+</span><span class="n">y</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span><span class="o">/</span><span class="n">K</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span><span class="o">**</span><span class="n">numean</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">dydt</span></div>
+
+
+<div class="viewcode-block" id="double_baranyi_roberts_ode7"><a class="viewcode-back" href="../../competitions.html#curveball.competitions.double_baranyi_roberts_ode7">[docs]</a><span class="k">def</span> <span class="nf">double_baranyi_roberts_ode7</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">K</span><span class="p">,</span> <span class="n">nu</span><span class="p">,</span> <span class="n">q0</span><span class="p">,</span> <span class="n">v</span><span class="p">):</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;A two species Baranyi-Roberts model. The function calculates the population growth rate at given time points.</span>
+
+<span class="sd">    .. math::</span>
+
+<span class="sd">        \frac{dN_1}{dt} = 0 \;\;\; \frac{dN_2}{dt} = r_2 \alpha_2(t) N_2 \Big(1 - \Big(\frac{N_2}{K_2}\Big)^{\nu_1}\Big)</span>
+
+<span class="sd">    See also</span>
+<span class="sd">    --------</span>
+<span class="sd">    curveball.competitions.double_baranyi_roberts_ode0</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">alfa</span> <span class="o">=</span> <span class="n">_alfa</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">q0</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">v</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="n">_alfa</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">q0</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">v</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+    <span class="n">numean</span> <span class="o">=</span> <span class="p">(</span><span class="n">nu</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">*</span><span class="n">y</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">nu</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">*</span><span class="n">y</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="o">/</span> <span class="p">(</span><span class="n">y</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">y</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+    <span class="n">dydt</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">alfa</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">r</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">y</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="p">(</span><span class="n">y</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">/</span><span class="n">K</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span><span class="o">**</span><span class="n">nu</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+    <span class="k">return</span> <span class="n">dydt</span></div>
+
+
+<div class="viewcode-block" id="double_baranyi_roberts_ode8"><a class="viewcode-back" href="../../competitions.html#curveball.competitions.double_baranyi_roberts_ode8">[docs]</a><span class="k">def</span> <span class="nf">double_baranyi_roberts_ode8</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">K</span><span class="p">,</span> <span class="n">nu</span><span class="p">,</span> <span class="n">q0</span><span class="p">,</span> <span class="n">v</span><span class="p">):</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;A two species Baranyi-Roberts model. The function calculates the population growth rate at given time points.</span>
+
+<span class="sd">    .. math::</span>
+
+<span class="sd">        \frac{dN_i}{dt} = r_i N_i \Big(1 - \Big(\frac{\sum_{j}{N_j}}{K_i}\Big)^{\nu_i}\Big)</span>
+
+<span class="sd">    See also</span>
+<span class="sd">    --------</span>
+<span class="sd">    curveball.competitions.double_baranyi_roberts_ode0</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">dydt</span> <span class="o">=</span> <span class="n">r</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">y</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="p">((</span><span class="n">y</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">y</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="o">/</span> <span class="n">K</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">**</span><span class="n">nu</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="n">r</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">y</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="p">((</span><span class="n">y</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">y</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="o">/</span> <span class="n">K</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span><span class="o">**</span><span class="n">nu</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+    <span class="k">return</span> <span class="n">dydt</span></div>
+
+
+<div class="viewcode-block" id="double_baranyi_roberts_gimenez_delgado_ode"><a class="viewcode-back" href="../../competitions.html#curveball.competitions.double_baranyi_roberts_gimenez_delgado_ode">[docs]</a><span class="k">def</span> <span class="nf">double_baranyi_roberts_gimenez_delgado_ode</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">K</span><span class="p">,</span> <span class="n">nu</span><span class="p">,</span> <span class="n">q0</span><span class="p">,</span> <span class="n">v</span><span class="p">):</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;A two species Baranyi-Roberts model with competition model inspired by Gimenez and Delgado (2004).</span>
+<span class="sd">    The function calculates the population growth rate at given time points.</span>
+
+<span class="sd">    .. math::</span>
+
+<span class="sd">        \frac{dN_i}{dt} = r_i \alpha_i(t) N_i \prod_j{\Big(1 - \Big(\frac{N_j}{K_j}\Big)^{\nu_j}\Big)}</span>
+
+<span class="sd">    See also</span>
+<span class="sd">    --------</span>
+<span class="sd">    curveball.competitions.double_baranyi_roberts_ode0</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">alfa</span> <span class="o">=</span> <span class="n">_alfa</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">q0</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">v</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="n">_alfa</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">q0</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">v</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+    <span class="n">prod</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="p">(</span><span class="n">y</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">/</span><span class="n">K</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">**</span><span class="p">(</span><span class="n">nu</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="p">(</span><span class="n">y</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">/</span><span class="n">K</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span><span class="o">**</span><span class="p">(</span><span class="n">nu</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
+    <span class="n">dydt</span> <span class="o">=</span> <span class="n">alfa</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">r</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">y</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">prod</span><span class="p">,</span> <span class="n">alfa</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">r</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">y</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">prod</span>
+    <span class="k">return</span> <span class="n">dydt</span></div>
+
+
+<div class="viewcode-block" id="compete"><a class="viewcode-back" href="../../competitions.html#curveball.competitions.compete">[docs]</a><span class="k">def</span> <span class="nf">compete</span><span class="p">(</span><span class="n">m1</span><span class="p">,</span> <span class="n">m2</span><span class="p">,</span> <span class="n">p0</span><span class="o">=</span><span class="p">(</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">),</span> <span class="n">y0</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">t</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">hours</span><span class="o">=</span><span class="mi">24</span><span class="p">,</span> <span class="n">num_of_points</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> 
+            <span class="n">nsamples</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">lag_phase</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">ode</span><span class="o">=</span><span class="n">double_baranyi_roberts_ode1</span><span class="p">,</span>
+            <span class="n">params1</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">params2</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ci</span><span class="o">=</span><span class="mi">95</span><span class="p">,</span> <span class="n">colors</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">PLOT</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+            <span class="n">sampler</span><span class="o">=</span><span class="s1">&#39;covar&#39;</span><span class="p">,</span> <span class="n">df1</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">df2</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Simulate competitions between two strains using growth parameters estimated</span>
+<span class="sd">    by fitting growth models to growth curves data.</span>
+
+<span class="sd">    Integrates a 2-dimensional ODE system given by `ode`</span>
+<span class="sd">    with parameters extracted from :py:class:`lmfit.model.ModelResult` instances `m1` and `m2`.</span>
+<span class="sd">    This implementation includes plotting (if required by `PLOT`);</span>
+<span class="sd">    resampling from the distribution of model parameters (when `nsamples` &gt; 1);</span>
+<span class="sd">    changing the ODE system (by providing a different function in `ode`);</span>
+<span class="sd">    and more.</span>
+
+<span class="sd">    The function competes two strains/species;</span>
+<span class="sd">    therefore it expects two :py:class:`lmfit.model.ModelResult` objects,</span>
+<span class="sd">    two initial values in `y0`, etc.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    m1, m2 : lmfit.model.ModelResult</span>
+<span class="sd">        model fitting results of growth models defined in :py:mod:`curveball.models`.</span>
+<span class="sd">    p0, y0 : tuple, optional</span>
+<span class="sd">        `p0` is the initial relative frequencies; `y0` is the initial population sizes.</span>
+<span class="sd">        if `y0` is given than ``y0[0]`` and ``y0[0]`` are the initial population size for `m1` and `m2`, respectively.</span>
+<span class="sd">        if `y0` is not given, then it will be set to the average estimated `y0` in `m1` and `m2` multiplied by `p0`.</span>
+<span class="sd">    t : numpy.ndarray or None, optional</span>
+<span class="sd">        array of time points in which to calculate the population sizes.</span>
+<span class="sd">    hours : int, optional</span>
+<span class="sd">        if `t` is not given, determines how many hours should the competition proceed, defaults to 24.</span>
+<span class="sd">    num_of_points : int, optional</span>
+<span class="sd">        if `t` is not given, determines the number of time points to use, defaults to 100.</span>
+<span class="sd">    nsamples : int, optional</span>
+<span class="sd">        how many replicates of the competition should be simulated;</span>
+<span class="sd">        if `nsamples` = 1, only one competition is simulated with the estimated parameters;</span>
+<span class="sd">        otherwise `nsamples` competitions are simulated with parameters drawn from a parameter distribution</span>
+<span class="sd">        determined by `sampler`. Defaults to 1.</span>
+<span class="sd">    lag_phase : bool, optional</span>
+<span class="sd">        if `True`, use lag phase as given by `m1` and `m2`. Otherwise, override the lag phase parameters to prevent a lag phase. Defaults to :const:`True`.</span>
+<span class="sd">    ode : func, optional</span>
+<span class="sd">        an ordinary differential systems system defined by a function that accepts ``y``, ``t``, and additional arguments, and returns the derivate of ``y`` with respect to ``t``. Defaults to :py:func:`.double_baranyi_roberts_ode0`.</span>
+<span class="sd">    params1, params2 : dict, optional</span>
+<span class="sd">        dictionaries of model parameter values; if given, overrides values from `m1` and `m2`.</span>
+<span class="sd">    ci : float, optional</span>
+<span class="sd">        confidence interval size, in (0, 100), only applicable when `PLOT` is :const:`True`, defaults to 95%.</span>
+<span class="sd">    colors : sequence of str, optional</span>
+<span class="sd">        if `PLOT` is :const:`True`, this sets the colors of the drawn lines. `colors[0]` will be used for `m1`; `colors[1]` for `m2`. If not provided, defaults to the current pallete.</span>
+<span class="sd">    ax : matplotlib.axes.Axes, optional</span>
+<span class="sd">        if `PLOT` is :const:`True`, an axes to plot into; if not provided, a new one is created.</span>
+<span class="sd">    PLOT : bool, optional</span>
+<span class="sd">        if :const:`True`, the function will plot the curves of *y* as a function of *t*. Defaults to :const:`False`.</span>
+<span class="sd">    sampler : str, optional</span>
+<span class="sd">        if ``covar``, the parameters will be sampled using the covariance matrix (:py:func:`curveball.models.sample_params`);</span>
+<span class="sd">        if ``bootstrap`` the parameters will be sampled by resampling the growth curves (:py:func:`curveball.models.bootstrap_params`).</span>
+<span class="sd">    df1, df2 : pandas.DataFrame, optional</span>
+<span class="sd">        the data frames used to fit `m1` and `m2`, only used when `sampler` is ``bootstrap``.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    t : numpy.ndarray</span>
+<span class="sd">        1d (or 2d, if `nsamples`&gt;1) array of time points, in hours.</span>
+<span class="sd">    y: numpy.ndarray</span>
+<span class="sd">        2d (or 3d, if `nsamples`&gt;1) array of strain frequencies.</span>
+<span class="sd">        First axis is time, second axis is strain, third axis (if applicable) is sample.</span>
+<span class="sd">    fig : matplotlib.figure.Figure</span>
+<span class="sd">        figure object.</span>
+<span class="sd">    ax : numpy.ndarray</span>
+<span class="sd">        array of :py:class:`matplotlib.axes.Axes` objects.</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    TypeError</span>
+<span class="sd">        if `m1` or `m2` are not :py:class:`lmfit.model.ModelResult`.</span>
+<span class="sd">    AssertionError</span>
+<span class="sd">        if an intermediate calculation produced an invalid result (not guaranteed).</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    &gt;&gt;&gt; import pandas as pd</span>
+<span class="sd">    &gt;&gt;&gt; import curveball</span>
+<span class="sd">    &gt;&gt;&gt; plate = pd.read_csv(&#39;plate_templates/G-RG-R.csv&#39;)</span>
+<span class="sd">    &gt;&gt;&gt; df = curveball.ioutils.read_tecan_xlsx(&#39;data/Tecan_280715.xlsx&#39;, label=&#39;OD&#39;, plate=plate)</span>
+<span class="sd">    &gt;&gt;&gt; green = curveball.models.fit_model(df[df.Strain == &#39;G&#39;], PLOT=False, PRINT=False)[0]</span>
+<span class="sd">    &gt;&gt;&gt; red = curveball.models.fit_model(df[df.Strain == &#39;R&#39;], PLOT=False, PRINT=False)[0]</span>
+<span class="sd">    &gt;&gt;&gt; t, y = curveball.competitions.compete(green, red, PLOT=False)</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    To debug, uncomment lines to return the ``infodict`` that is returned from :py:func:`scipy.integrate.odeint` is run with ``full_output=1``.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">m1</span><span class="p">,</span> <span class="n">lmfit</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">ModelResult</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;m1 must be </span><span class="si">%s</span><span class="s2">, instead it is </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">lmfit</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">ModelResult</span><span class="p">,</span> <span class="nb">type</span><span class="p">(</span><span class="n">m1</span><span class="p">))</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">m2</span><span class="p">,</span> <span class="n">lmfit</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">ModelResult</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;m2 must be </span><span class="si">%s</span><span class="s2">, instead it is </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">lmfit</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">ModelResult</span><span class="p">,</span> <span class="nb">type</span><span class="p">(</span><span class="n">m2</span><span class="p">))</span>
+
+    <span class="k">if</span> <span class="n">t</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">t</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">hours</span><span class="p">,</span> <span class="n">num_of_points</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">nsamples</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="c1"># draw random params</span>
+        <span class="n">sampler</span> <span class="o">=</span> <span class="n">sampler</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">sampler</span> <span class="o">==</span> <span class="s1">&#39;covar&#39;</span><span class="p">:</span>
+            <span class="n">m1_samples</span> <span class="o">=</span> <span class="n">curveball</span><span class="o">.</span><span class="n">models</span><span class="o">.</span><span class="n">sample_params</span><span class="p">(</span><span class="n">m1</span><span class="p">,</span> <span class="n">nsamples</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="n">params1</span><span class="p">)</span>
+            <span class="n">m2_samples</span> <span class="o">=</span> <span class="n">curveball</span><span class="o">.</span><span class="n">models</span><span class="o">.</span><span class="n">sample_params</span><span class="p">(</span><span class="n">m2</span><span class="p">,</span> <span class="n">nsamples</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="n">params2</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">sampler</span> <span class="o">==</span> <span class="s1">&#39;bootstrap&#39;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">params1</span> <span class="ow">or</span> <span class="n">params2</span><span class="p">:</span>
+                <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s2">&quot;Bootstrap sampling doesn&#39;t support params1 and params2 arguments&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">df1</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">df2</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Bootstrap sampling requires kwargs df1 and df2&quot;</span><span class="p">)</span>
+            <span class="n">m1_fixed</span> <span class="o">=</span> <span class="p">{</span><span class="n">pname</span> <span class="k">for</span> <span class="n">pname</span><span class="p">,</span><span class="n">p</span> <span class="ow">in</span> <span class="n">m1</span><span class="o">.</span><span class="n">params</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">p</span><span class="o">.</span><span class="n">vary</span><span class="p">}</span>
+            <span class="n">m2_fixed</span> <span class="o">=</span> <span class="p">{</span><span class="n">pname</span> <span class="k">for</span> <span class="n">pname</span><span class="p">,</span><span class="n">p</span> <span class="ow">in</span> <span class="n">m2</span><span class="o">.</span><span class="n">params</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">p</span><span class="o">.</span><span class="n">vary</span><span class="p">}</span>
+            <span class="c1"># FIXME bootstrap_params has changed</span>
+            <span class="n">m1_samples</span> <span class="o">=</span> <span class="n">curveball</span><span class="o">.</span><span class="n">models</span><span class="o">.</span><span class="n">bootstrap_params</span><span class="p">(</span><span class="n">df1</span><span class="p">,</span> <span class="n">m1</span><span class="p">,</span> <span class="n">nsamples</span><span class="p">,</span>
+                                                           <span class="n">fit_kws</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;param_fix&#39;</span><span class="p">:</span> <span class="n">m1_fixed</span><span class="p">})</span>
+            <span class="n">m2_samples</span> <span class="o">=</span> <span class="n">curveball</span><span class="o">.</span><span class="n">models</span><span class="o">.</span><span class="n">bootstrap_params</span><span class="p">(</span><span class="n">df2</span><span class="p">,</span> <span class="n">m2</span><span class="p">,</span> <span class="n">nsamples</span><span class="p">,</span>
+                                                           <span class="n">fit_kws</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;param_fix&#39;</span><span class="p">:</span> <span class="n">m2_fixed</span><span class="p">})</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Unknow sampler method: </span><span class="si">{0}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">sampler</span><span class="p">))</span>
+        <span class="n">min_nsamples</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">m1_samples</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">m2_samples</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">nsamples</span> <span class="o">&gt;</span> <span class="n">min_nsamples</span><span class="p">:</span>
+            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">{0}</span><span class="s2"> resamples lost&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">nsamples</span> <span class="o">-</span> <span class="n">min_nsamples</span><span class="p">))</span>
+            <span class="n">nsamples</span> <span class="o">=</span> <span class="n">min_nsamples</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">nsamples</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="c1"># override model result params with arguments params1 and params2</span>
+        <span class="k">if</span> <span class="n">params1</span><span class="p">:</span>
+            <span class="n">_params</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">m1</span><span class="o">.</span><span class="n">best_values</span><span class="p">)</span>
+            <span class="n">_params</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">params1</span><span class="p">)</span>
+            <span class="n">params1</span> <span class="o">=</span> <span class="n">_params</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">params1</span> <span class="o">=</span> <span class="n">m1</span><span class="o">.</span><span class="n">best_values</span>
+        <span class="k">if</span> <span class="n">params2</span><span class="p">:</span>
+            <span class="n">_params</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">m2</span><span class="o">.</span><span class="n">best_values</span><span class="p">)</span>
+            <span class="n">_params</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">params2</span><span class="p">)</span>
+            <span class="n">params2</span> <span class="o">=</span> <span class="n">_params</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">params2</span> <span class="o">=</span> <span class="n">m2</span><span class="o">.</span><span class="n">best_values</span>
+        <span class="c1"># param samples contain the model fit estimated params</span>
+        <span class="n">m1_samples</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">([</span><span class="n">params1</span><span class="p">])</span>
+        <span class="n">m2_samples</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">([</span><span class="n">params2</span><span class="p">])</span>
+        <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">m1_samples</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">m2_samples</span><span class="p">)</span>
+
+    <span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">t</span><span class="p">),</span> <span class="mi">2</span><span class="p">,</span> <span class="n">nsamples</span><span class="p">))</span>
+    <span class="c1">#infodict = [None]*nsamples # DEBUG</span>
+
+    <span class="c1"># simulate the ode for each param sample</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nsamples</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">y0</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">p0</span> <span class="o">=</span> <span class="n">p0</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">/</span> <span class="p">(</span><span class="n">p0</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">p0</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span> <span class="n">p0</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">/</span> <span class="p">(</span><span class="n">p0</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">p0</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+            <span class="n">y0</span> <span class="o">=</span> <span class="n">m1_samples</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="s1">&#39;y0&#39;</span><span class="p">]</span> <span class="o">*</span> <span class="n">p0</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">m2_samples</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="s1">&#39;y0&#39;</span><span class="p">]</span> <span class="o">*</span> <span class="n">p0</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">r</span> <span class="o">=</span> <span class="n">m1_samples</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="s1">&#39;r&#39;</span><span class="p">],</span> <span class="n">m2_samples</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="s1">&#39;r&#39;</span><span class="p">]</span>
+        <span class="n">K</span> <span class="o">=</span> <span class="n">m1_samples</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="s1">&#39;K&#39;</span><span class="p">],</span> <span class="n">m2_samples</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="s1">&#39;K&#39;</span><span class="p">]</span>
+        <span class="n">nu</span> <span class="o">=</span> <span class="n">m1_samples</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;nu&#39;</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">),</span> <span class="n">m2_samples</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;nu&#39;</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">lag_phase</span><span class="p">:</span>
+            <span class="n">q0</span> <span class="o">=</span> <span class="n">m1_samples</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;q0&#39;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">),</span> <span class="n">m2_samples</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;q0&#39;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">)</span>
+            <span class="n">v</span> <span class="o">=</span> <span class="n">m1_samples</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;v&#39;</span><span class="p">,</span> <span class="n">r</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="n">m2_samples</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;v&#39;</span><span class="p">,</span> <span class="n">r</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">q0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span>
+            <span class="n">v</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span>
+
+        <span class="n">args</span> <span class="o">=</span> <span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="n">K</span><span class="p">,</span> <span class="n">nu</span><span class="p">,</span> <span class="n">q0</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span>
+        <span class="n">y</span><span class="p">[:,:,</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">odeint</span><span class="p">(</span><span class="n">ode</span><span class="p">,</span> <span class="n">y0</span><span class="o">=</span><span class="n">y0</span><span class="p">,</span> <span class="n">t</span><span class="o">=</span><span class="n">t</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="n">args</span><span class="p">)</span>
+
+        <span class="c1"># DEBUG</span>
+        <span class="c1">#_y_,info = odeint(double_baranyi_roberts_ode0, y0, t, args=args, full_output=1)</span>
+        <span class="c1">#info[&#39;args&#39;] = (y0,) + args</span>
+        <span class="c1">#infodict[i] = info</span>
+        <span class="c1">#if info[&#39;message&#39;] == &#39;Integration successful.&#39;:</span>
+        <span class="c1">#   y[:,:,i] = _y_</span>
+
+    <span class="k">if</span> <span class="n">PLOT</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">ax</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">fig</span><span class="p">,</span><span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">fig</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">get_figure</span><span class="p">()</span>
+
+        <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">y</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]):</span>
+            <span class="n">_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">y</span><span class="p">[:,</span><span class="n">i</span><span class="p">,:])</span>
+            <span class="n">_df</span><span class="p">[</span><span class="s1">&#39;Time&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">t</span>
+            <span class="n">_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">melt</span><span class="p">(</span><span class="n">_df</span><span class="p">,</span> <span class="n">id_vars</span><span class="o">=</span><span class="s1">&#39;Time&#39;</span><span class="p">,</span> <span class="n">var_name</span><span class="o">=</span><span class="s1">&#39;Replicate&#39;</span><span class="p">,</span> <span class="n">value_name</span><span class="o">=</span><span class="s1">&#39;y&#39;</span><span class="p">)</span>
+            <span class="n">_df</span><span class="p">[</span><span class="s1">&#39;Strain&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">i</span>
+            <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">((</span><span class="n">df</span><span class="p">,</span> <span class="n">_df</span><span class="p">))</span>
+
+        <span class="k">if</span> <span class="n">colors</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">colors</span> <span class="o">=</span> <span class="p">{</span><span class="n">i</span><span class="p">:</span><span class="n">c</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span><span class="n">c</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">colors</span><span class="p">)}</span>
+        <span class="n">sns</span><span class="o">.</span><span class="n">tsplot</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">time</span><span class="o">=</span><span class="s1">&#39;Time&#39;</span><span class="p">,</span> <span class="n">unit</span><span class="o">=</span><span class="s1">&#39;Replicate&#39;</span><span class="p">,</span> <span class="n">condition</span><span class="o">=</span><span class="s1">&#39;Strain&#39;</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="s1">&#39;y&#39;</span><span class="p">,</span>
+                        <span class="n">ci</span><span class="o">=</span><span class="n">ci</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="n">colors</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">)</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">&#39;Time (hour)&#39;</span><span class="p">)</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;OD&#39;</span><span class="p">)</span>
+        <span class="n">sns</span><span class="o">.</span><span class="n">despine</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">t</span><span class="p">,</span><span class="n">y</span><span class="p">,</span><span class="n">fig</span><span class="p">,</span><span class="n">ax</span>
+    <span class="k">return</span> <span class="n">t</span><span class="p">,</span><span class="n">y</span><span class="c1">#,infodict</span></div>
+
+
+<div class="viewcode-block" id="selection_coefs_ts"><a class="viewcode-back" href="../../competitions.html#curveball.competitions.selection_coefs_ts">[docs]</a><span class="k">def</span> <span class="nf">selection_coefs_ts</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">PLOT</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Calculate selection coefficient according to the following formula[2]_,</span>
+<span class="sd">    where :math:`A(t), B(t)` are population densities of assay strain *A* and reference strain *B* at time *t*:</span>
+
+<span class="sd">    .. math::</span>
+
+<span class="sd">        s = \frac{d}{dt} \log{\frac{A(t)}{B(t)}}</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    t : numpy.ndarray</span>
+<span class="sd">        array of time points, as produced by :py:func:`compete`</span>
+<span class="sd">    y : numpy.ndarray</span>
+<span class="sd">        array of population densities, as produced by :py:func:`compete`, where the first axis is time and the second axis is strain.</span>
+<span class="sd">    ax : matplotlib.axes.Axes, optional</span>
+<span class="sd">        if `PLOT` is :const:`True`, an axes to plot into; if not provided, a new one is created.</span>
+<span class="sd">    PLOT : bool, optional</span>
+<span class="sd">        if :const:`True`, the function will plot the curve of *s* as a function of *t*.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    svals : numpy.ndarray</span>
+<span class="sd">        the selection coefficients of the assay strain relative to the reference strain over time.</span>
+<span class="sd">    fig : matplotlib.figure.Figure</span>
+<span class="sd">        figure object.</span>
+<span class="sd">    ax : numpy.ndarray of matplotlib.axes.Axes</span>
+<span class="sd">        array of axes objects.</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    This formula assumes that the frequencies of the strains follow a logistic curve.</span>
+<span class="sd">    Lag phases, interactions, etc. may cause this formula to become irrelevant.</span>
+
+<span class="sd">    References</span>
+<span class="sd">    ----------</span>
+<span class="sd">    .. [12] Chevin, L-M. 2011. `On Measuring Selection in Experimental Evolution &lt;http://dx.doi.org/10.1098/rsbl.2010.0580&gt;`_. Biology Letters.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">dt</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ediff1d</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">to_end</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">dt</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">dt</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span>
+    <span class="n">svals</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">gradient</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">y</span><span class="p">[:,</span><span class="mi">0</span><span class="p">]</span> <span class="o">/</span> <span class="n">y</span><span class="p">[:,</span><span class="mi">1</span><span class="p">]),</span> <span class="n">dt</span><span class="p">)</span>
+    <span class="n">svals</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">isinf</span><span class="p">(</span><span class="n">svals</span><span class="p">)]</span> <span class="o">=</span> <span class="n">svals</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">svals</span><span class="p">)]</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+
+    <span class="k">if</span> <span class="n">PLOT</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">ax</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">fig</span><span class="p">,</span><span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">fig</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">get_figure</span><span class="p">()</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">svals</span><span class="p">)</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;Selection coefficient&#39;</span><span class="p">)</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">&#39;Time (hour)&#39;</span><span class="p">)</span>
+        <span class="n">sns</span><span class="o">.</span><span class="n">despine</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">svals</span><span class="p">,</span> <span class="n">fig</span><span class="p">,</span> <span class="n">ax</span>
+
+    <span class="k">return</span> <span class="n">svals</span></div>
+
+
+<div class="viewcode-block" id="fitness_LTEE"><a class="viewcode-back" href="../../competitions.html#curveball.competitions.fitness_LTEE">[docs]</a><span class="k">def</span> <span class="nf">fitness_LTEE</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">ref_strain</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">assay_strain</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">t0</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">t1</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="n">ci</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Calculate relative fitness according to the definition used in the *Long Term Evolutionary Experiment* (LTEE) [3]_,</span>
+<span class="sd">    where :math:`A(t), B(t)` are population densities of assay strain *A* and reference strain *B* at time *t*:</span>
+
+<span class="sd">    .. math::</span>
+
+<span class="sd">        \omega = \frac{\log{(A(t) / A(0))}}{\log{(B(t) / B(0))}}</span>
+
+<span class="sd">    If `ci` &gt; 0, treats the third axis of `y` as replicates (from a parameteric boostrap) to calculate the confidence interval on the fitness.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    y : numpy.ndarray</span>
+<span class="sd">        array of population densities, as produced by :py:func:`compete`, where the first axis is time and the second axis is strain. A third axis is also applicable if `ci`&gt;0.</span>
+<span class="sd">    ref_strain : int, optional</span>
+<span class="sd">        the index of the reference strain within `y`. This strain&#39;s fitness is set to 1 by definition. Defaults to 0 (first).</span>
+<span class="sd">    assay_strain : int, optional</span>
+<span class="sd">        the index of the assay strain within `y`. The result will be the fitness of this strain relative to the fitness of the reference strain. Defaults to 1 (second).</span>
+<span class="sd">    t0 : int, optional</span>
+<span class="sd">        the index of the time point from which to start the calculation of the relative fitness, defaults to 0 (first).</span>
+<span class="sd">    t1 : int, optional</span>
+<span class="sd">        the index of the time point at which to end the calculation of the relative fitness, defaults to -1 (last).</span>
+<span class="sd">    ci : float between 0 and 1, optional</span>
+<span class="sd">        if not zero, a confidence interval will be calculated using the third axis of `y` as replicates.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    w : float</span>
+<span class="sd">        the fitness of the assay strain relative to the reference strain.</span>
+<span class="sd">    low : float</span>
+<span class="sd">        if `ci` &gt; 0 and `y.ndim` = 3, this is the low limit of the confidence interval of the fitness</span>
+<span class="sd">    high : float</span>
+<span class="sd">        if `ci` &gt; 0 and `y.ndim` = 3, this is the higher limit of the confidence interval of the fitness</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    ValueError</span>
+<span class="sd">        if confidence interval is requested (`ci` &gt; 0) but there are no replicates (`y.ndim` != 3).</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    The result may depend on the choice of `t0` and `t1` as well as the strain designations (`ref_strain` and `assay_strain`).</span>
+
+<span class="sd">    References</span>
+<span class="sd">    ----------</span>
+<span class="sd">    .. [3] Wiser, M. J. &amp; Lenski, R. E. 2015 `A Comparison of Methods to Measure Fitness in Escherichia coli &lt;http://dx.plos.org/10.1371/journal.pone.0126210&gt;`_. PLoS One.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">ci</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">y</span> <span class="o">=</span> <span class="n">y</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">y</span><span class="o">.</span><span class="n">shape</span> <span class="o">+</span> <span class="p">(</span><span class="mi">1</span><span class="p">,))</span>
+    <span class="k">elif</span> <span class="n">y</span><span class="o">.</span><span class="n">ndim</span> <span class="o">!=</span> <span class="mi">3</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">()</span>
+    <span class="n">w</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">y</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">y</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]):</span>
+        <span class="n">At0</span><span class="p">,</span> <span class="n">Bt0</span> <span class="o">=</span> <span class="n">y</span><span class="p">[</span><span class="n">t0</span><span class="p">,</span> <span class="n">assay_strain</span><span class="p">,</span> <span class="n">i</span><span class="p">],</span> <span class="n">y</span><span class="p">[</span><span class="n">t0</span><span class="p">,</span> <span class="n">ref_strain</span><span class="p">,</span> <span class="n">i</span><span class="p">]</span>
+        <span class="n">At1</span><span class="p">,</span> <span class="n">Bt1</span> <span class="o">=</span> <span class="n">y</span><span class="p">[</span><span class="n">t1</span><span class="p">,</span> <span class="n">assay_strain</span><span class="p">,</span> <span class="n">i</span><span class="p">],</span> <span class="n">y</span><span class="p">[</span><span class="n">t1</span><span class="p">,</span> <span class="n">ref_strain</span><span class="p">,</span> <span class="n">i</span><span class="p">]</span>
+        <span class="n">w</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">At1</span> <span class="o">/</span> <span class="n">At0</span><span class="p">)</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">Bt1</span> <span class="o">/</span> <span class="n">Bt0</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">ci</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">w</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">margin</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">ci</span><span class="p">)</span> <span class="o">*</span> <span class="mi">50</span>
+        <span class="k">return</span> <span class="n">w</span><span class="o">.</span><span class="n">mean</span><span class="p">(),</span> <span class="n">np</span><span class="o">.</span><span class="n">percentile</span><span class="p">(</span><span class="n">w</span><span class="p">,</span> <span class="n">margin</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">percentile</span><span class="p">(</span><span class="n">w</span><span class="p">,</span> <span class="n">ci</span> <span class="o">*</span> <span class="mi">100</span> <span class="o">+</span> <span class="n">margin</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="baranyi_roberts_gd"><a class="viewcode-back" href="../../competitions.html#curveball.competitions.baranyi_roberts_gd">[docs]</a><span class="k">def</span> <span class="nf">baranyi_roberts_gd</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">):</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Fujikawa, Hiroshi, and Mohammad Z Sakha. 2014. Prediction of Microbial Growth in Mixed Culture with a Competition Model. Biocontrol Science 19 (2): 89-92.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">y1</span><span class="p">,</span> <span class="n">y2</span> <span class="o">=</span> <span class="n">y</span>
+    <span class="n">K</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">nu</span><span class="p">,</span> <span class="n">q0</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">a</span> <span class="o">=</span> <span class="n">args</span>
+    <span class="n">r1</span><span class="p">,</span> <span class="n">r2</span> <span class="o">=</span> <span class="n">r</span>
+    <span class="n">K1</span><span class="p">,</span> <span class="n">K2</span> <span class="o">=</span> <span class="n">K</span>
+    <span class="n">nu1</span><span class="p">,</span> <span class="n">nu2</span> <span class="o">=</span> <span class="n">nu</span>
+    <span class="n">q01</span><span class="p">,</span> <span class="n">q02</span> <span class="o">=</span> <span class="n">q0</span>
+    <span class="n">v1</span><span class="p">,</span> <span class="n">v2</span> <span class="o">=</span> <span class="n">v</span>
+    <span class="n">a1</span><span class="p">,</span> <span class="n">a2</span> <span class="o">=</span> <span class="n">a</span>
+    <span class="n">alfa1</span> <span class="o">=</span> <span class="n">_alfa</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">q01</span><span class="p">,</span> <span class="n">v1</span><span class="p">)</span>
+    <span class="n">alfa2</span> <span class="o">=</span> <span class="n">_alfa</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">q02</span><span class="p">,</span> <span class="n">v2</span><span class="p">)</span>
+    <span class="n">dy1dt</span> <span class="o">=</span> <span class="n">r1</span> <span class="o">*</span> <span class="n">alfa1</span> <span class="o">*</span> <span class="n">y1</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="p">(</span><span class="n">y1</span><span class="o">/</span><span class="n">K1</span><span class="p">)</span><span class="o">**</span><span class="n">nu1</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="p">(</span><span class="n">y2</span><span class="o">/</span><span class="n">K2</span><span class="p">)</span><span class="o">**</span><span class="p">(</span><span class="n">nu2</span><span class="o">*</span><span class="n">a2</span><span class="p">))</span>
+    <span class="n">dy2dt</span> <span class="o">=</span> <span class="n">r2</span> <span class="o">*</span> <span class="n">alfa2</span> <span class="o">*</span> <span class="n">y2</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="p">(</span><span class="n">y1</span><span class="o">/</span><span class="n">K1</span><span class="p">)</span><span class="o">**</span><span class="p">(</span><span class="n">nu1</span><span class="o">*</span><span class="n">a1</span><span class="p">))</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="p">(</span><span class="n">y2</span><span class="o">/</span><span class="n">K2</span><span class="p">)</span><span class="o">**</span><span class="n">nu2</span><span class="p">)</span>
+    <span class="k">return</span> <span class="p">[</span><span class="n">dy1dt</span><span class="p">,</span> <span class="n">dy2dt</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="baranyi_roberts_lv"><a class="viewcode-back" href="../../competitions.html#curveball.competitions.baranyi_roberts_lv">[docs]</a><span class="k">def</span> <span class="nf">baranyi_roberts_lv</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">):</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Fujikawa, Hiroshi, and Mohammad Z Sakha. 2014. Prediction of Microbial Growth in Mixed Culture with a Competition Model. Biocontrol Science 19 (2): 89-92.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">y1</span><span class="p">,</span> <span class="n">y2</span> <span class="o">=</span> <span class="n">y</span>
+    <span class="n">K</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">nu</span><span class="p">,</span> <span class="n">q0</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">a</span> <span class="o">=</span> <span class="n">args</span>
+    <span class="n">r1</span><span class="p">,</span> <span class="n">r2</span> <span class="o">=</span> <span class="n">r</span>
+    <span class="n">K1</span><span class="p">,</span> <span class="n">K2</span> <span class="o">=</span> <span class="n">K</span>
+    <span class="n">nu1</span><span class="p">,</span> <span class="n">nu2</span> <span class="o">=</span> <span class="n">nu</span>
+    <span class="n">q01</span><span class="p">,</span> <span class="n">q02</span> <span class="o">=</span> <span class="n">q0</span>
+    <span class="n">v1</span><span class="p">,</span> <span class="n">v2</span> <span class="o">=</span> <span class="n">v</span>
+    <span class="n">a1</span><span class="p">,</span> <span class="n">a2</span> <span class="o">=</span> <span class="n">a</span>
+    <span class="n">alfa1</span> <span class="o">=</span> <span class="n">_alfa</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">q01</span><span class="p">,</span> <span class="n">v1</span><span class="p">)</span>
+    <span class="n">alfa2</span> <span class="o">=</span> <span class="n">_alfa</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">q02</span><span class="p">,</span> <span class="n">v2</span><span class="p">)</span>
+    <span class="n">Kmax</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">K1</span><span class="o">**</span><span class="n">nu1</span><span class="p">,</span> <span class="n">K2</span><span class="o">**</span><span class="n">nu2</span><span class="p">)</span>
+    <span class="n">dy1dt</span> <span class="o">=</span> <span class="n">r1</span> <span class="o">*</span> <span class="n">alfa1</span> <span class="o">*</span> <span class="n">y1</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="p">(</span><span class="n">y1</span><span class="o">/</span><span class="n">K1</span><span class="p">)</span><span class="o">**</span><span class="n">nu1</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="p">(</span><span class="n">y1</span><span class="o">**</span><span class="n">a1</span> <span class="o">+</span> <span class="n">y2</span><span class="o">**</span><span class="n">a2</span><span class="p">)</span><span class="o">/</span><span class="n">Kmax</span><span class="p">)</span>
+    <span class="n">dy2dt</span> <span class="o">=</span> <span class="n">r2</span> <span class="o">*</span> <span class="n">alfa2</span> <span class="o">*</span> <span class="n">y2</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="p">(</span><span class="n">y2</span><span class="o">/</span><span class="n">K2</span><span class="p">)</span><span class="o">**</span><span class="n">nu2</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="p">(</span><span class="n">y1</span><span class="o">**</span><span class="n">a1</span> <span class="o">+</span> <span class="n">y2</span><span class="o">**</span><span class="n">a2</span><span class="p">)</span><span class="o">/</span><span class="n">Kmax</span><span class="p">)</span>
+    <span class="k">return</span> <span class="p">[</span><span class="n">dy1dt</span><span class="p">,</span> <span class="n">dy2dt</span><span class="p">]</span></div>
+
+
+<span class="k">def</span> <span class="nf">baranyi_roberts_yr2</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">):</span>
+    <span class="n">y1</span><span class="p">,</span> <span class="n">y2</span> <span class="o">=</span> <span class="n">y</span>
+    <span class="n">K</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">nu</span><span class="p">,</span> <span class="n">q0</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">a</span> <span class="o">=</span> <span class="n">args</span>
+    <span class="n">r1</span><span class="p">,</span> <span class="n">r2</span> <span class="o">=</span> <span class="n">r</span>
+    <span class="n">K1</span><span class="p">,</span> <span class="n">K2</span> <span class="o">=</span> <span class="n">K</span>
+    <span class="n">nu1</span><span class="p">,</span> <span class="n">nu2</span> <span class="o">=</span> <span class="n">nu</span>
+    <span class="n">q01</span><span class="p">,</span> <span class="n">q02</span> <span class="o">=</span> <span class="n">q0</span>
+    <span class="n">v1</span><span class="p">,</span> <span class="n">v2</span> <span class="o">=</span> <span class="n">v</span>
+    <span class="n">a1</span><span class="p">,</span> <span class="n">a2</span> <span class="o">=</span> <span class="n">a</span>
+    <span class="n">alfa1</span> <span class="o">=</span> <span class="n">_alfa</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">q01</span><span class="p">,</span> <span class="n">v1</span><span class="p">)</span>
+    <span class="n">alfa2</span> <span class="o">=</span> <span class="n">_alfa</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">q02</span><span class="p">,</span> <span class="n">v2</span><span class="p">)</span>
+    <span class="n">dy1dt</span> <span class="o">=</span> <span class="n">r1</span> <span class="o">*</span> <span class="n">alfa1</span> <span class="o">*</span> <span class="n">y1</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="p">(</span><span class="n">y1</span><span class="o">/</span><span class="n">K1</span><span class="p">)</span><span class="o">**</span><span class="n">nu1</span> <span class="o">-</span> <span class="p">(</span><span class="n">a2</span> <span class="o">*</span> <span class="n">y2</span><span class="o">/</span><span class="n">K2</span><span class="p">)</span><span class="o">**</span><span class="n">nu2</span><span class="p">)</span>
+    <span class="n">dy2dt</span> <span class="o">=</span> <span class="n">r2</span> <span class="o">*</span> <span class="n">alfa2</span> <span class="o">*</span> <span class="n">y2</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="p">(</span><span class="n">a1</span> <span class="o">*</span> <span class="n">y1</span><span class="o">/</span><span class="n">K1</span><span class="p">)</span><span class="o">**</span><span class="n">nu1</span> <span class="o">-</span> <span class="p">(</span><span class="n">y2</span><span class="o">/</span><span class="n">K2</span><span class="p">)</span><span class="o">**</span><span class="n">nu2</span><span class="p">)</span>
+    <span class="k">return</span> <span class="p">[</span><span class="n">dy1dt</span><span class="p">,</span> <span class="n">dy2dt</span><span class="p">]</span>
+
+
+<span class="k">def</span> <span class="nf">baranyi_roberts_yr</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">):</span>
+    <span class="n">y1</span><span class="p">,</span> <span class="n">y2</span> <span class="o">=</span> <span class="n">y</span>
+    <span class="n">K</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">nu</span><span class="p">,</span> <span class="n">q0</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">a</span> <span class="o">=</span> <span class="n">args</span>
+    <span class="n">r1</span><span class="p">,</span> <span class="n">r2</span> <span class="o">=</span> <span class="n">r</span>
+    <span class="n">K1</span><span class="p">,</span> <span class="n">K2</span> <span class="o">=</span> <span class="n">K</span>
+    <span class="n">nu1</span><span class="p">,</span> <span class="n">nu2</span> <span class="o">=</span> <span class="n">nu</span>
+    <span class="n">q01</span><span class="p">,</span> <span class="n">q02</span> <span class="o">=</span> <span class="n">q0</span>
+    <span class="n">v1</span><span class="p">,</span> <span class="n">v2</span> <span class="o">=</span> <span class="n">v</span>
+    <span class="n">a1</span><span class="p">,</span> <span class="n">a2</span> <span class="o">=</span> <span class="n">a</span>
+    <span class="n">alfa1</span> <span class="o">=</span> <span class="n">_alfa</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">q01</span><span class="p">,</span> <span class="n">v1</span><span class="p">)</span>
+    <span class="n">alfa2</span> <span class="o">=</span> <span class="n">_alfa</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">q02</span><span class="p">,</span> <span class="n">v2</span><span class="p">)</span>
+    <span class="n">dy1dt</span> <span class="o">=</span> <span class="n">r1</span> <span class="o">*</span> <span class="n">alfa1</span> <span class="o">*</span> <span class="n">y1</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="p">(</span><span class="n">y1</span><span class="o">**</span><span class="n">nu1</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">K1</span><span class="o">**</span><span class="n">nu1</span><span class="p">)</span> <span class="o">-</span> <span class="n">a2</span> <span class="o">*</span> <span class="p">(</span><span class="n">y2</span><span class="o">**</span><span class="n">nu2</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">K1</span><span class="o">**</span><span class="n">nu1</span><span class="p">))</span>
+    <span class="n">dy2dt</span> <span class="o">=</span> <span class="n">r2</span> <span class="o">*</span> <span class="n">alfa2</span> <span class="o">*</span> <span class="n">y2</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">a1</span> <span class="o">*</span> <span class="p">(</span><span class="n">y1</span><span class="o">**</span><span class="n">nu1</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">K2</span><span class="o">**</span><span class="n">nu2</span><span class="p">)</span> <span class="o">-</span> <span class="p">(</span><span class="n">y2</span><span class="o">**</span><span class="n">nu2</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">K2</span><span class="o">**</span><span class="n">nu2</span><span class="p">))</span>
+    <span class="k">return</span> <span class="p">[</span><span class="n">dy1dt</span><span class="p">,</span> <span class="n">dy2dt</span><span class="p">]</span>
+
+<span class="c1"># obsolete - just call baranyi_roberts_yr(y, t, *args, (1, 1))</span>
+<span class="c1"># def baranyi_roberts_yr_a1(y, t, *args):</span>
+<span class="c1">#     return baranyi_roberts_yr(y, t, *args, (1, 1))</span>
+
+
+<span class="k">def</span> <span class="nf">fit_and_compete</span><span class="p">(</span><span class="n">m1</span><span class="p">,</span> <span class="n">m2</span><span class="p">,</span> <span class="n">df_mixed</span><span class="p">,</span> <span class="n">y0</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">aguess</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="n">fixed</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                    <span class="n">ode</span><span class="o">=</span><span class="n">baranyi_roberts_yr</span><span class="p">,</span> <span class="n">num_of_points</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s1">&#39;nelder&#39;</span><span class="p">,</span>
+                    <span class="n">value_var</span> <span class="o">=</span> <span class="s1">&#39;OD&#39;</span><span class="p">,</span> <span class="n">time_var</span> <span class="o">=</span> <span class="s1">&#39;Time&#39;</span><span class="p">,</span>
+                    <span class="n">PLOT</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">colors</span><span class="o">=</span><span class="n">sns</span><span class="o">.</span><span class="n">color_palette</span><span class="p">(</span><span class="s1">&#39;Set1&#39;</span><span class="p">,</span> <span class="mi">3</span><span class="p">)):</span>
+    <span class="n">best_values1</span> <span class="o">=</span> <span class="n">m1</span><span class="o">.</span><span class="n">best_values</span> <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">m1</span><span class="p">,</span> <span class="s1">&#39;best_values&#39;</span><span class="p">)</span> <span class="k">else</span> <span class="n">m1</span>
+    <span class="n">best_values2</span> <span class="o">=</span> <span class="n">m2</span><span class="o">.</span><span class="n">best_values</span> <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">m2</span><span class="p">,</span> <span class="s1">&#39;best_values&#39;</span><span class="p">)</span> <span class="k">else</span> <span class="n">m2</span>
+    <span class="n">K</span> <span class="o">=</span> <span class="n">best_values1</span><span class="p">[</span><span class="s1">&#39;K&#39;</span><span class="p">],</span> <span class="n">best_values2</span><span class="p">[</span><span class="s1">&#39;K&#39;</span><span class="p">]</span>
+    <span class="n">r</span> <span class="o">=</span> <span class="n">best_values1</span><span class="p">[</span><span class="s1">&#39;r&#39;</span><span class="p">],</span> <span class="n">best_values2</span><span class="p">[</span><span class="s1">&#39;r&#39;</span><span class="p">]</span>
+    <span class="n">nu</span> <span class="o">=</span> <span class="n">best_values1</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;nu&#39;</span><span class="p">,</span><span class="mi">1</span><span class="p">),</span> <span class="n">best_values2</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;nu&#39;</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">q0</span> <span class="o">=</span> <span class="n">best_values1</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;q0&#39;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">),</span> <span class="n">best_values2</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;q0&#39;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">)</span>
+    <span class="n">v</span> <span class="o">=</span> <span class="n">best_values1</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;v&#39;</span><span class="p">,</span> <span class="n">r</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="n">best_values2</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;v&#39;</span><span class="p">,</span> <span class="n">r</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+    <span class="k">if</span> <span class="n">y0</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">y0</span> <span class="o">=</span> <span class="n">best_values1</span><span class="p">[</span><span class="s1">&#39;y0&#39;</span><span class="p">]</span><span class="o">/</span><span class="mi">2</span><span class="p">,</span> <span class="n">best_values2</span><span class="p">[</span><span class="s1">&#39;y0&#39;</span><span class="p">]</span><span class="o">/</span><span class="mi">2</span>
+
+    <span class="n">y_mixed</span> <span class="o">=</span> <span class="n">df_mixed</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="n">time_var</span><span class="p">)[</span><span class="n">value_var</span><span class="p">]</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span><span class="o">.</span><span class="n">as_matrix</span><span class="p">()</span>
+    <span class="n">y_mixed_std</span> <span class="o">=</span> <span class="n">df_mixed</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="n">time_var</span><span class="p">)[</span><span class="n">value_var</span><span class="p">]</span><span class="o">.</span><span class="n">std</span><span class="p">()</span><span class="o">.</span><span class="n">as_matrix</span><span class="p">()</span>
+    <span class="n">t_mixed</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">df_mixed</span><span class="p">[</span><span class="n">time_var</span><span class="p">])</span>
+    <span class="n">t</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">t_mixed</span><span class="o">.</span><span class="n">max</span><span class="p">(),</span> <span class="n">num_of_points</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">fixed</span><span class="p">:</span>
+        <span class="n">a</span> <span class="o">=</span> <span class="n">aguess</span>
+        <span class="n">a1</span><span class="p">,</span> <span class="n">a2</span> <span class="o">=</span> <span class="n">a</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">def</span> <span class="nf">mixed_model</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">a1</span><span class="p">,</span> <span class="n">a2</span><span class="p">):</span>
+            <span class="n">y</span> <span class="o">=</span> <span class="n">odeint</span><span class="p">(</span><span class="n">ode</span><span class="p">,</span> <span class="n">y0</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">K</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">nu</span><span class="p">,</span> <span class="n">q0</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="p">(</span><span class="n">a1</span><span class="p">,</span> <span class="n">a2</span><span class="p">)))</span>
+            <span class="k">return</span> <span class="n">y</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">model</span> <span class="o">=</span> <span class="n">lmfit</span><span class="o">.</span><span class="n">Model</span><span class="p">(</span><span class="n">mixed_model</span><span class="p">)</span>
+
+        <span class="n">params</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">make_params</span><span class="p">(</span><span class="n">a1</span><span class="o">=</span><span class="n">aguess</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">a2</span><span class="o">=</span><span class="n">aguess</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+        <span class="n">params</span><span class="p">[</span><span class="s1">&#39;a1&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="nb">min</span><span class="o">=</span><span class="mf">1e-1</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+        <span class="n">params</span><span class="p">[</span><span class="s1">&#39;a2&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="nb">min</span><span class="o">=</span><span class="mf">1e-1</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+        
+        <span class="n">result</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">y_mixed</span><span class="p">,</span> <span class="n">t</span><span class="o">=</span><span class="n">t_mixed</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="n">params</span><span class="p">,</span> <span class="n">weights</span><span class="o">=</span><span class="mf">1.0</span> <span class="o">/</span> <span class="n">y_mixed_std</span><span class="p">,</span> 
+            <span class="n">method</span><span class="o">=</span><span class="n">method</span><span class="p">,</span> <span class="n">fit_kws</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">nan_policy</span><span class="o">=</span><span class="s1">&#39;propagate&#39;</span><span class="p">))</span>
+
+        <span class="n">a</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">best_values</span><span class="p">[</span><span class="s1">&#39;a1&#39;</span><span class="p">],</span> <span class="n">result</span><span class="o">.</span><span class="n">best_values</span><span class="p">[</span><span class="s1">&#39;a2&#39;</span><span class="p">]</span>
+        <span class="n">a1</span><span class="p">,</span> <span class="n">a2</span> <span class="o">=</span> <span class="n">a</span>
+
+    <span class="n">y</span> <span class="o">=</span> <span class="n">odeint</span><span class="p">(</span><span class="n">ode</span><span class="p">,</span> <span class="n">y0</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">K</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">nu</span><span class="p">,</span> <span class="n">q0</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">a</span><span class="p">))</span>
+
+    <span class="k">if</span> <span class="n">PLOT</span><span class="p">:</span>
+        <span class="n">ysum</span> <span class="o">=</span> <span class="n">y</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">p1</span> <span class="o">=</span> <span class="n">y</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">/</span> <span class="n">ysum</span>
+        <span class="n">p2</span> <span class="o">=</span> <span class="n">y</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">/</span> <span class="n">ysum</span>
+        <span class="n">MRSE</span> <span class="o">=</span> <span class="p">((</span><span class="n">odeint</span><span class="p">(</span><span class="n">ode</span><span class="p">,</span> <span class="n">y0</span><span class="p">,</span> <span class="n">t_mixed</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">K</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">nu</span><span class="p">,</span> <span class="n">q0</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">a</span><span class="p">))</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span> <span class="o">-</span> <span class="n">y_mixed</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+
+        <span class="n">w</span><span class="p">,</span> <span class="n">h</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">rcParams</span><span class="p">[</span><span class="s1">&#39;figure.figsize&#39;</span><span class="p">]</span>
+        <span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="n">w</span> <span class="o">*</span> <span class="mi">2</span><span class="p">,</span> <span class="n">h</span><span class="p">),</span> <span class="n">sharex</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+
+        <span class="n">ax</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">y</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">color</span><span class="o">=</span><span class="n">colors</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="n">ax</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">y</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">color</span><span class="o">=</span><span class="n">colors</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+        <span class="n">ax</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">ysum</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="n">colors</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">fixed</span><span class="p">:</span>
+            <span class="n">ax</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">t_mixed</span><span class="p">,</span> <span class="n">result</span><span class="o">.</span><span class="n">init_fit</span><span class="p">,</span> <span class="n">ls</span><span class="o">=</span><span class="s1">&#39;-.&#39;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="n">colors</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+        <span class="n">ax</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">errorbar</span><span class="p">(</span><span class="n">t_mixed</span><span class="p">,</span> <span class="n">y_mixed</span><span class="p">,</span> <span class="n">y_mixed_std</span><span class="p">,</span> <span class="n">fmt</span><span class="o">=</span><span class="s1">&#39;o&#39;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="n">colors</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+
+        <span class="n">ax</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">xlabel</span><span class="o">=</span><span class="s1">&#39;Time (hour)&#39;</span><span class="p">,</span> <span class="n">ylabel</span><span class="o">=</span><span class="s1">&#39;OD&#39;</span><span class="p">,</span>
+                  <span class="n">xlim</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">t</span><span class="o">.</span><span class="n">max</span><span class="p">()</span> <span class="o">+</span> <span class="mf">0.5</span><span class="p">),</span>
+                  <span class="n">title</span><span class="o">=</span><span class="s2">&quot;MRSE: </span><span class="si">{:.2g}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">MRSE</span><span class="p">))</span>
+
+        <span class="n">ax</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">p1</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="n">colors</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="n">ax</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">p2</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="n">colors</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+
+        <span class="n">ax</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">xlabel</span><span class="o">=</span><span class="s1">&#39;Time (hour)&#39;</span><span class="p">,</span> <span class="n">ylabel</span><span class="o">=</span><span class="s1">&#39;Frequency&#39;</span><span class="p">,</span>
+                  <span class="n">xlim</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">t</span><span class="o">.</span><span class="n">max</span><span class="p">()</span> <span class="o">+</span> <span class="mf">0.5</span><span class="p">),</span> <span class="n">ylim</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
+                  <span class="n">title</span><span class="o">=</span><span class="s2">&quot;a1=</span><span class="si">{:.2g}</span><span class="s2">, a2=</span><span class="si">{:.2g}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="o">*</span><span class="n">a</span><span class="p">))</span>
+
+        <span class="n">sns</span><span class="o">.</span><span class="n">despine</span><span class="p">()</span>
+        <span class="n">fig</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">t</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">fig</span><span class="p">,</span> <span class="n">ax</span>
+    <span class="k">return</span> <span class="n">t</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">a</span>
+
+
+<span class="k">def</span> <span class="nf">fit_and_compete_ci</span><span class="p">(</span><span class="n">param_samples1</span><span class="p">,</span> <span class="n">param_samples2</span><span class="p">,</span> <span class="n">df_mixed</span><span class="p">,</span> <span class="n">y0</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ci</span><span class="o">=</span><span class="mf">0.95</span><span class="p">,</span>
+    <span class="n">colors</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;g&#39;</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">),</span> <span class="n">line_kws</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ci_kws</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">PLOT</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">line_kws</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">line_kws</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">ci_kws</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">ci_kws</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">color</span><span class="o">=</span><span class="s1">&#39;gray&#39;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
+    <span class="n">nsamples</span> <span class="o">=</span> <span class="n">param_samples1</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">assert</span> <span class="n">param_samples1</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">param_samples2</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="s2">&quot;Parameters samples should have the same length&quot;</span>
+    <span class="n">t</span> <span class="o">=</span> <span class="p">[</span><span class="kc">None</span><span class="p">]</span> <span class="o">*</span> <span class="n">nsamples</span>
+    <span class="n">y</span> <span class="o">=</span> <span class="p">[</span><span class="kc">None</span><span class="p">]</span> <span class="o">*</span> <span class="n">nsamples</span>
+    <span class="n">a</span> <span class="o">=</span> <span class="p">[</span><span class="kc">None</span><span class="p">]</span> <span class="o">*</span> <span class="n">nsamples</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nsamples</span><span class="p">):</span>
+        <span class="n">sample1</span> <span class="o">=</span> <span class="n">param_samples1</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="p">:]</span>
+        <span class="n">sample2</span> <span class="o">=</span> <span class="n">param_samples2</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="p">:]</span>
+        <span class="n">t</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">y</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">a</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">curveball</span><span class="o">.</span><span class="n">competitions</span><span class="o">.</span><span class="n">fit_and_compete</span><span class="p">(</span><span class="n">sample1</span><span class="p">,</span> <span class="n">sample2</span><span class="p">,</span> <span class="n">df_mixed</span><span class="p">,</span> <span class="n">y0</span><span class="o">=</span><span class="n">y0</span><span class="p">)</span>
+
+    <span class="n">t</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
+    <span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>
+    <span class="n">a</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
+    <span class="n">ysum</span> <span class="o">=</span> <span class="n">y</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+    <span class="n">f1</span> <span class="o">=</span> <span class="n">y</span><span class="p">[:,</span> <span class="p">:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">/</span> <span class="n">ysum</span>
+    <span class="n">f2</span> <span class="o">=</span> <span class="n">y</span><span class="p">[:,</span> <span class="p">:,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">/</span> <span class="n">ysum</span>
+    <span class="n">f</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">((</span><span class="n">f1</span><span class="p">,</span> <span class="n">f2</span><span class="p">))</span><span class="o">.</span><span class="n">T</span>
+
+    <span class="n">margin</span> <span class="o">=</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">-</span> <span class="n">ci</span><span class="p">)</span> <span class="o">*</span> <span class="mf">50.0</span>
+
+    <span class="n">low_f</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">percentile</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">margin</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">high_f</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">percentile</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">ci</span> <span class="o">*</span> <span class="mf">100.0</span> <span class="o">+</span> <span class="n">margin</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">avg_f</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="n">low_a</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">percentile</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">margin</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">avg_a</span> <span class="o">=</span> <span class="n">a</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">high_a</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">percentile</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">ci</span> <span class="o">*</span> <span class="mf">100.0</span> <span class="o">+</span> <span class="n">margin</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">PLOT</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">ax</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">fig</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">figure</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">fill_between</span><span class="p">(</span><span class="n">t</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="p">:],</span> <span class="n">low_f</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">high_f</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">],</span> <span class="o">**</span><span class="n">ci_kws</span><span class="p">)</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">t</span><span class="p">[</span><span class="mi">0</span><span class="p">,:],</span> <span class="n">avg_f</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">color</span><span class="o">=</span><span class="n">colors</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="o">**</span><span class="n">line_kws</span><span class="p">)</span>
+
+        <span class="n">ax</span><span class="o">.</span><span class="n">fill_between</span><span class="p">(</span><span class="n">t</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="p">:],</span> <span class="n">low_f</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">high_f</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">],</span> <span class="o">**</span><span class="n">ci_kws</span><span class="p">)</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">t</span><span class="p">[</span><span class="mi">0</span><span class="p">,:],</span> <span class="n">avg_f</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">color</span><span class="o">=</span><span class="n">colors</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="o">**</span><span class="n">line_kws</span><span class="p">)</span>
+
+        <span class="n">ax</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">xlabel</span><span class="o">=</span><span class="s1">&#39;Time&#39;</span><span class="p">,</span> <span class="n">ylabel</span><span class="o">=</span><span class="s1">&#39;Frequency&#39;</span><span class="p">)</span>
+        <span class="n">fig</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+        <span class="n">sns</span><span class="o">.</span><span class="n">despine</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">low_a</span><span class="p">,</span> <span class="n">avg_a</span><span class="p">,</span> <span class="n">high_a</span><span class="p">,</span> <span class="n">low_f</span><span class="p">,</span> <span class="n">avg_f</span><span class="p">,</span> <span class="n">high_f</span><span class="p">,</span> <span class="n">fig</span><span class="p">,</span> <span class="n">ax</span>
+
+    <span class="k">return</span> <span class="n">low_a</span><span class="p">,</span> <span class="n">avg_a</span><span class="p">,</span> <span class="n">high_a</span><span class="p">,</span> <span class="n">low_f</span><span class="p">,</span> <span class="n">avg_f</span><span class="p">,</span> <span class="n">high_f</span>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2015, Yoav Ram
+      <span class="lastupdated">
+        Last updated on 17 Jun, 2019.
+      </span>
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

@@ -1,0 +1,556 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>curveball.likelihood &mdash; Curveball 0.2.12+18.g2933f0b documentation</title>
+  
+
+  
+  
+    <link rel="shortcut icon" href="../../_static/favicon.ico"/>
+  
+  
+  
+
+  
+  <script type="text/javascript" src="../../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../../_static/jquery.js"></script>
+        <script type="text/javascript" src="../../_static/underscore.js"></script>
+        <script type="text/javascript" src="../../_static/doctools.js"></script>
+        <script type="text/javascript" src="../../_static/language_data.js"></script>
+        <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> Curveball
+          
+
+          
+            
+            <img src="../../_static/logo_200px.png" class="logo" alt="Logo"/>
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.2.12+18.g2933f0b
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorial.html">Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../ioutils.html">I/O Utils</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../plots.html">Plots</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../models.html">Growth Models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../likelihood.html">Likelihood</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../competitions.html">Competition Models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../cli.html">CLI</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../troubleshooting.html">Troubleshooting</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Curveball</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+        
+      <li>curveball.likelihood</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for curveball.likelihood</h1><div class="highlight"><pre>
+<span></span><span class="ch">#!/usr/bin/env python</span>
+<span class="c1"># -*- coding: utf-8 -*-</span>
+
+<span class="c1"># This file is part of curveball.</span>
+<span class="c1"># https://github.com/yoavram/curveball</span>
+
+<span class="c1"># Licensed under the MIT license:</span>
+<span class="c1"># http://www.opensource.org/licenses/MIT-license</span>
+<span class="c1"># Copyright (c) 2015, Yoav Ram &lt;yoav@yoavram.com&gt;</span>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="n">print_function</span>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="n">division</span>
+<span class="kn">from</span> <span class="nn">builtins</span> <span class="k">import</span> <span class="nb">str</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">matplotlib</span> <span class="k">as</span> <span class="nn">mpl</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">import</span> <span class="nn">seaborn</span> <span class="k">as</span> <span class="nn">sns</span>
+<span class="n">sns</span><span class="o">.</span><span class="n">set_style</span><span class="p">(</span><span class="s2">&quot;ticks&quot;</span><span class="p">)</span>
+<span class="kn">import</span> <span class="nn">curveball</span>
+<span class="kn">import</span> <span class="nn">curveball.baranyi_roberts_model</span>
+
+
+<div class="viewcode-block" id="loglik"><a class="viewcode-back" href="../../likelihood.html#curveball.likelihood.loglik">[docs]</a><span class="k">def</span> <span class="nf">loglik</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">y_sig</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="n">penalty</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">params</span><span class="p">):</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Computes the log-likelihood of seeing the data given a model </span>
+<span class="sd">    assuming normal distributed observation/measurement errors.</span>
+
+<span class="sd">    .. math::</span>
+
+<span class="sd">        \log{L(y | \theta)} = -\frac{1}{2} \sum_i { \log{(2 \pi \sigma_{i}^{2})} + \frac{(y - f(t_i; \theta))^2}{\sigma_{i}^{2}} }</span>
+
+<span class="sd">    which is the log-likelihood of seeing the data points :math:`t_i, y_i` </span>
+<span class="sd">    with measurement error :math:`\sigma_i`</span>
+<span class="sd">    given the model function :math:`f`, the model parameters :math:`\theta`, </span>
+<span class="sd">    and that the measurement error at time :math:`t_i` has a normal distribution with mean 0.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    t : np.ndarray</span>
+<span class="sd">        one dimensional array of time</span>
+<span class="sd">    y : np.ndarray</span>
+<span class="sd">        one dimensional array of the means of the observations </span>
+<span class="sd">    y_sig : np.ndarray</span>
+<span class="sd">        one dimensional array of standrad deviations of the observations</span>
+<span class="sd">    f : callable</span>
+<span class="sd">        a function the calculates the expected observations (`f(t)`) from `t` and any parameters in `params`</span>
+<span class="sd">    penalty : callable</span>
+<span class="sd">        a function that calculates a scalar penalty from the parameters in `params` to be substracted from the log-likelihood</span>
+<span class="sd">    params : floats, optional</span>
+<span class="sd">        model parameters</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    float</span>
+<span class="sd">        the log-likelihood result</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">yhat</span> <span class="o">=</span> <span class="n">f</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="o">**</span><span class="n">params</span><span class="p">)</span>
+    <span class="n">val</span> <span class="o">=</span> <span class="o">-</span><span class="mf">0.5</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="n">y_sig</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span> <span class="o">+</span> <span class="p">(</span><span class="n">y</span> <span class="o">-</span> <span class="n">yhat</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">/</span> <span class="n">y_sig</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">penalty</span><span class="p">:</span>
+        <span class="n">val</span> <span class="o">-=</span> <span class="n">penalty</span><span class="p">(</span><span class="o">**</span><span class="n">params</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">val</span></div>
+        
+
+<div class="viewcode-block" id="ridge_regularization"><a class="viewcode-back" href="../../likelihood.html#curveball.likelihood.ridge_regularization">[docs]</a><span class="k">def</span> <span class="nf">ridge_regularization</span><span class="p">(</span><span class="n">lam</span><span class="p">,</span> <span class="o">**</span><span class="n">center</span><span class="p">):</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Create a penaly function that employs the ridge regularization method:</span>
+
+<span class="sd">    .. math::</span>
+
+<span class="sd">        P = \lambda ||\theta - \theta_0||_2</span>
+
+<span class="sd">    where :math:`\lambda` is the regularization scale, </span>
+<span class="sd">    :math:`\theta` is the model parameters vector, </span>
+<span class="sd">    and :math:`\theta_0` is the model parameters guess vector.</span>
+<span class="sd">    This is similar to using a multivariate Gaussian prior distribution on the model parameters </span>
+<span class="sd">    with the Gaussian centerd at :math:`\theta_0` and scaled by :math:`\lambda`.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    lam : float</span>
+<span class="sd">        the penalty factor or regularization scale</span>
+<span class="sd">    center : floats, optional</span>
+<span class="sd">        guesses of model parameters</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    callable</span>
+<span class="sd">        the penalty function, accepts model parameters as float keyword arguments and returns a float penalty to the log-likelihood</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    &gt;&gt;&gt; penalty = ridge_regularization(1, y=0.1, K=1, r=1)</span>
+<span class="sd">    &gt;&gt;&gt; loglik(t, y, y_sig, logistic, penalty=penalty, y0=0.12, K=0.98, r=1.1)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">_ridge_regularization</span><span class="p">(</span><span class="o">**</span><span class="n">params</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">lam</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">([</span><span class="n">v</span> <span class="o">-</span> <span class="n">center</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">params</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">v</span><span class="p">)])</span>
+    <span class="k">return</span> <span class="n">_ridge_regularization</span></div>
+
+
+<div class="viewcode-block" id="loglik_r_nu"><a class="viewcode-back" href="../../likelihood.html#curveball.likelihood.loglik_r_nu">[docs]</a><span class="k">def</span> <span class="nf">loglik_r_nu</span><span class="p">(</span><span class="n">r_range</span><span class="p">,</span> <span class="n">nu_range</span><span class="p">,</span> <span class="n">df</span><span class="p">,</span> <span class="n">f</span><span class="o">=</span><span class="n">curveball</span><span class="o">.</span><span class="n">baranyi_roberts_model</span><span class="o">.</span><span class="n">baranyi_roberts_function</span><span class="p">,</span> 
+                <span class="n">penalty</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">params</span><span class="p">):</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Estimates the log-likelihood surface for :math:`r` and :math:`\nu` given data and a model function.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    r_range, nu_range : numpy.ndarray</span>
+<span class="sd">        vectors of floats of :math:`r` and :math:`\nu` values on which to compute the log-likelihood</span>
+<span class="sd">    df : pandas.DataFrame</span>
+<span class="sd">        data frame with `Time` and `OD` columns</span>
+<span class="sd">    f : callable, optional</span>
+<span class="sd">        model function, defaults to :py:func:`curveball.baranyi_roberts_model.baranyi_roberts_function`</span>
+<span class="sd">    penalty : callable, optional</span>
+<span class="sd">        if given, the result of `penalty` will be substracted from the log-likelihood for each parameter set</span>
+<span class="sd">    params : floats</span>
+<span class="sd">        values for the model model parameters used by `f`</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    np.ndarray</span>
+<span class="sd">        two-dimensional array of log-likelihood calculations;</span>
+<span class="sd">        value at index `i, j` will have the value for `r_range[i]` and `nu_range[j]`</span>
+
+<span class="sd">    See also</span>
+<span class="sd">    --------</span>
+<span class="sd">    loglik</span>
+<span class="sd">    loglik_r_q0</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">params</span><span class="p">:</span>
+        <span class="n">params</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+    <span class="n">t</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">Time</span><span class="o">.</span><span class="n">unique</span><span class="p">()</span>
+    <span class="n">y</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s1">&#39;Time&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">OD</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span><span class="o">.</span><span class="n">as_matrix</span><span class="p">()</span>
+    <span class="n">y_sig</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s1">&#39;Time&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">OD</span><span class="o">.</span><span class="n">std</span><span class="p">()</span><span class="o">.</span><span class="n">as_matrix</span><span class="p">()</span>
+    
+    <span class="n">output</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">r_range</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">nu_range</span><span class="p">)))</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">r</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">r_range</span><span class="p">):</span>
+        <span class="n">params</span><span class="p">[</span><span class="s1">&#39;r&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">r</span>
+        <span class="k">for</span> <span class="n">j</span><span class="p">,</span> <span class="n">nu</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">nu_range</span><span class="p">):</span>
+            <span class="n">params</span><span class="p">[</span><span class="s1">&#39;nu&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">nu</span>
+            <span class="n">output</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">loglik</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">y_sig</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="n">penalty</span><span class="p">,</span> <span class="o">**</span><span class="n">params</span><span class="p">)</span>
+    
+    <span class="k">return</span> <span class="n">output</span></div>
+
+
+<div class="viewcode-block" id="loglik_r_q0"><a class="viewcode-back" href="../../likelihood.html#curveball.likelihood.loglik_r_q0">[docs]</a><span class="k">def</span> <span class="nf">loglik_r_q0</span><span class="p">(</span><span class="n">r_range</span><span class="p">,</span> <span class="n">q0_range</span><span class="p">,</span> <span class="n">df</span><span class="p">,</span> <span class="n">f</span><span class="o">=</span><span class="n">curveball</span><span class="o">.</span><span class="n">baranyi_roberts_model</span><span class="o">.</span><span class="n">baranyi_roberts_function</span><span class="p">,</span> 
+                <span class="n">penalty</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">params</span><span class="p">):</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Estimates the log-likelihood surface for :math:`r` and :math:`\nu` given data and a model function.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    r_range, q0_range : numpy.ndarray</span>
+<span class="sd">        vectors of floats of :math:`r` and :math:`q_0` values on which to compute the log-likelihood</span>
+<span class="sd">    df : pandas.DataFrame</span>
+<span class="sd">        data frame with `Time` and `OD` columns</span>
+<span class="sd">    f : callable, optional</span>
+<span class="sd">        model function, defaults to :py:func:`curveball.baranyi_roberts_model.baranyi_roberts_function`</span>
+<span class="sd">    penalty : callable, optional</span>
+<span class="sd">        if given, the result of `penalty` will be substracted from the log-likelihood for each parameter set</span>
+<span class="sd">    params : floats</span>
+<span class="sd">        values for the model model parameters used by `f`</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    np.ndarray</span>
+<span class="sd">        two-dimensional array of log-likelihood calculations; </span>
+<span class="sd">        value at index `i, j` will have the value for `r_range[i]` and `q0_range[j]`</span>
+
+<span class="sd">    See also</span>
+<span class="sd">    --------</span>
+<span class="sd">    loglik</span>
+<span class="sd">    loglik_r_nu</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">params</span><span class="p">:</span>
+        <span class="n">params</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+    <span class="n">t</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">Time</span><span class="o">.</span><span class="n">unique</span><span class="p">()</span>
+    <span class="n">y</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s1">&#39;Time&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">OD</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span><span class="o">.</span><span class="n">as_matrix</span><span class="p">()</span>
+    <span class="n">y_sig</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s1">&#39;Time&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">OD</span><span class="o">.</span><span class="n">std</span><span class="p">()</span><span class="o">.</span><span class="n">as_matrix</span><span class="p">()</span>
+    
+    <span class="n">output</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">r_range</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">q0_range</span><span class="p">)))</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">r</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">r_range</span><span class="p">):</span>
+        <span class="n">params</span><span class="p">[</span><span class="s1">&#39;r&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">r</span>
+        <span class="k">for</span> <span class="n">j</span><span class="p">,</span> <span class="n">q0</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">q0_range</span><span class="p">):</span>
+            <span class="n">params</span><span class="p">[</span><span class="s1">&#39;q0&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">q0</span>
+            <span class="n">output</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">loglik</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">y_sig</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="n">penalty</span><span class="p">,</span> <span class="o">**</span><span class="n">params</span><span class="p">)</span>
+    
+    <span class="k">return</span> <span class="n">output</span></div>
+
+
+<div class="viewcode-block" id="plot_loglik"><a class="viewcode-back" href="../../likelihood.html#curveball.likelihood.plot_loglik">[docs]</a><span class="k">def</span> <span class="nf">plot_loglik</span><span class="p">(</span><span class="n">Ls</span><span class="p">,</span> <span class="n">xrange</span><span class="p">,</span> <span class="n">yrange</span><span class="p">,</span> <span class="n">xlabel</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ylabel</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">fig_title</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">normalize</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                <span class="n">ax_titles</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="s1">&#39;viridis&#39;</span><span class="p">,</span> <span class="n">colorbar</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">ax_width</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">ax_height</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Plots one or more log-likelihood surfaces.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    Ls : sequence of numpy.ndarray</span>
+<span class="sd">        list or tuple of log-likelihood two-dimensional arrays; if one array is given it will be converted to a size 1 list</span>
+<span class="sd">    xrange, yrange : np.ndarray</span>
+<span class="sd">        values on x-axis and y-axis of the plot (rows and columns of `Ls`, respectively)</span>
+<span class="sd">    xlabel, ylabel : str, optional</span>
+<span class="sd">        strings for x and y labels</span>
+<span class="sd">    columns : int, optional</span>
+<span class="sd">        number of columns in case that `Ls` has more than one matrice</span>
+<span class="sd">    fig_title : str, optional</span>
+<span class="sd">        a title for the whole figure</span>
+<span class="sd">    normalize : bool, optional</span>
+<span class="sd">        if :py:const:`True`, all matrices will be plotted using a single color scale</span>
+<span class="sd">    ax_titles : list or tuple of str, optional</span>
+<span class="sd">        titles corresponding to the different matrices in `Ls`</span>
+<span class="sd">    cmap : str. optional</span>
+<span class="sd">        name of a matplotlib colormap (to see list, call :py:func:`matplotlib.pyplot.colormaps`), defaults to `viridis`</span>
+<span class="sd">    colorbar : bool, optional</span>
+<span class="sd">        if :py:const:`True` a colorbar will be added to the plot</span>
+<span class="sd">    ax_width, ax_height : int</span>
+<span class="sd">        width and height of each panel (one for each matrice in `Ls`)</span>
+<span class="sd">    ax : matplotlib axes or numpy.ndarray of axes</span>
+<span class="sd">        if given, will plot into `ax`, otherwise will create a new figure</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    fig : matplotlib.figure.Figure</span>
+<span class="sd">        figure object</span>
+<span class="sd">    ax : numpy.ndarray</span>
+<span class="sd">        array of axis objects</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    &gt;&gt;&gt; L = loglik_r_nu(rs, nus, df, y0=y0, K=K, q0=q0, v=v)</span>
+<span class="sd">    &gt;&gt;&gt; plot_loglik(L0, rs, nus, normalize=False, fig_title=fig_title, xlabel=r&#39;$r$&#39;, ylabel=r&#39;$\nu$&#39;, colorbar=False)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">Ls</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">)):</span>
+        <span class="n">Ls</span> <span class="o">=</span> <span class="p">[</span><span class="n">Ls</span><span class="p">]</span>
+    <span class="n">columns</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">columns</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">Ls</span><span class="p">))</span>
+    <span class="n">rows</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">Ls</span><span class="p">)</span> <span class="o">/</span> <span class="n">columns</span><span class="p">))</span>
+    <span class="k">if</span> <span class="n">ax</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">rows</span><span class="p">,</span> <span class="n">columns</span><span class="p">,</span> <span class="n">sharex</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">sharey</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="n">ax_width</span><span class="o">*</span><span class="n">columns</span><span class="p">,</span> <span class="n">ax_height</span><span class="o">*</span><span class="n">rows</span><span class="p">))</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">fig</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">figure</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">ax</span><span class="p">,</span> <span class="s1">&#39;__iter__&#39;</span><span class="p">):</span>
+        <span class="n">ax</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">ax</span><span class="p">,</span> <span class="n">ndmin</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">ax</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">resize</span><span class="p">((</span><span class="n">rows</span><span class="p">,</span> <span class="n">columns</span><span class="p">))</span>
+    <span class="n">vmin</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nanmin</span><span class="p">(</span><span class="n">Ls</span><span class="p">)</span>
+    <span class="n">vmax</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nanmax</span><span class="p">(</span><span class="n">Ls</span><span class="p">)</span>
+    <span class="n">norm</span> <span class="o">=</span> <span class="n">mpl</span><span class="o">.</span><span class="n">colors</span><span class="o">.</span><span class="n">Normalize</span><span class="p">(</span><span class="n">vmin</span><span class="o">=</span><span class="n">vmin</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="n">vmax</span><span class="p">)</span>
+    
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">L</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">Ls</span><span class="p">):</span>
+        <span class="n">row</span> <span class="o">=</span> <span class="n">i</span> <span class="o">//</span> <span class="n">columns</span>
+        <span class="n">col</span> <span class="o">=</span> <span class="n">i</span> <span class="o">%</span> <span class="n">columns</span>
+        <span class="n">_ax</span> <span class="o">=</span> <span class="n">ax</span><span class="p">[</span><span class="n">row</span><span class="p">,</span> <span class="n">col</span><span class="p">]</span>
+        
+        <span class="n">im</span> <span class="o">=</span> <span class="n">_ax</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">L</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="n">cmap</span><span class="p">,</span> <span class="n">aspect</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">origin</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">normalize</span><span class="p">:</span>
+            <span class="n">im</span><span class="o">.</span><span class="n">set_norm</span><span class="p">(</span><span class="n">norm</span><span class="p">)</span>
+    
+        <span class="k">if</span> <span class="n">colorbar</span><span class="p">:</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">colorbar</span><span class="p">(</span><span class="n">im</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">_ax</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;Log Likelihood&#39;</span><span class="p">,</span> <span class="n">fraction</span><span class="o">=</span><span class="mf">0.03</span><span class="p">,</span> <span class="n">pad</span><span class="o">=</span><span class="mf">0.25</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s1">&#39;%1.e&#39;</span><span class="p">)</span>
+
+        <span class="n">_ax</span><span class="o">.</span><span class="n">xaxis</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="n">color</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">,</span> <span class="n">ls</span><span class="o">=</span><span class="s1">&#39;--&#39;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
+        <span class="n">_ax</span><span class="o">.</span><span class="n">yaxis</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="n">color</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">,</span> <span class="n">ls</span><span class="o">=</span><span class="s1">&#39;--&#39;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
+
+        <span class="n">xstep</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">xrange</span><span class="p">)</span> <span class="o">//</span> <span class="mi">5</span>
+        <span class="n">xticks</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">xrange</span><span class="p">),</span> <span class="n">xstep</span><span class="p">))</span> <span class="o">+</span> <span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">xrange</span><span class="p">)</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">xticklabels</span> <span class="o">=</span> <span class="n">xrange</span><span class="p">[</span><span class="n">xticks</span><span class="p">]</span>
+        <span class="n">_ax</span><span class="o">.</span><span class="n">set_xticks</span><span class="p">(</span><span class="n">xticks</span><span class="p">)</span>
+        <span class="n">_ax</span><span class="o">.</span><span class="n">set_xticklabels</span><span class="p">([</span><span class="s1">&#39;</span><span class="si">{:.2g}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">xticklabels</span><span class="p">],</span> <span class="n">rotation</span><span class="o">=</span><span class="s1">&#39;vertical&#39;</span><span class="p">)</span>
+
+        <span class="n">ystep</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">xrange</span><span class="p">)</span> <span class="o">//</span> <span class="mi">5</span>
+        <span class="n">yticks</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">yrange</span><span class="p">),</span> <span class="n">ystep</span><span class="p">))</span> <span class="o">+</span> <span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">yrange</span><span class="p">)</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">yticklabels</span> <span class="o">=</span> <span class="n">yrange</span><span class="p">[</span><span class="n">yticks</span><span class="p">]</span>
+        <span class="n">_ax</span><span class="o">.</span><span class="n">set_yticks</span><span class="p">(</span><span class="n">yticks</span><span class="p">)</span>
+        <span class="n">_ax</span><span class="o">.</span><span class="n">set_yticklabels</span><span class="p">([</span><span class="s1">&#39;</span><span class="si">{:.2g}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">y</span><span class="p">)</span> <span class="k">for</span> <span class="n">y</span> <span class="ow">in</span> <span class="n">yticklabels</span><span class="p">])</span>
+
+        <span class="n">imax</span><span class="p">,</span> <span class="n">jmax</span> <span class="o">=</span> <span class="p">(</span><span class="n">L</span> <span class="o">==</span> <span class="n">np</span><span class="o">.</span><span class="n">nanmax</span><span class="p">(</span><span class="n">L</span><span class="p">))</span><span class="o">.</span><span class="n">nonzero</span><span class="p">()</span>
+        <span class="n">_ax</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">imax</span><span class="p">,</span> <span class="n">jmax</span><span class="p">,</span> <span class="n">marker</span><span class="o">=</span><span class="s1">&#39;o&#39;</span><span class="p">,</span> <span class="n">s</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;r&#39;</span><span class="p">)</span>
+        
+        <span class="k">if</span> <span class="n">row</span> <span class="o">==</span> <span class="n">rows</span><span class="o">-</span><span class="mi">1</span> <span class="ow">and</span> <span class="n">xlabel</span><span class="p">:</span>
+            <span class="n">_ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="n">xlabel</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">col</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">ylabel</span><span class="p">:</span>
+            <span class="n">_ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="n">ylabel</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">ax_titles</span><span class="p">:</span>
+            <span class="n">_ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="n">ax_titles</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+
+    <span class="k">if</span> <span class="n">fig_title</span><span class="p">:</span>
+        <span class="n">fig</span><span class="o">.</span><span class="n">text</span><span class="p">(</span><span class="mf">0.5</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">fig_title</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">24</span><span class="p">,</span> <span class="n">horizontalalignment</span><span class="o">=</span><span class="s1">&#39;center&#39;</span><span class="p">)</span>     
+    <span class="n">fig</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+    <span class="n">sns</span><span class="o">.</span><span class="n">despine</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">fig</span><span class="p">,</span> <span class="n">ax</span></div>
+
+
+<div class="viewcode-block" id="plot_model_loglik"><a class="viewcode-back" href="../../likelihood.html#curveball.likelihood.plot_model_loglik">[docs]</a><span class="k">def</span> <span class="nf">plot_model_loglik</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="n">df</span><span class="p">,</span> <span class="n">fig_title</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Plot the log-ikelihood surfaces for :math:`\nu` over :math:`r` and :math:`q_0` over :math:`r` for given data and model fitting result.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    m : lmfit.model.ModelResult</span>
+<span class="sd">        model for which to plot the log-likelihood surface</span>
+<span class="sd">    df : pandas.DataFrame</span>
+<span class="sd">        data frame with `Time` and `OD` columns used to fit the model</span>
+<span class="sd">    fig_title : str</span>
+<span class="sd">        title for the plot</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    fig : matplotlib.figure.Figure</span>
+<span class="sd">        figure object</span>
+<span class="sd">    ax : numpy.ndarray</span>
+<span class="sd">        array of axis objects</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    &gt;&gt;&gt; m = curveball.models.fit_model(df)</span>
+<span class="sd">    &gt;&gt;&gt; curveball.likelihood.plot_model_loglik(m, df)</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">K</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">best_values</span><span class="p">[</span><span class="s1">&#39;K&#39;</span><span class="p">]</span>
+    <span class="n">y0</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">best_values</span><span class="p">[</span><span class="s1">&#39;y0&#39;</span><span class="p">]</span>
+    <span class="n">r</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">best_values</span><span class="p">[</span><span class="s1">&#39;r&#39;</span><span class="p">]</span>
+    <span class="n">nu</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">best_values</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;nu&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="n">q0</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">best_values</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;q0&#39;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">)</span>
+    <span class="n">v</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">best_values</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;v&#39;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">)</span>
+
+    <span class="n">rs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logspace</span><span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">100</span><span class="p">)</span>
+    <span class="n">nus</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logspace</span><span class="p">(</span><span class="o">-</span><span class="mi">3</span><span class="p">,</span> <span class="mf">2.5</span><span class="p">,</span> <span class="mi">100</span><span class="p">)</span>
+    <span class="n">q0s</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logspace</span><span class="p">(</span><span class="o">-</span><span class="mi">3</span><span class="p">,</span> <span class="mf">2.5</span><span class="p">,</span> <span class="mi">100</span><span class="p">)</span>
+
+    <span class="n">ir</span> <span class="o">=</span> <span class="p">(</span> <span class="nb">abs</span><span class="p">(</span><span class="n">rs</span> <span class="o">-</span> <span class="n">r</span><span class="p">)</span><span class="o">.</span><span class="n">argmin</span><span class="p">()</span> <span class="p">)</span>
+    <span class="n">inu</span> <span class="o">=</span> <span class="p">(</span> <span class="nb">abs</span><span class="p">(</span><span class="n">nus</span> <span class="o">-</span> <span class="n">nu</span><span class="p">)</span><span class="o">.</span><span class="n">argmin</span><span class="p">()</span> <span class="p">)</span>
+    <span class="n">iq0</span> <span class="o">=</span> <span class="p">(</span> <span class="nb">abs</span><span class="p">(</span><span class="n">q0s</span> <span class="o">-</span> <span class="n">m</span><span class="o">.</span><span class="n">best_values</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;q0&#39;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">))</span><span class="o">.</span><span class="n">argmin</span><span class="p">()</span> <span class="p">)</span>
+    <span class="n">ir_in</span> <span class="o">=</span> <span class="p">(</span> <span class="nb">abs</span><span class="p">(</span><span class="n">rs</span> <span class="o">-</span> <span class="n">m</span><span class="o">.</span><span class="n">init_values</span><span class="p">[</span><span class="s1">&#39;r&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">argmin</span><span class="p">()</span> <span class="p">)</span>
+    <span class="n">inu_in</span> <span class="o">=</span> <span class="p">(</span> <span class="nb">abs</span><span class="p">(</span><span class="n">nus</span> <span class="o">-</span> <span class="n">m</span><span class="o">.</span><span class="n">init_values</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;nu&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span><span class="o">.</span><span class="n">argmin</span><span class="p">()</span> <span class="p">)</span>
+    <span class="n">iq0_in</span> <span class="o">=</span> <span class="p">(</span> <span class="nb">abs</span><span class="p">(</span><span class="n">q0s</span> <span class="o">-</span> <span class="n">m</span><span class="o">.</span><span class="n">init_values</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;q0&#39;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">))</span><span class="o">.</span><span class="n">argmin</span><span class="p">()</span> <span class="p">)</span>
+
+    <span class="n">L0</span> <span class="o">=</span> <span class="n">loglik_r_nu</span><span class="p">(</span><span class="n">rs</span><span class="p">,</span> <span class="n">nus</span><span class="p">,</span> <span class="n">df</span><span class="p">,</span> <span class="n">y0</span><span class="o">=</span><span class="n">y0</span><span class="p">,</span> <span class="n">K</span><span class="o">=</span><span class="n">K</span><span class="p">,</span> <span class="n">q0</span><span class="o">=</span><span class="n">q0</span><span class="p">,</span> <span class="n">v</span><span class="o">=</span><span class="n">v</span><span class="p">)</span>
+    <span class="n">L1</span> <span class="o">=</span> <span class="n">loglik_r_q0</span><span class="p">(</span><span class="n">rs</span><span class="p">,</span> <span class="n">q0s</span><span class="p">,</span> <span class="n">df</span><span class="p">,</span> <span class="n">y0</span><span class="o">=</span><span class="n">y0</span><span class="p">,</span> <span class="n">K</span><span class="o">=</span><span class="n">K</span><span class="p">,</span> <span class="n">nu</span><span class="o">=</span><span class="n">nu</span><span class="p">,</span> <span class="n">v</span><span class="o">=</span><span class="n">v</span><span class="p">)</span>
+        
+    <span class="n">w</span><span class="p">,</span> <span class="n">h</span><span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">rcParams</span><span class="p">[</span><span class="s1">&#39;figure.figsize&#39;</span><span class="p">]</span>
+    <span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="n">w</span> <span class="o">*</span> <span class="mi">2</span><span class="p">,</span> <span class="n">h</span><span class="p">))</span>
+
+    <span class="n">plot_loglik</span><span class="p">(</span><span class="n">L0</span><span class="p">,</span> <span class="n">rs</span><span class="p">,</span> <span class="n">nus</span><span class="p">,</span> <span class="n">normalize</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">fig_title</span><span class="o">=</span><span class="n">fig_title</span><span class="p">,</span>
+                <span class="n">xlabel</span><span class="o">=</span><span class="sa">r</span><span class="s1">&#39;$r$&#39;</span><span class="p">,</span> <span class="n">ylabel</span><span class="o">=</span><span class="sa">r</span><span class="s1">&#39;$\nu$&#39;</span><span class="p">,</span> <span class="n">colorbar</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+    <span class="n">ax</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">ir</span><span class="p">,</span> <span class="n">inu</span><span class="p">,</span> <span class="n">marker</span><span class="o">=</span><span class="s1">&#39;s&#39;</span><span class="p">,</span> <span class="n">s</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;w&#39;</span><span class="p">,</span> <span class="n">edgecolors</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">)</span>
+    <span class="n">ax</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">ir_in</span><span class="p">,</span> <span class="n">inu_in</span><span class="p">,</span> <span class="n">marker</span><span class="o">=</span><span class="s1">&#39;^&#39;</span><span class="p">,</span> <span class="n">s</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;w&#39;</span><span class="p">,</span> <span class="n">edgecolors</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">)</span>
+
+    <span class="n">plot_loglik</span><span class="p">(</span><span class="n">L1</span><span class="p">,</span> <span class="n">rs</span><span class="p">,</span> <span class="n">q0s</span><span class="p">,</span> <span class="n">normalize</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                <span class="n">xlabel</span><span class="o">=</span><span class="sa">r</span><span class="s1">&#39;$r$&#39;</span><span class="p">,</span> <span class="n">ylabel</span><span class="o">=</span><span class="sa">r</span><span class="s1">&#39;$q_0$&#39;</span><span class="p">,</span> <span class="n">colorbar</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+    <span class="n">ax</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">ir</span><span class="p">,</span> <span class="n">iq0</span><span class="p">,</span> <span class="n">marker</span><span class="o">=</span><span class="s1">&#39;s&#39;</span><span class="p">,</span> <span class="n">s</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;w&#39;</span><span class="p">,</span> <span class="n">edgecolors</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">)</span>
+    <span class="n">ax</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">ir_in</span><span class="p">,</span> <span class="n">iq0_in</span><span class="p">,</span> <span class="n">marker</span><span class="o">=</span><span class="s1">&#39;^&#39;</span><span class="p">,</span> <span class="n">s</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;w&#39;</span><span class="p">,</span> <span class="n">edgecolors</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">)</span>
+
+    <span class="n">fig</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+    <span class="n">sns</span><span class="o">.</span><span class="n">despine</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">fig</span><span class="p">,</span> <span class="n">ax</span></div>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2015, Yoav Ram
+      <span class="lastupdated">
+        Last updated on 17 Jun, 2019.
+      </span>
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

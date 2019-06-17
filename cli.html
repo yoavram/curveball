@@ -1,0 +1,321 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>CLI &mdash; Curveball 0.2.12+18.g2933f0b documentation</title>
+  
+
+  
+  
+    <link rel="shortcut icon" href="_static/favicon.ico"/>
+  
+  
+  
+
+  
+  <script type="text/javascript" src="_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script type="text/javascript" src="_static/jquery.js"></script>
+        <script type="text/javascript" src="_static/underscore.js"></script>
+        <script type="text/javascript" src="_static/doctools.js"></script>
+        <script type="text/javascript" src="_static/language_data.js"></script>
+        <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Troubleshooting" href="troubleshooting.html" />
+    <link rel="prev" title="Competition Models" href="competitions.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="index.html" class="icon icon-home"> Curveball
+          
+
+          
+            
+            <img src="_static/logo_200px.png" class="logo" alt="Logo"/>
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.2.12+18.g2933f0b
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorial.html">Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ioutils.html">I/O Utils</a></li>
+<li class="toctree-l1"><a class="reference internal" href="plots.html">Plots</a></li>
+<li class="toctree-l1"><a class="reference internal" href="models.html">Growth Models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="likelihood.html">Likelihood</a></li>
+<li class="toctree-l1"><a class="reference internal" href="competitions.html">Competition Models</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">CLI</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#module-curveball.scripts.cli">Members</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="troubleshooting.html">Troubleshooting</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Curveball</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+      <li>CLI</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/cli.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="cli">
+<h1>CLI<a class="headerlink" href="#cli" title="Permalink to this headline">¶</a></h1>
+<p>The <a class="reference internal" href="#module-curveball.scripts.cli" title="curveball.scripts.cli"><code class="xref py py-mod docutils literal notranslate"><span class="pre">cli</span></code></a> module implements a command line interface that allows to interact with Curveball
+through a command line or terminal, without any knowledge in Python programming.</p>
+<p>The <a class="reference internal" href="tutorial.html"><span class="doc">Tutorial</span></a> includes a complete walkthrough on using the CLI to analyse growth cruves data.</p>
+<div class="section" id="module-curveball.scripts.cli">
+<span id="members"></span><h2>Members<a class="headerlink" href="#module-curveball.scripts.cli" title="Permalink to this headline">¶</a></h2>
+<dl class="data">
+<dt id="curveball.scripts.cli.analyse">
+<code class="sig-prename descclassname">curveball.scripts.cli.</code><code class="sig-name descname">analyse</code><span class="sig-paren">(</span><em class="sig-param">*args</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><em class="property"> = &lt;click.core.Command object&gt;</em><a class="headerlink" href="#curveball.scripts.cli.analyse" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="data">
+<dt id="curveball.scripts.cli.cli">
+<code class="sig-prename descclassname">curveball.scripts.cli.</code><code class="sig-name descname">cli</code><span class="sig-paren">(</span><em class="sig-param">*args</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><em class="property"> = &lt;click.core.Group object&gt;</em><a class="headerlink" href="#curveball.scripts.cli.cli" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="curveball.scripts.cli.find_plate_file">
+<code class="sig-prename descclassname">curveball.scripts.cli.</code><code class="sig-name descname">find_plate_file</code><span class="sig-paren">(</span><em class="sig-param">plate_folder</em>, <em class="sig-param">plate_file</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/curveball/scripts/cli.html#find_plate_file"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#curveball.scripts.cli.find_plate_file" title="Permalink to this definition">¶</a></dt>
+<dd><p>Finds a plate file, either in the current working dir or in the package data resources.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>plate_file</strong><span class="classifier">str</span></dt><dd><p>the filename of the plate file, may include absolute or relative path</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt>str</dt><dd><p>the full path of the plate file.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="curveball.scripts.cli.get_filename">
+<code class="sig-prename descclassname">curveball.scripts.cli.</code><code class="sig-name descname">get_filename</code><span class="sig-paren">(</span><em class="sig-param">filepath</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/curveball/scripts/cli.html#get_filename"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#curveball.scripts.cli.get_filename" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a file name out of a file path.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>filepath</strong><span class="classifier">str</span></dt><dd></dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt>str</dt><dd><p>filename</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="curveball.scripts.cli.load_plate">
+<code class="sig-prename descclassname">curveball.scripts.cli.</code><code class="sig-name descname">load_plate</code><span class="sig-paren">(</span><em class="sig-param">plate_path</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/curveball/scripts/cli.html#load_plate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#curveball.scripts.cli.load_plate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Loads a plate template from a CSV file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>plate_path</strong><span class="classifier">str</span></dt><dd><p>full or relative path to the plate template file.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt>pandas.DataFrame</dt><dd><p>the plate template in tidy data format (see <a class="reference internal" href="ioutils.html#module-curveball.ioutils" title="curveball.ioutils"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ioutils</span></code></a>).</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<dl class="simple">
+<dt><a class="reference internal" href="#curveball.scripts.cli.find_plate_file" title="curveball.scripts.cli.find_plate_file"><code class="xref py py-obj docutils literal notranslate"><span class="pre">find_plate_file</span></code></a></dt><dd></dd>
+</dl>
+</div>
+</dd></dl>
+
+<dl class="data">
+<dt id="curveball.scripts.cli.plate">
+<code class="sig-prename descclassname">curveball.scripts.cli.</code><code class="sig-name descname">plate</code><span class="sig-paren">(</span><em class="sig-param">*args</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><em class="property"> = &lt;click.core.Command object&gt;</em><a class="headerlink" href="#curveball.scripts.cli.plate" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="curveball.scripts.cli.where">
+<code class="sig-prename descclassname">curveball.scripts.cli.</code><code class="sig-name descname">where</code><span class="sig-paren">(</span><em class="sig-param">ctx</em>, <em class="sig-param">param</em>, <em class="sig-param">value</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/curveball/scripts/cli.html#where"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#curveball.scripts.cli.where" title="Permalink to this definition">¶</a></dt>
+<dd><p>Prints the path where Curveball is installed and exits.</p>
+<p>Parameters are generally ignored; 
+if <cite>value</cite> or <cite>ctx.resilient_parsing</cite> are not empty/<code class="xref py py-const docutils literal notranslate"><span class="pre">False</span></code>/<code class="xref py py-const docutils literal notranslate"><span class="pre">None</span></code>, 
+the function returns without doing anything.</p>
+</dd></dl>
+
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="troubleshooting.html" class="btn btn-neutral float-right" title="Troubleshooting" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="competitions.html" class="btn btn-neutral float-left" title="Competition Models" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2015, Yoav Ram
+      <span class="lastupdated">
+        Last updated on 17 Jun, 2019.
+      </span>
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

@@ -1,0 +1,487 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Plots &mdash; Curveball 0.2.12+18.g2933f0b documentation</title>
+  
+
+  
+  
+    <link rel="shortcut icon" href="_static/favicon.ico"/>
+  
+  
+  
+
+  
+  <script type="text/javascript" src="_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script type="text/javascript" src="_static/jquery.js"></script>
+        <script type="text/javascript" src="_static/underscore.js"></script>
+        <script type="text/javascript" src="_static/doctools.js"></script>
+        <script type="text/javascript" src="_static/language_data.js"></script>
+        <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Growth Models" href="models.html" />
+    <link rel="prev" title="I/O Utils" href="ioutils.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="index.html" class="icon icon-home"> Curveball
+          
+
+          
+            
+            <img src="_static/logo_200px.png" class="logo" alt="Logo"/>
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.2.12+18.g2933f0b
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorial.html">Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ioutils.html">I/O Utils</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Plots</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#module-curveball.plots">Members</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="models.html">Growth Models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="likelihood.html">Likelihood</a></li>
+<li class="toctree-l1"><a class="reference internal" href="competitions.html">Competition Models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cli.html">CLI</a></li>
+<li class="toctree-l1"><a class="reference internal" href="troubleshooting.html">Troubleshooting</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Curveball</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+      <li>Plots</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/plots.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="plots">
+<h1>Plots<a class="headerlink" href="#plots" title="Permalink to this headline">¶</a></h1>
+<p>The <a class="reference internal" href="#module-curveball.plots" title="curveball.plots"><code class="xref py py-mod docutils literal notranslate"><span class="pre">plots</span></code></a> module contains plotting functions for Curveball.
+Functions that plot growth data expect a <a class="reference external" href="http://pandas.pydata.org/pandas-docs/version/0.17.1/generated/pandas.DataFrame.html#pandas.DataFrame" title="(in pandas v0.17.1)"><code class="xref py py-class docutils literal notranslate"><span class="pre">pandas.DataFrame</span></code></a> generated by the <a class="reference internal" href="ioutils.html#module-curveball.ioutils" title="curveball.ioutils"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ioutils</span></code></a> module.
+Functions that plot the results of growth model fitting often expect the result of the fitting - one or more <a class="reference external" href="https://lmfit.github.io/lmfit-py/model.html#lmfit.model.ModelResult" title="(in lmfit v0.9.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">lmfit.model.ModelResult</span></code></a> objects.</p>
+<div class="section" id="module-curveball.plots">
+<span id="members"></span><h2>Members<a class="headerlink" href="#module-curveball.plots" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="curveball.plots.plot_model_residuals">
+<code class="sig-prename descclassname">curveball.plots.</code><code class="sig-name descname">plot_model_residuals</code><span class="sig-paren">(</span><em class="sig-param">model_fit</em>, <em class="sig-param">rv=&lt;scipy.stats._continuous_distns.norm_gen object at 0x1199bfdd8&gt;</em>, <em class="sig-param">color='k'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/curveball/plots.html#plot_model_residuals"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#curveball.plots.plot_model_residuals" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plot of the residuals of a model fit.</p>
+<p>The function will plot the residuals - the difference between data and model - for a given model fit.
+The left panel shows the residuals over time; the right panel shows the histogram of the residuals with a fitted distribution curve.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>model_fit</strong><span class="classifier">lmfit.ModelResult</span></dt><dd><p>the result of a model fitting procedure.</p>
+</dd>
+<dt><strong>rv</strong><span class="classifier">scipy.stats.rv_continuous, optional</span></dt><dd><p><code class="xref py py-class docutils literal notranslate"><span class="pre">scipy.stats.rv_continuous</span></code> random variable whose probability density function (pdf)
+will be fitted to the histogram. Defaults to the normal distribution (<cite>scipy.stats.norm</cite>).</p>
+</dd>
+<dt><strong>color</strong><span class="classifier">str, optional</span></dt><dd><p>color string for the plot, defaults to <cite>k</cite> for black.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>fig</strong><span class="classifier">matplotlib.figure.Figure</span></dt><dd><p>figure object</p>
+</dd>
+<dt><strong>ax</strong><span class="classifier">numpy.ndarray</span></dt><dd><p>array of axis objects.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="curveball.plots.plot_params_distribution">
+<code class="sig-prename descclassname">curveball.plots.</code><code class="sig-name descname">plot_params_distribution</code><span class="sig-paren">(</span><em class="sig-param">param_samples</em>, <em class="sig-param">color='k'</em>, <em class="sig-param">cmap='viridis'</em>, <em class="sig-param">alpha=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/curveball/plots.html#plot_params_distribution"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#curveball.plots.plot_params_distribution" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plots a distribution of model parameter samples generated with <a class="reference internal" href="models.html#curveball.models.sample_params" title="curveball.models.sample_params"><code class="xref py py-func docutils literal notranslate"><span class="pre">curveball.models.sample_params()</span></code></a>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>param_samples</strong><span class="classifier">pandas.DataFrame</span></dt><dd><p>data frame of samples; each row is one sample, each column is one parameter.</p>
+</dd>
+<dt><strong>alpha</strong><span class="classifier">float</span></dt><dd><p>transparency of plot markers, defaults to <span class="math notranslate nohighlight">\(1/n^{1/4}\)</span> where <em>n</em> is number of rows in <cite>param_samples</cite>.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt>seaborn.Grid</dt><dd><p>figure object</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="curveball.plots.plot_plate">
+<code class="sig-prename descclassname">curveball.plots.</code><code class="sig-name descname">plot_plate</code><span class="sig-paren">(</span><em class="sig-param">data</em>, <em class="sig-param">edge_color='#888888'</em>, <em class="sig-param">output_filename=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/curveball/plots.html#plot_plate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#curveball.plots.plot_plate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plot of the plate color mapping.</p>
+<p>The function will plot the color mapping in <cite>data</cite>:
+a grid with enough columns and rows for the <code class="docutils literal notranslate"><span class="pre">Col</span></code> and <code class="docutils literal notranslate"><span class="pre">Row</span></code> columns in <cite>data</cite>,
+where the color of each grid cell given by the <code class="docutils literal notranslate"><span class="pre">Color</span></code> column.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>data</strong><span class="classifier">pandas.DataFrame</span></dt><dd><p>growth curve data, see <a class="reference internal" href="ioutils.html#module-curveball.ioutils" title="curveball.ioutils"><code class="xref py py-mod docutils literal notranslate"><span class="pre">curveball.ioutils</span></code></a> for a detailed definition.</p>
+</dd>
+<dt><strong>edge_color</strong><span class="classifier">str</span></dt><dd><p>color hex string for the grid edges.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>fig</strong><span class="classifier">matplotlib.figure.Figure</span></dt><dd><p>figure object</p>
+</dd>
+<dt><strong>ax</strong><span class="classifier">numpy.ndarray</span></dt><dd><p>array of axis objects.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="curveball.plots.plot_residuals">
+<code class="sig-prename descclassname">curveball.plots.</code><code class="sig-name descname">plot_residuals</code><span class="sig-paren">(</span><em class="sig-param">df</em>, <em class="sig-param">time='Time'</em>, <em class="sig-param">value='OD'</em>, <em class="sig-param">resid_func=&lt;function &lt;lambda&gt; at 0x11e5980d0&gt;</em>, <em class="sig-param">rv=&lt;scipy.stats._continuous_distns.norm_gen object at 0x1199bfdd8&gt;</em>, <em class="sig-param">color='k'</em>, <em class="sig-param">ax=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/curveball/plots.html#plot_residuals"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#curveball.plots.plot_residuals" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plot of the residuals of in the data.</p>
+<p>The function will plot the residuals - the difference between data and average at each time point.
+The left panel shows the residuals over time.
+The middle panel shows the histogram of the residuals with a fitted distribution (defaults to Gaussian).
+The right panel shows the regression between the standard deviation at time <cite>t+1</cite> and <cite>t</cite> to identify autocorrelation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>df</strong><span class="classifier">pandas.DataFrame</span></dt><dd><p>a data frame with columns <code class="docutils literal notranslate"><span class="pre">Time</span></code> and <code class="docutils literal notranslate"><span class="pre">OD</span></code>.</p>
+</dd>
+<dt><strong>time</strong><span class="classifier">str, optional</span></dt><dd><p>name of column over which to group and plot the residuals. Defaults to <code class="docutils literal notranslate"><span class="pre">Time</span></code>.</p>
+</dd>
+<dt><strong>value</strong><span class="classifier">str, optional</span></dt><dd><p>name of column in <cite>df</cite> of the value on which to compute the residuals. Defaults to <code class="docutils literal notranslate"><span class="pre">OD</span></code>.</p>
+</dd>
+<dt><strong>resid_func</strong><span class="classifier">function, optional</span></dt><dd><p>function to calculate residuals. Defaults to <code class="docutils literal notranslate"><span class="pre">x</span> <span class="pre">-</span> <span class="pre">x.mean()</span></code>.</p>
+</dd>
+<dt><strong>rv</strong><span class="classifier">scipy.stats.rv_continuous, optional</span></dt><dd><p><code class="xref py py-class docutils literal notranslate"><span class="pre">scipy.stats.rv_continuous</span></code> random variable whose probability density function (pdf)
+will be fitted to the histogram. Defaults the normal distribution (<code class="xref py py-class docutils literal notranslate"><span class="pre">scipy.stats.norm</span></code>).</p>
+</dd>
+<dt><strong>color</strong><span class="classifier">str, optional</span></dt><dd><p>color string for the plot, defaults to <cite>k</cite> for black.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>fig</strong><span class="classifier">matplotlib.figure.Figure</span></dt><dd><p>figure object</p>
+</dd>
+<dt><strong>ax</strong><span class="classifier">numpy.ndarray</span></dt><dd><p>array of axis objects.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="curveball.plots.plot_sample_fit">
+<code class="sig-prename descclassname">curveball.plots.</code><code class="sig-name descname">plot_sample_fit</code><span class="sig-paren">(</span><em class="sig-param">model_fit</em>, <em class="sig-param">param_samples</em>, <em class="sig-param">fit_kws=None</em>, <em class="sig-param">data_kws=None</em>, <em class="sig-param">sample_kws=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/curveball/plots.html#plot_sample_fit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#curveball.plots.plot_sample_fit" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plot of sampled curve fits.</p>
+<p>The function will plot the main model fit and the sampled curve fits based on a table of sample parameters.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>model_fit</strong><span class="classifier">lmfit.ModelResult</span></dt><dd><p>the result of a model fitting procedure.</p>
+</dd>
+<dt><strong>param_samples</strong><span class="classifier">pandas.DataFrame</span></dt><dd><p>data frame of samples; each row is one sample, each column is one parameter.</p>
+</dd>
+<dt><strong>fit_kws, data_kws, sample_kws</strong><span class="classifier">dict</span></dt><dd><p>dictionaries of plot directives for the fit, data, and sampled fit curves.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>fig</strong><span class="classifier">matplotlib.figure.Figure</span></dt><dd><p>figure object</p>
+</dd>
+<dt><strong>ax</strong><span class="classifier">numpy.ndarray</span></dt><dd><p>array of axis objects.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="curveball.plots.plot_strains">
+<code class="sig-prename descclassname">curveball.plots.</code><code class="sig-name descname">plot_strains</code><span class="sig-paren">(</span><em class="sig-param">data</em>, <em class="sig-param">x='Time'</em>, <em class="sig-param">y='OD'</em>, <em class="sig-param">plot_func=&lt;function plot at 0x11a6f4bf8&gt;</em>, <em class="sig-param">by=None</em>, <em class="sig-param">agg_func=&lt;function mean at 0x117115048&gt;</em>, <em class="sig-param">hue='Strain'</em>, <em class="sig-param">color=None</em>, <em class="sig-param">output_filename=None</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/curveball/plots.html#plot_strains"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#curveball.plots.plot_strains" title="Permalink to this definition">¶</a></dt>
+<dd><p>Aggregate by strain and plot the results on one figure with different color for each strain.</p>
+<p>The grouping of the data is done by the <code class="docutils literal notranslate"><span class="pre">Strain</span></code> and either <code class="docutils literal notranslate"><span class="pre">Cycle</span> <span class="pre">Nr.</span></code> or <code class="docutils literal notranslate"><span class="pre">Time</span></code> columns of <cite>data</cite>;
+the aggregation is done by the <cite>agg_func</cite>, which defaults to <code class="xref py py-func docutils literal notranslate"><span class="pre">numpy.mean()</span></code>.
+The colors are given by the <code class="docutils literal notranslate"><span class="pre">Color</span></code> column, the labels of the colors are given by the <code class="docutils literal notranslate"><span class="pre">Strain</span></code> column of <cite>data</cite>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>data</strong><span class="classifier">pandas.DataFrame</span></dt><dd><p>growth curve data, see <a class="reference internal" href="ioutils.html#module-curveball.ioutils" title="curveball.ioutils"><code class="xref py py-mod docutils literal notranslate"><span class="pre">curveball.ioutils</span></code></a> for a detailed definition.</p>
+</dd>
+<dt><strong>x</strong><span class="classifier">str, optional</span></dt><dd><p>name of column for x-axis, defaults to <code class="docutils literal notranslate"><span class="pre">Time</span></code>.</p>
+</dd>
+<dt><strong>y</strong><span class="classifier">str, optional</span></dt><dd><p>name of column for y-axis, defaults to <code class="docutils literal notranslate"><span class="pre">OD</span></code>.</p>
+</dd>
+<dt><strong>plot_func</strong><span class="classifier">func, optional</span></dt><dd><p>function to use for plotting, defaults to <a class="reference external" href="https://matplotlib.org/api/_as_gen/matplotlib.pyplot.plot.html#matplotlib.pyplot.plot" title="(in Matplotlib v3.1.0)"><code class="xref py py-func docutils literal notranslate"><span class="pre">matplotlib.pyplot.plot()</span></code></a></p>
+</dd>
+<dt><strong>by</strong><span class="classifier">tuple of str, optional</span></dt><dd><p>used for grouping the data, defaults to <code class="docutils literal notranslate"><span class="pre">('Strain',</span> <span class="pre">'Cycle</span> <span class="pre">Nr.')</span></code> or <code class="docutils literal notranslate"><span class="pre">('Strain',</span> <span class="pre">'Time')</span></code>, whichever is available.</p>
+</dd>
+<dt><strong>plot_func</strong><span class="classifier">func, optional</span></dt><dd><p>function to use for aggregating the data, defaults to <code class="xref py py-func docutils literal notranslate"><span class="pre">numpy.mean()</span></code>.</p>
+</dd>
+<dt><strong>color</strong><span class="classifier">seaborn color palette</span></dt><dd><p>a seaborn color palette to use if there is no <code class="docutils literal notranslate"><span class="pre">Color</span></code> column; if not given, using the default palette.</p>
+</dd>
+<dt><strong>output_filename</strong><span class="classifier">str, optional</span></dt><dd><p>filename to save the resulting figure; if not given, figure is not saved.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt>seaborn.FacetGrid</dt><dd><p>figure object.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-odd">Raises</dt>
+<dd class="field-odd"><dl class="simple">
+<dt>ValueError</dt><dd><p>raised if <cite>by</cite> isn’t set and <cite>data</cite> doesn’t contain <code class="docutils literal notranslate"><span class="pre">Strain</span></code> and either <code class="docutils literal notranslate"><span class="pre">Time</span></code> or <code class="docutils literal notranslate"><span class="pre">Cycle</span> <span class="pre">Nr.</span></code>.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="curveball.plots.plot_wells">
+<code class="sig-prename descclassname">curveball.plots.</code><code class="sig-name descname">plot_wells</code><span class="sig-paren">(</span><em class="sig-param">df</em>, <em class="sig-param">x='Time'</em>, <em class="sig-param">y='OD'</em>, <em class="sig-param">plot_func=&lt;function plot at 0x11a6f4bf8&gt;</em>, <em class="sig-param">output_filename=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/curveball/plots.html#plot_wells"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#curveball.plots.plot_wells" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plot a grid of plots, one for each well in the plate.</p>
+<p>The facetting is done by the <code class="docutils literal notranslate"><span class="pre">Row</span></code> and <code class="docutils literal notranslate"><span class="pre">Col</span></code> columns of <cite>df</cite>.
+The colors are given by the <code class="docutils literal notranslate"><span class="pre">Color</span></code> column, 
+the labels of the colors are given by the <code class="docutils literal notranslate"><span class="pre">Strain</span></code> column.
+If <code class="docutils literal notranslate"><span class="pre">Strain</span></code> is missing then the coloring is done by the <code class="docutils literal notranslate"><span class="pre">Well</span></code> column.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>df</strong><span class="classifier">pandas.DataFrame</span></dt><dd><p>growth curve data, see <a class="reference internal" href="ioutils.html#module-curveball.ioutils" title="curveball.ioutils"><code class="xref py py-mod docutils literal notranslate"><span class="pre">curveball.ioutils</span></code></a> for a detailed definition.</p>
+</dd>
+<dt><strong>x</strong><span class="classifier">str, optional</span></dt><dd><p>name of column for x-axis, defaults to <code class="docutils literal notranslate"><span class="pre">Time</span></code>.</p>
+</dd>
+<dt><strong>y</strong><span class="classifier">str, optional</span></dt><dd><p>name of column for y-axis, defaults to <code class="docutils literal notranslate"><span class="pre">OD</span></code>.</p>
+</dd>
+<dt><strong>plot_func</strong><span class="classifier">func, optional</span></dt><dd><p>function to use for plotting, defaults to <a class="reference external" href="https://matplotlib.org/api/_as_gen/matplotlib.pyplot.plot.html#matplotlib.pyplot.plot" title="(in Matplotlib v3.1.0)"><code class="xref py py-func docutils literal notranslate"><span class="pre">matplotlib.pyplot.plot()</span></code></a></p>
+</dd>
+<dt><strong>output_filename</strong><span class="classifier">str, optional</span></dt><dd><p>filename to save the resulting figure; if not given, figure is not saved.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt>seaborn.FacetGrid</dt><dd><p>figure object.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="curveball.plots.tsplot">
+<code class="sig-prename descclassname">curveball.plots.</code><code class="sig-name descname">tsplot</code><span class="sig-paren">(</span><em class="sig-param">data</em>, <em class="sig-param">x='Time'</em>, <em class="sig-param">y='OD'</em>, <em class="sig-param">ci_level=95</em>, <em class="sig-param">ax=None</em>, <em class="sig-param">color=None</em>, <em class="sig-param">output_filename=None</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/curveball/plots.html#tsplot"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#curveball.plots.tsplot" title="Permalink to this definition">¶</a></dt>
+<dd><p>Time series plot of the data by strain (if applicable) or well.</p>
+<p>The grouping of the data is done by the value of <cite>x</cite> and <code class="docutils literal notranslate"><span class="pre">Strain</span></code>, if such a column exists in <cite>data</cite>; 
+otherwise it is done by <cite>x</cite> and <code class="docutils literal notranslate"><span class="pre">Well</span></code>.
+The aggregation is done by <code class="xref py py-func docutils literal notranslate"><span class="pre">seaborn.tsplot()</span></code> which calculates the mean with a confidence interval.
+The colors are given by the <code class="docutils literal notranslate"><span class="pre">Color</span></code> column, the labels of the colors are given by the <code class="docutils literal notranslate"><span class="pre">Strain</span></code> column; 
+if <code class="docutils literal notranslate"><span class="pre">Strain</span></code> and <code class="docutils literal notranslate"><span class="pre">Color</span></code> don’t exist in <cite>data</cite> then
+the function will use a default palette and color the lines by well.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>data</strong><span class="classifier">pandas.DataFrame</span></dt><dd><p>growth curve data, see <a class="reference internal" href="ioutils.html#module-curveball.ioutils" title="curveball.ioutils"><code class="xref py py-mod docutils literal notranslate"><span class="pre">curveball.ioutils</span></code></a> for a detailed definition.</p>
+</dd>
+<dt><strong>x</strong><span class="classifier">str, optional</span></dt><dd><p>name of column for x-axis, defaults to <code class="docutils literal notranslate"><span class="pre">Time</span></code>.</p>
+</dd>
+<dt><strong>y</strong><span class="classifier">str, optional</span></dt><dd><p>name of column for y-axis, defaults to <code class="docutils literal notranslate"><span class="pre">OD</span></code>.</p>
+</dd>
+<dt><strong>ci_level</strong><span class="classifier">int, optional</span></dt><dd><p>confidence interval width in precent (0-100), defaults to 95.</p>
+</dd>
+<dt><strong>ax</strong><span class="classifier">matplotlib.axes.Axes, optional</span></dt><dd><p>plot into this axes, if not given create a new figure.</p>
+</dd>
+<dt><strong>color</strong><span class="classifier">seaborn color palette</span></dt><dd><p>a seaborn color palette to use if there is no <code class="docutils literal notranslate"><span class="pre">Color</span></code> column; if not given, using the default palette.</p>
+</dd>
+<dt><strong>output_filename</strong><span class="classifier">str, optional</span></dt><dd><p>filename to save the resulting figure; if not given, figure is not saved.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt>matplotlib.axes.Axes</dt><dd><p>axes object</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="models.html" class="btn btn-neutral float-right" title="Growth Models" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="ioutils.html" class="btn btn-neutral float-left" title="I/O Utils" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2015, Yoav Ram
+      <span class="lastupdated">
+        Last updated on 17 Jun, 2019.
+      </span>
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

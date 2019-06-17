@@ -1,0 +1,454 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Likelihood &mdash; Curveball 0.2.12+18.g2933f0b documentation</title>
+  
+
+  
+  
+    <link rel="shortcut icon" href="_static/favicon.ico"/>
+  
+  
+  
+
+  
+  <script type="text/javascript" src="_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script type="text/javascript" src="_static/jquery.js"></script>
+        <script type="text/javascript" src="_static/underscore.js"></script>
+        <script type="text/javascript" src="_static/doctools.js"></script>
+        <script type="text/javascript" src="_static/language_data.js"></script>
+        <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Competition Models" href="competitions.html" />
+    <link rel="prev" title="Growth Models" href="models.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="index.html" class="icon icon-home"> Curveball
+          
+
+          
+            
+            <img src="_static/logo_200px.png" class="logo" alt="Logo"/>
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.2.12+18.g2933f0b
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorial.html">Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ioutils.html">I/O Utils</a></li>
+<li class="toctree-l1"><a class="reference internal" href="plots.html">Plots</a></li>
+<li class="toctree-l1"><a class="reference internal" href="models.html">Growth Models</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Likelihood</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#module-curveball.likelihood">Members</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="competitions.html">Competition Models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cli.html">CLI</a></li>
+<li class="toctree-l1"><a class="reference internal" href="troubleshooting.html">Troubleshooting</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Curveball</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+      <li>Likelihood</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/likelihood.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="likelihood">
+<h1>Likelihood<a class="headerlink" href="#likelihood" title="Permalink to this headline">¶</a></h1>
+<p>The <a class="reference internal" href="#module-curveball.likelihood" title="curveball.likelihood"><code class="xref py py-mod docutils literal notranslate"><span class="pre">likelihood</span></code></a> module contains functions used to calculate and visualize
+the log-likelihood surfaces for models and data in Curveball.
+Functions that use growth data expect a <a class="reference external" href="http://pandas.pydata.org/pandas-docs/version/0.17.1/generated/pandas.DataFrame.html#pandas.DataFrame" title="(in pandas v0.17.1)"><code class="xref py py-class docutils literal notranslate"><span class="pre">pandas.DataFrame</span></code></a> generated by the <a class="reference internal" href="ioutils.html#module-curveball.ioutils" title="curveball.ioutils"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ioutils</span></code></a> module.
+Functions that use often results of model fitting require <a class="reference external" href="https://lmfit.github.io/lmfit-py/model.html#lmfit.model.ModelResult" title="(in lmfit v0.9.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">lmfit.model.ModelResult</span></code></a> objects.</p>
+<div class="section" id="module-curveball.likelihood">
+<span id="members"></span><h2>Members<a class="headerlink" href="#module-curveball.likelihood" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="curveball.likelihood.loglik">
+<code class="sig-prename descclassname">curveball.likelihood.</code><code class="sig-name descname">loglik</code><span class="sig-paren">(</span><em class="sig-param">t</em>, <em class="sig-param">y</em>, <em class="sig-param">y_sig</em>, <em class="sig-param">f</em>, <em class="sig-param">penalty=None</em>, <em class="sig-param">**params</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/curveball/likelihood.html#loglik"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#curveball.likelihood.loglik" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes the log-likelihood of seeing the data given a model 
+assuming normal distributed observation/measurement errors.</p>
+<div class="math notranslate nohighlight">
+\[\log{L(y | \theta)} = -\frac{1}{2} \sum_i { \log{(2 \pi \sigma_{i}^{2})} + \frac{(y - f(t_i; \theta))^2}{\sigma_{i}^{2}} }\]</div>
+<p>which is the log-likelihood of seeing the data points <span class="math notranslate nohighlight">\(t_i, y_i\)</span> 
+with measurement error <span class="math notranslate nohighlight">\(\sigma_i\)</span>
+given the model function <span class="math notranslate nohighlight">\(f\)</span>, the model parameters <span class="math notranslate nohighlight">\(\theta\)</span>, 
+and that the measurement error at time <span class="math notranslate nohighlight">\(t_i\)</span> has a normal distribution with mean 0.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>t</strong><span class="classifier">np.ndarray</span></dt><dd><p>one dimensional array of time</p>
+</dd>
+<dt><strong>y</strong><span class="classifier">np.ndarray</span></dt><dd><p>one dimensional array of the means of the observations</p>
+</dd>
+<dt><strong>y_sig</strong><span class="classifier">np.ndarray</span></dt><dd><p>one dimensional array of standrad deviations of the observations</p>
+</dd>
+<dt><strong>f</strong><span class="classifier">callable</span></dt><dd><p>a function the calculates the expected observations (<cite>f(t)</cite>) from <cite>t</cite> and any parameters in <cite>params</cite></p>
+</dd>
+<dt><strong>penalty</strong><span class="classifier">callable</span></dt><dd><p>a function that calculates a scalar penalty from the parameters in <cite>params</cite> to be substracted from the log-likelihood</p>
+</dd>
+<dt><strong>params</strong><span class="classifier">floats, optional</span></dt><dd><p>model parameters</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt>float</dt><dd><p>the log-likelihood result</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="curveball.likelihood.loglik_r_nu">
+<code class="sig-prename descclassname">curveball.likelihood.</code><code class="sig-name descname">loglik_r_nu</code><span class="sig-paren">(</span><em class="sig-param">r_range</em>, <em class="sig-param">nu_range</em>, <em class="sig-param">df</em>, <em class="sig-param">f=&lt;function baranyi_roberts_function at 0x11fa7ac80&gt;</em>, <em class="sig-param">penalty=None</em>, <em class="sig-param">**params</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/curveball/likelihood.html#loglik_r_nu"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#curveball.likelihood.loglik_r_nu" title="Permalink to this definition">¶</a></dt>
+<dd><p>Estimates the log-likelihood surface for <span class="math notranslate nohighlight">\(r\)</span> and <span class="math notranslate nohighlight">\(\nu\)</span> given data and a model function.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>r_range, nu_range</strong><span class="classifier">numpy.ndarray</span></dt><dd><p>vectors of floats of <span class="math notranslate nohighlight">\(r\)</span> and <span class="math notranslate nohighlight">\(\nu\)</span> values on which to compute the log-likelihood</p>
+</dd>
+<dt><strong>df</strong><span class="classifier">pandas.DataFrame</span></dt><dd><p>data frame with <cite>Time</cite> and <cite>OD</cite> columns</p>
+</dd>
+<dt><strong>f</strong><span class="classifier">callable, optional</span></dt><dd><p>model function, defaults to <code class="xref py py-func docutils literal notranslate"><span class="pre">curveball.baranyi_roberts_model.baranyi_roberts_function()</span></code></p>
+</dd>
+<dt><strong>penalty</strong><span class="classifier">callable, optional</span></dt><dd><p>if given, the result of <cite>penalty</cite> will be substracted from the log-likelihood for each parameter set</p>
+</dd>
+<dt><strong>params</strong><span class="classifier">floats</span></dt><dd><p>values for the model model parameters used by <cite>f</cite></p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt>np.ndarray</dt><dd><p>two-dimensional array of log-likelihood calculations;
+value at index <cite>i, j</cite> will have the value for <cite>r_range[i]</cite> and <cite>nu_range[j]</cite></p>
+</dd>
+</dl>
+</dd>
+</dl>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<dl class="simple">
+<dt><a class="reference internal" href="#curveball.likelihood.loglik" title="curveball.likelihood.loglik"><code class="xref py py-obj docutils literal notranslate"><span class="pre">loglik</span></code></a></dt><dd></dd>
+<dt><a class="reference internal" href="#curveball.likelihood.loglik_r_q0" title="curveball.likelihood.loglik_r_q0"><code class="xref py py-obj docutils literal notranslate"><span class="pre">loglik_r_q0</span></code></a></dt><dd></dd>
+</dl>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="curveball.likelihood.loglik_r_q0">
+<code class="sig-prename descclassname">curveball.likelihood.</code><code class="sig-name descname">loglik_r_q0</code><span class="sig-paren">(</span><em class="sig-param">r_range</em>, <em class="sig-param">q0_range</em>, <em class="sig-param">df</em>, <em class="sig-param">f=&lt;function baranyi_roberts_function at 0x11fa7ac80&gt;</em>, <em class="sig-param">penalty=None</em>, <em class="sig-param">**params</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/curveball/likelihood.html#loglik_r_q0"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#curveball.likelihood.loglik_r_q0" title="Permalink to this definition">¶</a></dt>
+<dd><p>Estimates the log-likelihood surface for <span class="math notranslate nohighlight">\(r\)</span> and <span class="math notranslate nohighlight">\(\nu\)</span> given data and a model function.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>r_range, q0_range</strong><span class="classifier">numpy.ndarray</span></dt><dd><p>vectors of floats of <span class="math notranslate nohighlight">\(r\)</span> and <span class="math notranslate nohighlight">\(q_0\)</span> values on which to compute the log-likelihood</p>
+</dd>
+<dt><strong>df</strong><span class="classifier">pandas.DataFrame</span></dt><dd><p>data frame with <cite>Time</cite> and <cite>OD</cite> columns</p>
+</dd>
+<dt><strong>f</strong><span class="classifier">callable, optional</span></dt><dd><p>model function, defaults to <code class="xref py py-func docutils literal notranslate"><span class="pre">curveball.baranyi_roberts_model.baranyi_roberts_function()</span></code></p>
+</dd>
+<dt><strong>penalty</strong><span class="classifier">callable, optional</span></dt><dd><p>if given, the result of <cite>penalty</cite> will be substracted from the log-likelihood for each parameter set</p>
+</dd>
+<dt><strong>params</strong><span class="classifier">floats</span></dt><dd><p>values for the model model parameters used by <cite>f</cite></p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt>np.ndarray</dt><dd><p>two-dimensional array of log-likelihood calculations; 
+value at index <cite>i, j</cite> will have the value for <cite>r_range[i]</cite> and <cite>q0_range[j]</cite></p>
+</dd>
+</dl>
+</dd>
+</dl>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<dl class="simple">
+<dt><a class="reference internal" href="#curveball.likelihood.loglik" title="curveball.likelihood.loglik"><code class="xref py py-obj docutils literal notranslate"><span class="pre">loglik</span></code></a></dt><dd></dd>
+<dt><a class="reference internal" href="#curveball.likelihood.loglik_r_nu" title="curveball.likelihood.loglik_r_nu"><code class="xref py py-obj docutils literal notranslate"><span class="pre">loglik_r_nu</span></code></a></dt><dd></dd>
+</dl>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="curveball.likelihood.plot_loglik">
+<code class="sig-prename descclassname">curveball.likelihood.</code><code class="sig-name descname">plot_loglik</code><span class="sig-paren">(</span><em class="sig-param">Ls</em>, <em class="sig-param">xrange</em>, <em class="sig-param">yrange</em>, <em class="sig-param">xlabel=None</em>, <em class="sig-param">ylabel=None</em>, <em class="sig-param">columns=4</em>, <em class="sig-param">fig_title=None</em>, <em class="sig-param">normalize=True</em>, <em class="sig-param">ax_titles=None</em>, <em class="sig-param">cmap='viridis'</em>, <em class="sig-param">colorbar=True</em>, <em class="sig-param">ax_width=4</em>, <em class="sig-param">ax_height=4</em>, <em class="sig-param">ax=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/curveball/likelihood.html#plot_loglik"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#curveball.likelihood.plot_loglik" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plots one or more log-likelihood surfaces.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>Ls</strong><span class="classifier">sequence of numpy.ndarray</span></dt><dd><p>list or tuple of log-likelihood two-dimensional arrays; if one array is given it will be converted to a size 1 list</p>
+</dd>
+<dt><strong>xrange, yrange</strong><span class="classifier">np.ndarray</span></dt><dd><p>values on x-axis and y-axis of the plot (rows and columns of <cite>Ls</cite>, respectively)</p>
+</dd>
+<dt><strong>xlabel, ylabel</strong><span class="classifier">str, optional</span></dt><dd><p>strings for x and y labels</p>
+</dd>
+<dt><strong>columns</strong><span class="classifier">int, optional</span></dt><dd><p>number of columns in case that <cite>Ls</cite> has more than one matrice</p>
+</dd>
+<dt><strong>fig_title</strong><span class="classifier">str, optional</span></dt><dd><p>a title for the whole figure</p>
+</dd>
+<dt><strong>normalize</strong><span class="classifier">bool, optional</span></dt><dd><p>if <code class="xref py py-const docutils literal notranslate"><span class="pre">True</span></code>, all matrices will be plotted using a single color scale</p>
+</dd>
+<dt><strong>ax_titles</strong><span class="classifier">list or tuple of str, optional</span></dt><dd><p>titles corresponding to the different matrices in <cite>Ls</cite></p>
+</dd>
+<dt><strong>cmap</strong><span class="classifier">str. optional</span></dt><dd><p>name of a matplotlib colormap (to see list, call <a class="reference external" href="https://matplotlib.org/api/pyplot_summary.html#matplotlib.pyplot.colormaps" title="(in Matplotlib v3.1.0)"><code class="xref py py-func docutils literal notranslate"><span class="pre">matplotlib.pyplot.colormaps()</span></code></a>), defaults to <cite>viridis</cite></p>
+</dd>
+<dt><strong>colorbar</strong><span class="classifier">bool, optional</span></dt><dd><p>if <code class="xref py py-const docutils literal notranslate"><span class="pre">True</span></code> a colorbar will be added to the plot</p>
+</dd>
+<dt><strong>ax_width, ax_height</strong><span class="classifier">int</span></dt><dd><p>width and height of each panel (one for each matrice in <cite>Ls</cite>)</p>
+</dd>
+<dt><strong>ax</strong><span class="classifier">matplotlib axes or numpy.ndarray of axes</span></dt><dd><p>if given, will plot into <cite>ax</cite>, otherwise will create a new figure</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>fig</strong><span class="classifier">matplotlib.figure.Figure</span></dt><dd><p>figure object</p>
+</dd>
+<dt><strong>ax</strong><span class="classifier">numpy.ndarray</span></dt><dd><p>array of axis objects</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">L</span> <span class="o">=</span> <span class="n">loglik_r_nu</span><span class="p">(</span><span class="n">rs</span><span class="p">,</span> <span class="n">nus</span><span class="p">,</span> <span class="n">df</span><span class="p">,</span> <span class="n">y0</span><span class="o">=</span><span class="n">y0</span><span class="p">,</span> <span class="n">K</span><span class="o">=</span><span class="n">K</span><span class="p">,</span> <span class="n">q0</span><span class="o">=</span><span class="n">q0</span><span class="p">,</span> <span class="n">v</span><span class="o">=</span><span class="n">v</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">plot_loglik</span><span class="p">(</span><span class="n">L0</span><span class="p">,</span> <span class="n">rs</span><span class="p">,</span> <span class="n">nus</span><span class="p">,</span> <span class="n">normalize</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">fig_title</span><span class="o">=</span><span class="n">fig_title</span><span class="p">,</span> <span class="n">xlabel</span><span class="o">=</span><span class="sa">r</span><span class="s1">&#39;$r$&#39;</span><span class="p">,</span> <span class="n">ylabel</span><span class="o">=</span><span class="sa">r</span><span class="s1">&#39;$\nu$&#39;</span><span class="p">,</span> <span class="n">colorbar</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="curveball.likelihood.plot_model_loglik">
+<code class="sig-prename descclassname">curveball.likelihood.</code><code class="sig-name descname">plot_model_loglik</code><span class="sig-paren">(</span><em class="sig-param">m</em>, <em class="sig-param">df</em>, <em class="sig-param">fig_title=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/curveball/likelihood.html#plot_model_loglik"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#curveball.likelihood.plot_model_loglik" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plot the log-ikelihood surfaces for <span class="math notranslate nohighlight">\(\nu\)</span> over <span class="math notranslate nohighlight">\(r\)</span> and <span class="math notranslate nohighlight">\(q_0\)</span> over <span class="math notranslate nohighlight">\(r\)</span> for given data and model fitting result.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>m</strong><span class="classifier">lmfit.model.ModelResult</span></dt><dd><p>model for which to plot the log-likelihood surface</p>
+</dd>
+<dt><strong>df</strong><span class="classifier">pandas.DataFrame</span></dt><dd><p>data frame with <cite>Time</cite> and <cite>OD</cite> columns used to fit the model</p>
+</dd>
+<dt><strong>fig_title</strong><span class="classifier">str</span></dt><dd><p>title for the plot</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>fig</strong><span class="classifier">matplotlib.figure.Figure</span></dt><dd><p>figure object</p>
+</dd>
+<dt><strong>ax</strong><span class="classifier">numpy.ndarray</span></dt><dd><p>array of axis objects</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">m</span> <span class="o">=</span> <span class="n">curveball</span><span class="o">.</span><span class="n">models</span><span class="o">.</span><span class="n">fit_model</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">curveball</span><span class="o">.</span><span class="n">likelihood</span><span class="o">.</span><span class="n">plot_model_loglik</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="n">df</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="curveball.likelihood.ridge_regularization">
+<code class="sig-prename descclassname">curveball.likelihood.</code><code class="sig-name descname">ridge_regularization</code><span class="sig-paren">(</span><em class="sig-param">lam</em>, <em class="sig-param">**center</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/curveball/likelihood.html#ridge_regularization"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#curveball.likelihood.ridge_regularization" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a penaly function that employs the ridge regularization method:</p>
+<div class="math notranslate nohighlight">
+\[P = \lambda ||\theta - \theta_0||_2\]</div>
+<p>where <span class="math notranslate nohighlight">\(\lambda\)</span> is the regularization scale, 
+<span class="math notranslate nohighlight">\(\theta\)</span> is the model parameters vector, 
+and <span class="math notranslate nohighlight">\(\theta_0\)</span> is the model parameters guess vector.
+This is similar to using a multivariate Gaussian prior distribution on the model parameters 
+with the Gaussian centerd at <span class="math notranslate nohighlight">\(\theta_0\)</span> and scaled by <span class="math notranslate nohighlight">\(\lambda\)</span>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>lam</strong><span class="classifier">float</span></dt><dd><p>the penalty factor or regularization scale</p>
+</dd>
+<dt><strong>center</strong><span class="classifier">floats, optional</span></dt><dd><p>guesses of model parameters</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt>callable</dt><dd><p>the penalty function, accepts model parameters as float keyword arguments and returns a float penalty to the log-likelihood</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">penalty</span> <span class="o">=</span> <span class="n">ridge_regularization</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">K</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">r</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">loglik</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">y_sig</span><span class="p">,</span> <span class="n">logistic</span><span class="p">,</span> <span class="n">penalty</span><span class="o">=</span><span class="n">penalty</span><span class="p">,</span> <span class="n">y0</span><span class="o">=</span><span class="mf">0.12</span><span class="p">,</span> <span class="n">K</span><span class="o">=</span><span class="mf">0.98</span><span class="p">,</span> <span class="n">r</span><span class="o">=</span><span class="mf">1.1</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="competitions.html" class="btn btn-neutral float-right" title="Competition Models" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="models.html" class="btn btn-neutral float-left" title="Growth Models" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2015, Yoav Ram
+      <span class="lastupdated">
+        Last updated on 17 Jun, 2019.
+      </span>
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

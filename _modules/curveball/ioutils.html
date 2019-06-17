@@ -1,0 +1,750 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>curveball.ioutils &mdash; Curveball 0.2.12+18.g2933f0b documentation</title>
+  
+
+  
+  
+    <link rel="shortcut icon" href="../../_static/favicon.ico"/>
+  
+  
+  
+
+  
+  <script type="text/javascript" src="../../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../../_static/jquery.js"></script>
+        <script type="text/javascript" src="../../_static/underscore.js"></script>
+        <script type="text/javascript" src="../../_static/doctools.js"></script>
+        <script type="text/javascript" src="../../_static/language_data.js"></script>
+        <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> Curveball
+          
+
+          
+            
+            <img src="../../_static/logo_200px.png" class="logo" alt="Logo"/>
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.2.12+18.g2933f0b
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorial.html">Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../ioutils.html">I/O Utils</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../plots.html">Plots</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../models.html">Growth Models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../likelihood.html">Likelihood</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../competitions.html">Competition Models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../cli.html">CLI</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../troubleshooting.html">Troubleshooting</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Curveball</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+        
+      <li>curveball.ioutils</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for curveball.ioutils</h1><div class="highlight"><pre>
+<span></span><span class="ch">#!/usr/bin/env python</span>
+<span class="c1"># -*- coding: utf-8 -*-</span>
+
+<span class="c1"># This file is part of curveball.</span>
+<span class="c1"># https://github.com/yoavram/curveball</span>
+
+<span class="c1"># Licensed under the MIT license:</span>
+<span class="c1"># http://www.opensource.org/licenses/MIT-license</span>
+<span class="c1"># Copyright (c) 2015, Yoav Ram &lt;yoav@yoavram.com&gt;</span>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="n">print_function</span>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="n">division</span>
+<span class="kn">from</span> <span class="nn">builtins</span> <span class="k">import</span> <span class="nb">zip</span>
+<span class="kn">from</span> <span class="nn">builtins</span> <span class="k">import</span> <span class="nb">str</span>
+<span class="kn">from</span> <span class="nn">builtins</span> <span class="k">import</span> <span class="nb">filter</span>
+<span class="kn">from</span> <span class="nn">builtins</span> <span class="k">import</span> <span class="nb">map</span>
+<span class="kn">from</span> <span class="nn">builtins</span> <span class="k">import</span> <span class="nb">range</span>
+<span class="kn">from</span> <span class="nn">six</span> <span class="k">import</span> <span class="n">string_types</span>
+<span class="kn">from</span> <span class="nn">past.utils</span> <span class="k">import</span> <span class="n">old_div</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">from</span> <span class="nn">string</span> <span class="k">import</span> <span class="n">ascii_uppercase</span>
+<span class="kn">from</span> <span class="nn">scipy.io</span> <span class="k">import</span> <span class="n">loadmat</span>
+<span class="kn">import</span> <span class="nn">re</span>
+<span class="kn">import</span> <span class="nn">datetime</span>
+<span class="kn">import</span> <span class="nn">dateutil.parser</span>
+<span class="kn">from</span> <span class="nn">glob</span> <span class="k">import</span> <span class="n">glob</span>
+<span class="kn">import</span> <span class="nn">os.path</span>
+<span class="kn">from</span> <span class="nn">warnings</span> <span class="k">import</span> <span class="n">warn</span>
+
+
+<span class="n">MAT_VERSION</span> <span class="o">=</span> <span class="sa">u</span><span class="s1">&#39;1.0&#39;</span>
+
+
+<span class="k">def</span> <span class="nf">_fix_dtypes</span><span class="p">(</span><span class="n">df</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Fix the dtypes of categorial columns.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    df : pandas.DataFrame</span>
+<span class="sd">        data frame to fix</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    None</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="sa">u</span><span class="s1">&#39;Strain&#39;</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
+        <span class="n">df</span><span class="p">[</span><span class="sa">u</span><span class="s1">&#39;Strain&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="sa">u</span><span class="s1">&#39;Strain&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">str</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">df</span><span class="p">[</span><span class="n">col</span><span class="p">]</span><span class="o">.</span><span class="n">dtype</span> <span class="o">==</span> <span class="nb">object</span><span class="p">:</span>
+            <span class="n">df</span><span class="p">[</span><span class="n">col</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">col</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">str</span><span class="p">)</span>
+    
+
+<div class="viewcode-block" id="read_curveball_csv"><a class="viewcode-back" href="../../ioutils.html#curveball.ioutils.read_curveball_csv">[docs]</a><span class="k">def</span> <span class="nf">read_curveball_csv</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">max_time</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">plate</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Reads growth measurements from a Curveball csv (comma separated values) file.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    filename : str</span>
+<span class="sd">        path to the file.</span>
+<span class="sd">    plate : pandas.DataFrame, optional</span>
+<span class="sd">        data frame representing a plate, usually generated by reading a CSV file generated by `Plato &lt;http://plato.yoavram.com/&gt;`_.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    pandas.DataFrame</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------   </span>
+<span class="sd">    &gt;&gt;&gt; df = curveball.ioutils.read_curveball_csv(&quot;data/Tecan_210115.csv&quot;)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s1">&#39;utf8&#39;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">plate</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="s1">&#39;Strain&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
+        <span class="n">df</span><span class="p">[</span><span class="sa">u</span><span class="s1">&#39;Strain&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="sa">u</span><span class="s1">&#39;0&#39;</span>
+    <span class="k">if</span> <span class="n">plate</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="s1">&#39;Color&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
+        <span class="n">df</span><span class="p">[</span><span class="sa">u</span><span class="s1">&#39;Color&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="sa">u</span><span class="s1">&#39;#000000&#39;</span>
+    <span class="k">if</span> <span class="n">max_time</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">df</span><span class="o">.</span><span class="n">Time</span> <span class="o">&lt;=</span> <span class="n">max_time</span><span class="p">]</span>
+    <span class="n">_fix_dtypes</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">df</span></div>
+
+
+<div class="viewcode-block" id="write_curveball_csv"><a class="viewcode-back" href="../../ioutils.html#curveball.ioutils.write_curveball_csv">[docs]</a><span class="k">def</span> <span class="nf">write_curveball_csv</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">filename</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Reads growth measurements from a Curveball csv (comma separated values) file.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    df : pandas.DataFrame, optional</span>
+<span class="sd">        data frame to write</span>
+<span class="sd">    filename : str</span>
+<span class="sd">        path to the output file        </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">df</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s1">&#39;utf8&#39;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="read_tecan_xlsx"><a class="viewcode-back" href="../../ioutils.html#curveball.ioutils.read_tecan_xlsx">[docs]</a><span class="k">def</span> <span class="nf">read_tecan_xlsx</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="sa">u</span><span class="s1">&#39;OD&#39;</span><span class="p">,</span> <span class="n">sheets</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">max_time</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">plate</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">PRINT</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Reads growth measurements from a Tecan Infinity Excel output file.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    filename : str</span>
+<span class="sd">        path to the file.</span>
+<span class="sd">    label : str / sequence of str</span>
+<span class="sd">        a string or sequence of strings containing measurment names used as titles of the data tables in the file.</span>
+<span class="sd">    sheets : list, optional</span>
+<span class="sd">        list of sheet numbers, if known. Otherwise the function will try to all the sheets.</span>
+<span class="sd">    max_time : float, optional</span>
+<span class="sd">        maximal time in hours, defaults to infinity</span>
+<span class="sd">    plate : pandas.DataFrame, optional</span>
+<span class="sd">        data frame representing a plate, usually generated by reading a CSV file generated by `Plato &lt;http://plato.yoavram.com/&gt;`_.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    pandas.DataFrame</span>
+<span class="sd">        Data frame containing the columns:</span>
+
+<span class="sd">        - ``Time`` (:py:class:`float`, in hours)</span>
+<span class="sd">        - ``Temp. [°C]`` (:py:class:`float`)</span>
+<span class="sd">        - ``Cycle Nr.`` (:py:class:`int`)</span>
+<span class="sd">        - ``Well`` (:py:class:`str`): the well name, usually a letter for the row and a number of the column.</span>
+<span class="sd">        - ``Row`` (:py:class:`str`): the letter corresponding to the well row.</span>
+<span class="sd">        - ``Col`` (:py:class:`str`): the number corresponding to the well column.</span>
+<span class="sd">        - ``Strain`` (:py:class:`str`): if a `plate` was given, this is the strain name corresponding to the well from the plate.</span>
+<span class="sd">        - ``Color`` (:py:class:`str`, hex format): if a `plate` was given, this is the strain color corresponding to the well from the plate.</span>
+
+<span class="sd">        There will also be a separate column for each label, and if there is more than one label, a separate `Time` and `Temp. [°C]` column for each label.</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    ValueError</span>
+<span class="sd">        if not data was parsed from the file.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    </span>
+<span class="sd">    &gt;&gt;&gt; plate = pd.read_csv(&quot;plate_templates/G-RG-R.csv&quot;)</span>
+<span class="sd">    &gt;&gt;&gt; df = curveball.ioutils.read_tecan_xlsx(&quot;data/Tecan_210115.xlsx&quot;, label=(&#39;OD&#39;,&#39;Green&#39;,&#39;Red&#39;), max_time=12, plate=plate)</span>
+<span class="sd">    &gt;&gt;&gt; df.shape</span>
+<span class="sd">    (8544, 9)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="kn">import</span> <span class="nn">xlrd</span>
+    <span class="n">wb</span> <span class="o">=</span> <span class="n">xlrd</span><span class="o">.</span><span class="n">open_workbook</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+    <span class="n">dateandtime</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span> <span class="c1"># default</span>
+
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">label</span><span class="p">,</span> <span class="n">string_types</span><span class="p">):</span>
+        <span class="n">label</span> <span class="o">=</span> <span class="p">[</span><span class="n">label</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">sheets</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">sheets</span> <span class="o">=</span> <span class="nb">range</span><span class="p">(</span><span class="n">wb</span><span class="o">.</span><span class="n">nsheets</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">PRINT</span><span class="p">:</span> <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Reading </span><span class="si">{0}</span><span class="s2"> worksheets from workbook </span><span class="si">{1}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">sheets</span><span class="p">),</span> <span class="n">filename</span><span class="p">))</span>
+    <span class="n">label_dataframes</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">lbl</span> <span class="ow">in</span> <span class="n">label</span><span class="p">:</span>
+        <span class="n">sheet_dataframes</span> <span class="o">=</span> <span class="p">[]</span>        
+        <span class="c1">## FOR sheet</span>
+        <span class="k">for</span> <span class="n">sh_i</span> <span class="ow">in</span> <span class="n">sheets</span><span class="p">:</span>
+            <span class="n">sh</span> <span class="o">=</span> <span class="n">wb</span><span class="o">.</span><span class="n">sheet_by_index</span><span class="p">(</span><span class="n">sh_i</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">sh</span><span class="o">.</span><span class="n">nrows</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">continue</span> <span class="c1"># to next sheet</span>
+        
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">sh</span><span class="o">.</span><span class="n">nrows</span><span class="p">):</span>
+                <span class="c1">## FOR row</span>
+                <span class="n">row</span> <span class="o">=</span> <span class="n">sh</span><span class="o">.</span><span class="n">row_values</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">row</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="sa">u</span><span class="s1">&#39;Date&#39;</span><span class="p">):</span>
+                    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">string_types</span><span class="p">):</span>
+                        <span class="n">date</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+                        <span class="n">next_row</span> <span class="o">=</span> <span class="n">sh</span><span class="o">.</span><span class="n">row_values</span><span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+                        <span class="k">if</span> <span class="n">next_row</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="sa">u</span><span class="s1">&#39;Time&#39;</span><span class="p">):</span>
+                            <span class="n">time</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">next_row</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+                        <span class="k">else</span><span class="p">:</span>
+                            <span class="n">warn</span><span class="p">(</span><span class="sa">u</span><span class="s2">&quot;Warning: time row missing (sheet &#39;</span><span class="si">{0}</span><span class="s2">&#39;, row</span><span class="si">{1}</span><span class="s2">), found row starting with </span><span class="si">{2}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">sh</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">row</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
+                        <span class="n">dateandtime</span> <span class="o">=</span> <span class="n">dateutil</span><span class="o">.</span><span class="n">parser</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">date</span><span class="p">,</span> <span class="n">time</span><span class="p">))</span>
+                    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="nb">float</span><span class="p">):</span>
+                        <span class="n">date_tuple</span> <span class="o">=</span> <span class="n">xlrd</span><span class="o">.</span><span class="n">xldate_as_tuple</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">wb</span><span class="o">.</span><span class="n">datemode</span><span class="p">)</span>
+                        <span class="n">next_row</span> <span class="o">=</span> <span class="n">sh</span><span class="o">.</span><span class="n">row_values</span><span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+                        <span class="k">if</span> <span class="n">next_row</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="sa">u</span><span class="s1">&#39;Time&#39;</span><span class="p">):</span>
+                            <span class="n">time</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="n">next_row</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;:&#39;</span><span class="p">)))[:</span><span class="mi">3</span><span class="p">]</span>
+                            <span class="n">date_tuple</span> <span class="o">=</span> <span class="n">date_tuple</span><span class="p">[:</span><span class="mi">3</span><span class="p">]</span> <span class="o">+</span> <span class="n">time</span>
+                        <span class="k">else</span><span class="p">:</span>
+                            <span class="n">warn</span><span class="p">(</span><span class="sa">u</span><span class="s2">&quot;Warning: time row missing (sheet &#39;</span><span class="si">{0}</span><span class="s2">&#39;, row</span><span class="si">{1}</span><span class="s2">), found row starting with </span><span class="si">{2}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">sh</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">row</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
+                        <span class="n">dateandtime</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="p">(</span><span class="o">*</span><span class="n">date_tuple</span><span class="p">)</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">warn</span><span class="p">(</span><span class="sa">u</span><span class="s2">&quot;Warning: date row (sheet &#39;</span><span class="si">{2}</span><span class="s2">&#39;, row </span><span class="si">{3}</span><span class="s2">) could not be parsed: </span><span class="si">{0}</span><span class="s2"> </span><span class="si">{1}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="nb">type</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span> <span class="n">sh</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">i</span><span class="p">))</span>
+                <span class="k">if</span> <span class="n">row</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">lbl</span><span class="p">:</span>
+                    <span class="k">break</span>
+                <span class="c1">## FOR row ENDS</span>
+            
+            <span class="n">data</span> <span class="o">=</span> <span class="p">{}</span>            
+            <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">sh</span><span class="o">.</span><span class="n">nrows</span><span class="p">):</span>
+                <span class="c1">## FOR row</span>
+                <span class="n">row</span> <span class="o">=</span> <span class="n">sh</span><span class="o">.</span><span class="n">row</span><span class="p">(</span><span class="n">j</span><span class="p">)</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">row</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">value</span><span class="p">:</span>
+                    <span class="k">break</span>
+                <span class="n">data</span><span class="p">[</span><span class="n">row</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">value</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span><span class="o">.</span><span class="n">value</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">row</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span> <span class="k">if</span> <span class="n">x</span><span class="o">.</span><span class="n">ctype</span> <span class="o">==</span> <span class="mi">2</span><span class="p">]</span>
+                <span class="c1">## FOR row ENDS</span>
+
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">data</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;No data found in sheet </span><span class="si">{1}</span><span class="s2"> of workbook </span><span class="si">{0}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">sh_i</span><span class="p">))</span>
+
+            <span class="n">min_length</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="nb">len</span><span class="p">,</span> <span class="n">data</span><span class="o">.</span><span class="n">values</span><span class="p">()))</span>
+            <span class="k">for</span> <span class="n">k</span><span class="p">,</span><span class="n">v</span> <span class="ow">in</span> <span class="n">data</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="n">data</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span>  <span class="n">v</span><span class="p">[:</span><span class="n">min_length</span><span class="p">]</span>
+
+            <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+            <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">melt</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">id_vars</span><span class="o">=</span><span class="p">(</span><span class="sa">u</span><span class="s1">&#39;Time [s]&#39;</span><span class="p">,</span> <span class="sa">u</span><span class="s1">&#39;Temp. [°C]&#39;</span><span class="p">,</span> <span class="sa">u</span><span class="s1">&#39;Cycle Nr.&#39;</span><span class="p">),</span> <span class="n">var_name</span><span class="o">=</span><span class="sa">u</span><span class="s1">&#39;Well&#39;</span><span class="p">,</span> <span class="n">value_name</span><span class="o">=</span><span class="n">lbl</span><span class="p">)</span>
+            <span class="n">df</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">{</span><span class="sa">u</span><span class="s1">&#39;Time [s]&#39;</span><span class="p">:</span> <span class="sa">u</span><span class="s1">&#39;Time&#39;</span><span class="p">},</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="n">df</span><span class="o">.</span><span class="n">Time</span> <span class="o">=</span> <span class="p">[</span><span class="n">dateandtime</span> <span class="o">+</span> <span class="n">datetime</span><span class="o">.</span><span class="n">timedelta</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">t</span><span class="p">)</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">Time</span><span class="p">]</span>        
+            <span class="n">df</span><span class="p">[</span><span class="sa">u</span><span class="s1">&#39;Row&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">Well</span><span class="p">]</span>
+            <span class="n">df</span><span class="p">[</span><span class="sa">u</span><span class="s1">&#39;Col&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">Well</span><span class="p">]</span>
+            <span class="n">sheet_dataframes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
+        <span class="c1">## FOR sheet ENDS</span>
+
+        <span class="n">n_sheet_dataframes</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">sheet_dataframes</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">n_sheet_dataframes</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">()</span>
+        <span class="k">elif</span> <span class="n">n_sheet_dataframes</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">df</span> <span class="o">=</span> <span class="n">sheet_dataframes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span><span class="n">sheet_dataframes</span><span class="p">)</span>
+
+        <span class="n">min_time</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">Time</span><span class="o">.</span><span class="n">min</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">PRINT</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Starting time&quot;</span><span class="p">,</span> <span class="n">min_time</span><span class="p">)</span>
+        <span class="n">df</span><span class="o">.</span><span class="n">Time</span> <span class="o">=</span> <span class="p">[(</span><span class="n">t</span> <span class="o">-</span> <span class="n">min_time</span><span class="p">)</span><span class="o">.</span><span class="n">total_seconds</span><span class="p">()</span> <span class="o">/</span> <span class="mf">3600.0</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">Time</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">max_time</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">df</span><span class="o">.</span><span class="n">Time</span> <span class="o">&lt;=</span> <span class="n">max_time</span><span class="p">]</span>
+        <span class="n">df</span><span class="o">.</span><span class="n">sort_values</span><span class="p">([</span><span class="sa">u</span><span class="s1">&#39;Row&#39;</span><span class="p">,</span> <span class="sa">u</span><span class="s1">&#39;Col&#39;</span><span class="p">,</span> <span class="sa">u</span><span class="s1">&#39;Time&#39;</span><span class="p">],</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">label_dataframes</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">lbl</span><span class="p">,</span><span class="n">df</span><span class="p">))</span>
+
+    <span class="n">n_label_dataframes</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">label_dataframes</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">n_label_dataframes</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span> <span class="c1"># no dataframes</span>
+        <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">n_label_dataframes</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span> <span class="c1"># just one dataframe</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="n">label_dataframes</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span>
+    <span class="k">else</span><span class="p">:</span> <span class="c1"># multiple dataframes, merge together</span>
+        <span class="c1"># FIXME last label isn&#39;t used as a suffix, not sure why</span>
+        <span class="n">lbl</span><span class="p">,</span> <span class="n">df</span> <span class="o">=</span> <span class="n">label_dataframes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">lbl</span> <span class="o">=</span> <span class="s1">&#39;_&#39;</span> <span class="o">+</span> <span class="n">lbl</span>
+        <span class="k">for</span> <span class="n">lbli</span><span class="p">,</span> <span class="n">dfi</span> <span class="ow">in</span> <span class="n">label_dataframes</span><span class="p">[</span><span class="mi">1</span><span class="p">:]:</span>
+            <span class="n">lbli</span> <span class="o">=</span> <span class="s1">&#39;_&#39;</span> <span class="o">+</span> <span class="n">lbli</span>
+            <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">dfi</span><span class="p">,</span> <span class="n">on</span><span class="o">=</span><span class="p">(</span><span class="sa">u</span><span class="s1">&#39;Cycle Nr.&#39;</span><span class="p">,</span> <span class="sa">u</span><span class="s1">&#39;Well&#39;</span><span class="p">,</span> <span class="sa">u</span><span class="s1">&#39;Row&#39;</span><span class="p">,</span> <span class="sa">u</span><span class="s1">&#39;Col&#39;</span><span class="p">),</span> <span class="n">suffixes</span><span class="o">=</span><span class="p">(</span><span class="n">lbl</span><span class="p">,</span><span class="n">lbli</span><span class="p">))</span>
+    <span class="k">if</span> <span class="n">plate</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">df</span><span class="p">[</span><span class="sa">u</span><span class="s1">&#39;Strain&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="sa">u</span><span class="s1">&#39;0&#39;</span>
+        <span class="n">df</span><span class="p">[</span><span class="sa">u</span><span class="s1">&#39;Color&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="sa">u</span><span class="s1">&#39;#000000&#39;</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">plate</span><span class="p">,</span> <span class="n">on</span><span class="o">=</span><span class="p">(</span><span class="sa">u</span><span class="s1">&#39;Row&#39;</span><span class="p">,</span> <span class="sa">u</span><span class="s1">&#39;Col&#39;</span><span class="p">))</span>
+    <span class="k">if</span> <span class="n">PRINT</span><span class="p">:</span> <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Read </span><span class="si">{0}</span><span class="s2"> records from workbook&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
+    <span class="n">_fix_dtypes</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">df</span></div>
+
+
+<div class="viewcode-block" id="read_tecan_mat"><a class="viewcode-back" href="../../ioutils.html#curveball.ioutils.read_tecan_mat">[docs]</a><span class="k">def</span> <span class="nf">read_tecan_mat</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">time_label</span><span class="o">=</span><span class="sa">u</span><span class="s1">&#39;tps&#39;</span><span class="p">,</span> <span class="n">value_label</span><span class="o">=</span><span class="sa">u</span><span class="s1">&#39;plate_mat&#39;</span><span class="p">,</span> <span class="n">value_name</span><span class="o">=</span><span class="sa">u</span><span class="s1">&#39;OD&#39;</span><span class="p">,</span> <span class="n">plate_width</span><span class="o">=</span><span class="mi">12</span><span class="p">,</span> <span class="n">max_time</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">plate</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Reads growth measurements from a Matlab file generated by a propriety script at the *Pilpel lab*.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    filename : str</span>
+<span class="sd">        name of the XML file to be read. Use ``*`` and ``?`` in filename to read multiple files and parse them into a single data frame.</span>
+<span class="sd">    time_label : str, optional</span>
+<span class="sd">        name of the field used to store the time values, defaults to ``tps``.</span>
+<span class="sd">    label : str</span>
+<span class="sd">        name of the field used to store the OD values, defaults to ``plate_mat``.</span>
+<span class="sd">    plate_width : int</span>
+<span class="sd">        width of the microwell in plate in number of wells, defaults to 12.</span>
+<span class="sd">    max_time : float, optional</span>
+<span class="sd">        maximal time in hours, defaults to infinity</span>
+<span class="sd">    plate : pandas.DataFrame, optional</span>
+<span class="sd">        data frame representing a plate, usually generated by reading a CSV file generated by `Plato &lt;http://plato.yoavram.com/&gt;`_.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    pandas.DataFrame</span>
+<span class="sd">        Data frame containing the columns:</span>
+
+<span class="sd">        - ``Time`` (:py:class:`float`, in hours)</span>
+<span class="sd">        - ``OD`` (:py:class:`float`)</span>
+<span class="sd">        - ``Well`` (:py:class:`str`): the well name, usually a letter for the row and a number of the column.</span>
+<span class="sd">        - ``Row`` (:py:class:`str`): the letter corresponding to the well row.</span>
+<span class="sd">        - ``Col`` (:py:class:`str`): the number corresponding to the well column.</span>
+<span class="sd">        - ``Filename`` (:py:class:`str`): the filename from which this measurement was read.</span>
+<span class="sd">        - ``Strain`` (:py:class:`str`): if a `plate` was given, this is the strain name corresponding to the well from the plate.</span>
+<span class="sd">        - ``Color`` (:py:class:`str`, hex format): if a `plate` was given, this is the strain color corresponding to the well from the plate.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">mat</span> <span class="o">=</span> <span class="n">loadmat</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">appendmat</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">mat</span><span class="p">[</span><span class="sa">u</span><span class="s1">&#39;__version__&#39;</span><span class="p">]</span> <span class="o">!=</span> <span class="n">MAT_VERSION</span><span class="p">:</span>
+        <span class="n">warn</span><span class="p">(</span><span class="sa">u</span><span class="s2">&quot;Warning: expected mat file version </span><span class="si">{0}</span><span class="s2"> but got </span><span class="si">{1}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">MAT_VERSION</span><span class="p">,</span> <span class="n">mat</span><span class="p">[</span><span class="sa">u</span><span class="s1">&#39;__version__&#39;</span><span class="p">]))</span>
+    <span class="n">t</span> <span class="o">=</span> <span class="n">mat</span><span class="p">[</span><span class="n">time_label</span><span class="p">]</span>
+    <span class="n">t</span> <span class="o">=</span> <span class="n">t</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">shape</span><span class="p">))</span>
+    <span class="n">y</span> <span class="o">=</span> <span class="n">mat</span><span class="p">[</span><span class="n">value_label</span><span class="p">]</span>
+    <span class="k">assert</span> <span class="n">y</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="n">t</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">y</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">y</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="n">df</span><span class="p">[</span><span class="sa">u</span><span class="s1">&#39;Time&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">old_div</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="mf">3600.</span><span class="p">)</span>
+    <span class="n">df</span><span class="p">[</span><span class="sa">u</span><span class="s1">&#39;Cycle Nr.&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span> <span class="o">+</span> <span class="nb">len</span><span class="p">(</span><span class="n">t</span><span class="p">))</span>
+    <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">melt</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">id_vars</span><span class="o">=</span><span class="p">(</span><span class="sa">u</span><span class="s1">&#39;Cycle Nr.&#39;</span><span class="p">,</span> <span class="sa">u</span><span class="s1">&#39;Time&#39;</span><span class="p">),</span> <span class="n">var_name</span><span class="o">=</span><span class="sa">u</span><span class="s1">&#39;Well&#39;</span><span class="p">,</span> <span class="n">value_name</span><span class="o">=</span><span class="n">value_name</span><span class="p">)</span>
+    <span class="n">df</span><span class="p">[</span><span class="sa">u</span><span class="s1">&#39;Well&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">ascii_uppercase</span><span class="p">[</span><span class="n">old_div</span><span class="p">((</span><span class="nb">int</span><span class="p">(</span><span class="n">w</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">),</span> <span class="n">plate_width</span><span class="p">)]</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">w</span> <span class="o">%</span> <span class="n">plate_width</span> <span class="k">if</span> <span class="n">w</span> <span class="o">%</span> <span class="n">plate_width</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="n">plate_width</span><span class="p">)</span> <span class="k">for</span> <span class="n">w</span> <span class="ow">in</span> <span class="n">df</span><span class="p">[</span><span class="sa">u</span><span class="s1">&#39;Well&#39;</span><span class="p">]]</span>
+    <span class="n">df</span><span class="p">[</span><span class="sa">u</span><span class="s1">&#39;Row&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">w</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">w</span> <span class="ow">in</span> <span class="n">df</span><span class="p">[</span><span class="sa">u</span><span class="s1">&#39;Well&#39;</span><span class="p">]]</span>
+    <span class="n">df</span><span class="p">[</span><span class="sa">u</span><span class="s1">&#39;Col&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">w</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span> <span class="k">for</span> <span class="n">w</span> <span class="ow">in</span> <span class="n">df</span><span class="p">[</span><span class="sa">u</span><span class="s1">&#39;Well&#39;</span><span class="p">]]</span>
+    
+    <span class="k">if</span> <span class="n">plate</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">df</span><span class="p">[</span><span class="sa">u</span><span class="s1">&#39;Strain&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="sa">u</span><span class="s1">&#39;0&#39;</span>
+        <span class="n">df</span><span class="p">[</span><span class="sa">u</span><span class="s1">&#39;Color&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="sa">u</span><span class="s1">&#39;#000000&#39;</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">plate</span><span class="p">,</span> <span class="n">on</span><span class="o">=</span><span class="p">(</span><span class="sa">u</span><span class="s1">&#39;Row&#39;</span><span class="p">,</span> <span class="sa">u</span><span class="s1">&#39;Col&#39;</span><span class="p">))</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">max_time</span><span class="p">:</span>
+        <span class="n">max_time</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">Time</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+    <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">df</span><span class="o">.</span><span class="n">Time</span> <span class="o">&lt;</span> <span class="n">max_time</span><span class="p">]</span>
+    <span class="n">df</span><span class="o">.</span><span class="n">sort_values</span><span class="p">([</span><span class="sa">u</span><span class="s1">&#39;Row&#39;</span><span class="p">,</span> <span class="sa">u</span><span class="s1">&#39;Col&#39;</span><span class="p">,</span> <span class="sa">u</span><span class="s1">&#39;Time&#39;</span><span class="p">],</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>    
+    <span class="n">_fix_dtypes</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">df</span></div>
+
+
+<div class="viewcode-block" id="read_tecan_xml"><a class="viewcode-back" href="../../ioutils.html#curveball.ioutils.read_tecan_xml">[docs]</a><span class="k">def</span> <span class="nf">read_tecan_xml</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="sa">u</span><span class="s1">&#39;OD&#39;</span><span class="p">,</span> <span class="n">max_time</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">plate</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Reads growth measurements from a Tecan Infinity XML output files.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    filename : str</span>
+<span class="sd">        pattern of the XML files to be read. Use ``*`` and ``?`` in filename to read multiple files and parse them into a single data frame.</span>
+<span class="sd">    label : str, optional</span>
+<span class="sd">        measurment name used as ``Name`` in the measurement sections in the file, defaults to ``OD``.</span>
+<span class="sd">    max_time : float, optional</span>
+<span class="sd">        maximal time in hours, defaults to infinity</span>
+<span class="sd">    plate : pandas.DataFrame, optional</span>
+<span class="sd">        data frame representing a plate, usually generated by reading a CSV file generated by `Plato &lt;http://plato.yoavram.com/&gt;`_.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    pandas.DataFrame</span>
+<span class="sd">        Data frame containing the columns:</span>
+
+<span class="sd">        - ``Time`` (:py:class:`float`, in hours)</span>
+<span class="sd">        - ``Well`` (:py:class:`str`): the well name, usually a letter for the row and a number of the column.</span>
+<span class="sd">        - ``Row`` (:py:class:`str`): the letter corresponding to the well row.</span>
+<span class="sd">        - ``Col`` (:py:class:`str`): the number corresponding to the well column.</span>
+<span class="sd">        - ``Filename`` (:py:class:`str`): the filename from which this measurement was read.</span>
+<span class="sd">        - ``Strain`` (:py:class:`str`): if a `plate` was given, this is the strain name corresponding to the well from the plate.</span>
+<span class="sd">        - ``Color`` (:py:class:`str`, hex format): if a `plate` was given, this is the strain color corresponding to the well from the plate.</span>
+
+<span class="sd">    There will also be a separate column for the value of the label.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------    </span>
+
+<span class="sd">    &gt;&gt;&gt; import zipfile</span>
+<span class="sd">    &gt;&gt;&gt; with zipfile.ZipFile(&quot;data/20130211_dh.zip&quot;) as z:</span>
+<span class="sd">        z.extractall(&quot;data/20130211_dh&quot;)</span>
+<span class="sd">    &gt;&gt;&gt; plate = pd.read_csv(&quot;plate_templates/checkerboard.csv&quot;)</span>
+<span class="sd">    &gt;&gt;&gt; df = curveball.ioutils.read_tecan_xlsx(&quot;data/20130211_dh/*.xml&quot;, &#39;OD&#39;, plate=plate)</span>
+<span class="sd">    &gt;&gt;&gt; df.shape</span>
+<span class="sd">    (2016, 8)</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    This function was adapted from `choderalab/assaytools &lt;https://github.com/choderalab/assaytools/blob/908471e7976e207df3f9b0e31b2a89f84da40607/AssayTools/platereader.py&gt;`_ (licensed under LGPL).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="kn">from</span> <span class="nn">lxml</span> <span class="k">import</span> <span class="n">etree</span>
+    <span class="n">dataframes</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">filename</span> <span class="ow">in</span> <span class="n">glob</span><span class="p">(</span><span class="n">filename</span><span class="p">):</span>
+        <span class="c1"># Parse XML file into nodes.</span>
+        <span class="n">root_node</span> <span class="o">=</span> <span class="n">etree</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+
+        <span class="c1"># Build a dict of section nodes.</span>
+        <span class="n">section_nodes</span> <span class="o">=</span> <span class="p">{</span> <span class="n">section_node</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="sa">u</span><span class="s1">&#39;Name&#39;</span><span class="p">)</span> <span class="p">:</span> <span class="n">section_node</span> <span class="k">for</span> <span class="n">section_node</span> <span class="ow">in</span> <span class="n">root_node</span><span class="o">.</span><span class="n">xpath</span><span class="p">(</span><span class="sa">u</span><span class="s2">&quot;/*/Section&quot;</span><span class="p">)</span> <span class="p">}</span>
+
+        <span class="c1"># Process all sections.</span>
+        <span class="k">if</span> <span class="n">label</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">section_nodes</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">()</span>
+
+        <span class="n">section_node</span> <span class="o">=</span> <span class="n">section_nodes</span><span class="p">[</span><span class="n">label</span><span class="p">]</span>
+        
+        <span class="c1"># Get the time of measurement</span>
+        <span class="n">time_start</span> <span class="o">=</span> <span class="n">section_node</span><span class="o">.</span><span class="n">attrib</span><span class="p">[</span><span class="sa">u</span><span class="s1">&#39;Time_Start&#39;</span><span class="p">]</span>
+
+        <span class="c1"># Get a list of all well nodes</span>
+        <span class="n">well_nodes</span> <span class="o">=</span> <span class="n">section_node</span><span class="o">.</span><span class="n">xpath</span><span class="p">(</span><span class="sa">u</span><span class="s2">&quot;*/Well&quot;</span><span class="p">)</span>
+        
+        <span class="c1"># Process all wells into data.</span>
+        <span class="n">well_data</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">well_node</span> <span class="ow">in</span> <span class="n">well_nodes</span><span class="p">:</span>
+            <span class="n">well</span> <span class="o">=</span> <span class="n">well_node</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="sa">u</span><span class="s1">&#39;Pos&#39;</span><span class="p">)</span>
+            <span class="n">value</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">well_node</span><span class="o">.</span><span class="n">xpath</span><span class="p">(</span><span class="sa">u</span><span class="s2">&quot;string()&quot;</span><span class="p">))</span>
+            <span class="n">well_data</span><span class="o">.</span><span class="n">append</span><span class="p">({</span><span class="sa">u</span><span class="s1">&#39;Well&#39;</span><span class="p">:</span> <span class="n">well</span><span class="p">,</span> <span class="n">label</span><span class="p">:</span> <span class="n">value</span><span class="p">})</span>
+
+        <span class="c1"># Add to data frame</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">well_data</span><span class="p">)</span>
+        <span class="n">df</span><span class="p">[</span><span class="sa">u</span><span class="s1">&#39;Row&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">Well</span><span class="p">]</span>
+        <span class="n">df</span><span class="p">[</span><span class="sa">u</span><span class="s1">&#39;Col&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">Well</span><span class="p">]</span>
+        <span class="n">df</span><span class="p">[</span><span class="sa">u</span><span class="s1">&#39;Time&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">dateutil</span><span class="o">.</span><span class="n">parser</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">time_start</span><span class="p">)</span>
+        <span class="n">df</span><span class="p">[</span><span class="sa">u</span><span class="s1">&#39;Filename&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">filename</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">dataframes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
+    <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span><span class="n">dataframes</span><span class="p">)</span>
+    <span class="n">min_time</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">Time</span><span class="o">.</span><span class="n">min</span><span class="p">()</span>
+    <span class="n">df</span><span class="o">.</span><span class="n">Time</span> <span class="o">=</span> <span class="p">[(</span><span class="n">t</span> <span class="o">-</span> <span class="n">min_time</span><span class="p">)</span><span class="o">.</span><span class="n">total_seconds</span><span class="p">()</span> <span class="o">/</span> <span class="mf">3600.0</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">Time</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">plate</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">df</span><span class="p">[</span><span class="sa">u</span><span class="s1">&#39;Strain&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="sa">u</span><span class="s1">&#39;0&#39;</span>
+        <span class="n">df</span><span class="p">[</span><span class="sa">u</span><span class="s1">&#39;Color&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="sa">u</span><span class="s1">&#39;#000000&#39;</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">plate</span><span class="p">,</span> <span class="n">on</span><span class="o">=</span><span class="p">(</span><span class="sa">u</span><span class="s1">&#39;Row&#39;</span><span class="p">,</span> <span class="sa">u</span><span class="s1">&#39;Col&#39;</span><span class="p">))</span>
+    <span class="k">if</span> <span class="n">max_time</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">df</span><span class="o">.</span><span class="n">Time</span> <span class="o">&lt;=</span> <span class="n">max_time</span><span class="p">]</span>
+    <span class="n">df</span><span class="o">.</span><span class="n">sort_values</span><span class="p">([</span><span class="sa">u</span><span class="s1">&#39;Row&#39;</span><span class="p">,</span> <span class="sa">u</span><span class="s1">&#39;Col&#39;</span><span class="p">,</span> <span class="sa">u</span><span class="s1">&#39;Time&#39;</span><span class="p">],</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">_fix_dtypes</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">df</span></div>
+
+
+<div class="viewcode-block" id="read_sunrise_xlsx"><a class="viewcode-back" href="../../ioutils.html#curveball.ioutils.read_sunrise_xlsx">[docs]</a><span class="k">def</span> <span class="nf">read_sunrise_xlsx</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="sa">u</span><span class="s1">&#39;OD&#39;</span><span class="p">,</span> <span class="n">max_time</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">plate</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Reads growth measurements from a Tecan Sunrise Excel output file.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    filename : str</span>
+<span class="sd">        pattern of the XLSX files to be read. Use * and ? in filename to read multiple files and parse them into a single data frame.    label : str, optional</span>
+<span class="sd">    label : str, optional</span>
+<span class="sd">        measurment name to use for the data in the file, defaults to ``OD``.</span>
+<span class="sd">    max_time : float, optional</span>
+<span class="sd">        maximal time in hours, defaults to infinity</span>
+<span class="sd">    plate : pandas.DataFrame, optional</span>
+<span class="sd">        data frame representing a plate, usually generated by reading a CSV file generated by `Plato &lt;http://plato.yoavram.com/&gt;`_.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    pandas.DataFrame</span>
+<span class="sd">        Data frame containing the columns:</span>
+
+<span class="sd">        - ``Time`` (:py:class:`float`, in hours)</span>
+<span class="sd">        - ``OD`` (or the value of `label`, if given)</span>
+<span class="sd">        - ``Well`` (:py:class:`str`): the well name, usually a letter for the row and a number of the column.</span>
+<span class="sd">        - ``Row`` (:py:class:`str`): the letter corresponding to the well row.</span>
+<span class="sd">        - ``Col`` (:py:class:`str`): the number corresponding to the well column.</span>
+<span class="sd">        - ``Filename`` (:py:class:`str`): the filename from which this measurement was read.</span>
+<span class="sd">        - ``Strain`` (:py:class:`str`): if a `plate` was given, this is the strain name corresponding to the well from the plate.</span>
+<span class="sd">        - ``Color`` (:py:class:`str`, hex format): if a `plate` was given, this is the strain color corresponding to the well from the plate.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="kn">import</span> <span class="nn">xlrd</span>
+    <span class="n">dataframes</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">files</span> <span class="o">=</span> <span class="n">glob</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">files</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">filename</span> <span class="ow">in</span> <span class="n">files</span><span class="p">:</span>
+        <span class="n">wb</span> <span class="o">=</span> <span class="n">xlrd</span><span class="o">.</span><span class="n">open_workbook</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">sh</span> <span class="ow">in</span> <span class="n">wb</span><span class="o">.</span><span class="n">sheets</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">sh</span><span class="o">.</span><span class="n">nrows</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">break</span>
+        <span class="n">parse_data</span> <span class="o">=</span> <span class="kc">False</span> <span class="c1"># start with metadata</span>
+        <span class="n">index</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">sh</span><span class="o">.</span><span class="n">nrows</span><span class="p">):</span>
+            <span class="n">row</span> <span class="o">=</span> <span class="n">sh</span><span class="o">.</span><span class="n">row_values</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">row</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="sa">u</span><span class="s1">&#39;Date:&#39;</span><span class="p">:</span>
+                <span class="n">date</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="nb">filter</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="nb">float</span><span class="p">),</span> <span class="n">row</span><span class="p">[</span><span class="mi">1</span><span class="p">:]))</span>
+                <span class="n">date</span> <span class="o">=</span> <span class="n">xlrd</span><span class="o">.</span><span class="n">xldate_as_tuple</span><span class="p">(</span><span class="n">date</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>        
+            <span class="k">elif</span> <span class="n">row</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="sa">u</span><span class="s1">&#39;Time:&#39;</span><span class="p">:</span>
+                <span class="n">time</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="nb">filter</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="nb">float</span><span class="p">),</span> <span class="n">row</span><span class="p">[</span><span class="mi">1</span><span class="p">:]))</span>
+                <span class="n">time</span> <span class="o">=</span> <span class="n">xlrd</span><span class="o">.</span><span class="n">xldate_as_tuple</span><span class="p">(</span><span class="n">time</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">row</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="sa">u</span><span class="s1">&#39;&lt;&gt;&#39;</span><span class="p">:</span>
+                <span class="n">columns</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="n">row</span><span class="p">[</span><span class="mi">1</span><span class="p">:]))</span>
+                <span class="n">parse_data</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">parse_data</span><span class="p">:</span>
+                <span class="k">break</span>
+            <span class="k">elif</span> <span class="n">parse_data</span><span class="p">:</span>
+                <span class="n">index</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+                <span class="n">data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="nb">float</span><span class="p">,</span> <span class="n">row</span><span class="p">[</span><span class="mi">1</span><span class="p">:])))</span>
+                
+        <span class="n">dateandtime</span> <span class="o">=</span> <span class="n">date</span><span class="p">[:</span><span class="mi">3</span><span class="p">]</span> <span class="o">+</span> <span class="n">time</span><span class="p">[</span><span class="o">-</span><span class="mi">3</span><span class="p">:]</span>
+        <span class="n">dateandtime</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="p">(</span><span class="o">*</span><span class="n">dateandtime</span><span class="p">)</span>
+        
+        <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="n">columns</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="n">index</span><span class="p">)</span>
+        <span class="n">df</span><span class="p">[</span><span class="sa">u</span><span class="s1">&#39;Row&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">index</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">melt</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">id_vars</span><span class="o">=</span><span class="sa">u</span><span class="s1">&#39;Row&#39;</span><span class="p">,</span> <span class="n">var_name</span><span class="o">=</span><span class="sa">u</span><span class="s1">&#39;Col&#39;</span><span class="p">,</span> <span class="n">value_name</span><span class="o">=</span><span class="n">label</span><span class="p">)</span>
+        <span class="n">df</span><span class="p">[</span><span class="sa">u</span><span class="s1">&#39;Time&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">dateandtime</span>
+        <span class="n">df</span><span class="p">[</span><span class="sa">u</span><span class="s1">&#39;Well&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">Row</span><span class="p">,</span> <span class="n">df</span><span class="o">.</span><span class="n">Col</span><span class="p">)]</span>
+        <span class="n">df</span><span class="p">[</span><span class="sa">u</span><span class="s1">&#39;Filename&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">filename</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">dataframes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
+    <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span><span class="n">dataframes</span><span class="p">)</span>
+    <span class="n">min_time</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">Time</span><span class="o">.</span><span class="n">min</span><span class="p">()</span>
+    <span class="n">df</span><span class="o">.</span><span class="n">Time</span> <span class="o">=</span> <span class="p">[(</span><span class="n">t</span> <span class="o">-</span> <span class="n">min_time</span><span class="p">)</span><span class="o">.</span><span class="n">total_seconds</span><span class="p">()</span> <span class="o">/</span> <span class="mf">3600.0</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">Time</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">plate</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">df</span><span class="p">[</span><span class="sa">u</span><span class="s1">&#39;Strain&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="sa">u</span><span class="s1">&#39;0&#39;</span>
+        <span class="n">df</span><span class="p">[</span><span class="sa">u</span><span class="s1">&#39;Color&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="sa">u</span><span class="s1">&#39;#000000&#39;</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">plate</span><span class="p">,</span> <span class="n">on</span><span class="o">=</span><span class="p">(</span><span class="sa">u</span><span class="s1">&#39;Row&#39;</span><span class="p">,</span> <span class="sa">u</span><span class="s1">&#39;Col&#39;</span><span class="p">))</span>
+    <span class="k">if</span> <span class="n">max_time</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">df</span><span class="o">.</span><span class="n">Time</span> <span class="o">&lt;=</span> <span class="n">max_time</span><span class="p">]</span>
+    <span class="n">df</span><span class="o">.</span><span class="n">sort_values</span><span class="p">([</span><span class="sa">u</span><span class="s1">&#39;Row&#39;</span><span class="p">,</span> <span class="sa">u</span><span class="s1">&#39;Col&#39;</span><span class="p">,</span> <span class="sa">u</span><span class="s1">&#39;Time&#39;</span><span class="p">],</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">_fix_dtypes</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">df</span></div>
+
+
+<span class="k">def</span> <span class="nf">read_biotek_xlsx</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">max_time</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">plate</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">PRINT</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="kn">import</span> <span class="nn">xlrd</span>
+    <span class="n">wb</span> <span class="o">=</span> <span class="n">xlrd</span><span class="o">.</span><span class="n">open_workbook</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">sh_i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">wb</span><span class="o">.</span><span class="n">nsheets</span><span class="p">):</span>
+        <span class="n">sh</span> <span class="o">=</span> <span class="n">wb</span><span class="o">.</span><span class="n">sheet_by_index</span><span class="p">(</span><span class="n">sh_i</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">sh</span><span class="o">.</span><span class="n">nrows</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">break</span>
+    <span class="k">else</span><span class="p">:</span> <span class="c1"># all sheets are empty</span>
+        <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s1">&#39;All sheets are empty in </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">filename</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">()</span>
+
+    <span class="k">if</span> <span class="n">PRINT</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Reading worksheet </span><span class="si">{0}</span><span class="s2"> with </span><span class="si">{2}</span><span class="s2"> lines from workbook </span><span class="si">{1}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">sh_i</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">sh</span><span class="o">.</span><span class="n">nrows</span><span class="p">))</span>
+
+    <span class="n">in_data</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">dfs</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">while</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">sh</span><span class="o">.</span><span class="n">nrows</span><span class="p">:</span>
+        <span class="n">row</span> <span class="o">=</span> <span class="n">sh</span><span class="o">.</span><span class="n">row_values</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">in_data</span> <span class="ow">and</span> <span class="n">row</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;Time&#39;</span><span class="p">:</span>
+            <span class="n">columns</span> <span class="o">=</span> <span class="n">row</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>
+            <span class="n">in_data</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">elif</span> <span class="n">in_data</span> <span class="ow">and</span> <span class="n">row</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">!=</span> <span class="s1">&#39;&#39;</span><span class="p">:</span>
+            <span class="n">row</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*=</span> <span class="mi">24</span> <span class="c1"># days -&gt; hours</span>
+            <span class="n">data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+        <span class="k">elif</span> <span class="n">in_data</span> <span class="ow">and</span> <span class="n">row</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;&#39;</span><span class="p">:</span>
+            <span class="n">in_data</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="n">columns</span><span class="p">)</span>
+            <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">melt</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="p">[</span><span class="sa">u</span><span class="s1">&#39;Time&#39;</span><span class="p">,</span> <span class="sa">u</span><span class="s1">&#39;T° 600&#39;</span><span class="p">],</span> <span class="n">var_name</span><span class="o">=</span><span class="sa">u</span><span class="s1">&#39;Well&#39;</span><span class="p">,</span> <span class="n">value_name</span><span class="o">=</span><span class="sa">u</span><span class="s1">&#39;OD&#39;</span><span class="p">)</span>
+            <span class="n">dfs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
+        <span class="n">i</span> <span class="o">+=</span> <span class="mi">1</span>
+    <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span><span class="n">dfs</span> <span class="p">)</span>
+
+    <span class="n">df</span><span class="p">[</span><span class="sa">u</span><span class="s1">&#39;Row&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">Well</span><span class="p">]</span>
+    <span class="n">df</span><span class="p">[</span><span class="sa">u</span><span class="s1">&#39;Col&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">Well</span><span class="p">]</span>
+
+    <span class="n">min_time</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">Time</span><span class="o">.</span><span class="n">min</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">PRINT</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Starting time&quot;</span><span class="p">,</span> <span class="n">min_time</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">max_time</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">df</span><span class="o">.</span><span class="n">Time</span> <span class="o">&lt;=</span> <span class="n">max_time</span><span class="p">]</span>
+    <span class="n">df</span><span class="o">.</span><span class="n">sort_values</span><span class="p">([</span><span class="sa">u</span><span class="s1">&#39;Row&#39;</span><span class="p">,</span> <span class="sa">u</span><span class="s1">&#39;Col&#39;</span><span class="p">,</span> <span class="sa">u</span><span class="s1">&#39;Time&#39;</span><span class="p">],</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">df</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span> <span class="c1"># no dataframes</span>
+        <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">()</span>
+
+    <span class="k">if</span> <span class="n">plate</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">df</span><span class="p">[</span><span class="sa">u</span><span class="s1">&#39;Strain&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="sa">u</span><span class="s1">&#39;0&#39;</span>
+        <span class="n">df</span><span class="p">[</span><span class="sa">u</span><span class="s1">&#39;Color&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="sa">u</span><span class="s1">&#39;#000000&#39;</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">plate</span><span class="p">,</span> <span class="n">on</span><span class="o">=</span><span class="p">(</span><span class="sa">u</span><span class="s1">&#39;Row&#39;</span><span class="p">,</span> <span class="sa">u</span><span class="s1">&#39;Col&#39;</span><span class="p">))</span>
+    <span class="k">if</span> <span class="n">PRINT</span><span class="p">:</span> <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Read </span><span class="si">{0}</span><span class="s2"> records from workbook&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
+    <span class="n">_fix_dtypes</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">df</span>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2015, Yoav Ram
+      <span class="lastupdated">
+        Last updated on 17 Jun, 2019.
+      </span>
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

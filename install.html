@@ -1,0 +1,314 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Installation &mdash; Curveball 0.2.12+18.g2933f0b documentation</title>
+  
+
+  
+  
+    <link rel="shortcut icon" href="_static/favicon.ico"/>
+  
+  
+  
+
+  
+  <script type="text/javascript" src="_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script type="text/javascript" src="_static/jquery.js"></script>
+        <script type="text/javascript" src="_static/underscore.js"></script>
+        <script type="text/javascript" src="_static/doctools.js"></script>
+        <script type="text/javascript" src="_static/language_data.js"></script>
+        <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Tutorial" href="tutorial.html" />
+    <link rel="prev" title="Curveball: Predicting competition results from growth curves" href="index.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="index.html" class="icon icon-home"> Curveball
+          
+
+          
+            
+            <img src="_static/logo_200px.png" class="logo" alt="Logo"/>
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.2.12+18.g2933f0b
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Installation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#dependencies">Dependencies</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#users">Users</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#verify-installation">Verify installation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#updating">Updating</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#dependencies-versions">Dependencies versions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#contributing">Contributing</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="tutorial.html">Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ioutils.html">I/O Utils</a></li>
+<li class="toctree-l1"><a class="reference internal" href="plots.html">Plots</a></li>
+<li class="toctree-l1"><a class="reference internal" href="models.html">Growth Models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="likelihood.html">Likelihood</a></li>
+<li class="toctree-l1"><a class="reference internal" href="competitions.html">Competition Models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cli.html">CLI</a></li>
+<li class="toctree-l1"><a class="reference internal" href="troubleshooting.html">Troubleshooting</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Curveball</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+      <li>Installation</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/install.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="installation">
+<h1>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h1>
+<p>Curveball is a Python package. As such, it requires a Python interpreter to work.
+In addition, Curveball uses several scientific and data analysis libraries.
+All the dependencies are listed below,
+followed by a section containing instructions on how to install all the dependencies
+on the different operating systems.</p>
+<div class="section" id="dependencies">
+<h2>Dependencies<a class="headerlink" href="#dependencies" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li><p>Python 3.5, 3.4 or 2.7</p></li>
+<li><p>numpy</p></li>
+<li><p>scipy</p></li>
+<li><p>pandas</p></li>
+<li><p>matplotlib</p></li>
+<li><p>seaborn</p></li>
+<li><p>lmfit</p></li>
+<li><p>scikit-learn</p></li>
+<li><p>sympy</p></li>
+<li><p>xlrd</p></li>
+<li><p>lxml</p></li>
+<li><p>click</p></li>
+<li><p>future</p></li>
+<li><p>python-dateutil</p></li>
+</ul>
+<div class="admonition hint">
+<p class="admonition-title">Hint</p>
+<p>The minimal debian (<strong>Ubuntu</strong>, etc.) dependencies for Anaconda are:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">apt</span><span class="o">-</span><span class="n">get</span> <span class="n">install</span> <span class="n">libsm6</span> <span class="n">libxrender1</span> <span class="n">libfontconfig1</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="users">
+<h2>Users<a class="headerlink" href="#users" title="Permalink to this headline">¶</a></h2>
+<p>The recommended way to install the dependencies is to download and install
+<a class="reference external" href="https://www.continuum.io/downloads">Anaconda</a> (Python 3.5, 3.4 or 2.7),
+available for free on Windows, OS X, and Linux.</p>
+<p>After installing Anaconda, open a terminal or command line, and write the following commands to install the dependencies:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">conda</span> <span class="n">update</span> <span class="o">--</span><span class="n">yes</span> <span class="n">conda</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">conda</span> <span class="n">install</span> <span class="o">-</span><span class="n">c</span> <span class="n">conda</span><span class="o">-</span><span class="n">forge</span> <span class="o">-</span><span class="n">c</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">conda</span><span class="o">.</span><span class="n">anaconda</span><span class="o">.</span><span class="n">org</span><span class="o">/</span><span class="n">t</span><span class="o">/</span><span class="n">yo</span><span class="o">-</span><span class="mi">4760086</span><span class="n">a</span><span class="o">-</span><span class="n">c28d</span><span class="o">-</span><span class="mi">467</span><span class="n">d</span><span class="o">-</span><span class="n">bd46</span><span class="o">-</span><span class="mi">53</span><span class="n">bea521edac</span><span class="o">/</span><span class="n">yoavram</span> <span class="n">curveball</span>
+</pre></div>
+</div>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>To open a command line (or terminal) in:</p>
+<ul class="simple">
+<li><p><strong>Windows</strong>: click the <em>Start</em> button, type <strong class="command">cmd.exe</strong> and click <em>Enter</em>.</p></li>
+<li><p><strong>Linux</strong>: click <em>Ctrl-T</em>.</p></li>
+<li><p><strong>OS X</strong>: search for <strong class="command">terminal</strong> in <em>Spotlight</em>.</p></li>
+</ul>
+</div>
+<div class="section" id="verify-installation">
+<h3>Verify installation<a class="headerlink" href="#verify-installation" title="Permalink to this headline">¶</a></h3>
+<p>To verify the installation, run this command:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">curveball</span> <span class="o">--</span><span class="n">version</span>
+<span class="go">curveball, version x.x.x</span>
+</pre></div>
+</div>
+<p>where <code class="docutils literal notranslate"><span class="pre">x.x.x</span></code> will be replaced by the current version number (0.2.12+18.g2933f0b).</p>
+</div>
+<div class="section" id="updating">
+<h3>Updating<a class="headerlink" href="#updating" title="Permalink to this headline">¶</a></h3>
+<p>To update Curveball:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">conda</span> <span class="n">update</span> <span class="o">-</span><span class="n">c</span> <span class="n">conda</span><span class="o">-</span><span class="n">forge</span> <span class="o">-</span><span class="n">c</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">conda</span><span class="o">.</span><span class="n">anaconda</span><span class="o">.</span><span class="n">org</span><span class="o">/</span><span class="n">t</span><span class="o">/</span><span class="n">yo</span><span class="o">-</span><span class="mi">4760086</span><span class="n">a</span><span class="o">-</span><span class="n">c28d</span><span class="o">-</span><span class="mi">467</span><span class="n">d</span><span class="o">-</span><span class="n">bd46</span><span class="o">-</span><span class="mi">53</span><span class="n">bea521edac</span><span class="o">/</span><span class="n">yoavram</span> <span class="n">curveball</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="dependencies-versions">
+<h3>Dependencies versions<a class="headerlink" href="#dependencies-versions" title="Permalink to this headline">¶</a></h3>
+<p>The versions of the dependencies used to develop Curveball are documented in the <a class="reference external" href="https://github.com/yoavram/curveball/blob/master/environment.yml">conda environment file</a>.</p>
+</div>
+<div class="section" id="contributing">
+<h3>Contributing<a class="headerlink" href="#contributing" title="Permalink to this headline">¶</a></h3>
+<p>Please do! We encourage contributions, both to the documentation -
+from new sections and examples to typo fixes and rephrasing -
+and to the source code -
+from new file format parser to new growth and competition models.</p>
+<p>Please see the <a class="reference external" href="https://github.com/yoavram/curveball/blob/master/CONTRIBUTING.md">guidelines for contributing</a>
+for instructions and best practices and feel free to contact me via
+<a class="reference external" href="mailto:yoav&#37;&#52;&#48;yoavram&#46;com">Email</a>, <a class="reference external" href="https://twitter.com/yoavram">Twitter</a>, and <a class="reference external" href="https://gitter.im/yoavram/curveball">Gitter</a></p>
+</div>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="tutorial.html" class="btn btn-neutral float-right" title="Tutorial" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="index.html" class="btn btn-neutral float-left" title="Curveball: Predicting competition results from growth curves" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2015, Yoav Ram
+      <span class="lastupdated">
+        Last updated on 17 Jun, 2019.
+      </span>
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

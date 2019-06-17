@@ -1,0 +1,606 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>I/O Utils &mdash; Curveball 0.2.12+18.g2933f0b documentation</title>
+  
+
+  
+  
+    <link rel="shortcut icon" href="_static/favicon.ico"/>
+  
+  
+  
+
+  
+  <script type="text/javascript" src="_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script type="text/javascript" src="_static/jquery.js"></script>
+        <script type="text/javascript" src="_static/underscore.js"></script>
+        <script type="text/javascript" src="_static/doctools.js"></script>
+        <script type="text/javascript" src="_static/language_data.js"></script>
+        <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Plots" href="plots.html" />
+    <link rel="prev" title="Tutorial" href="tutorial.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="index.html" class="icon icon-home"> Curveball
+          
+
+          
+            
+            <img src="_static/logo_200px.png" class="logo" alt="Logo"/>
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.2.12+18.g2933f0b
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorial.html">Tutorial</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">I/O Utils</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#plate-template">Plate template</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#module-curveball.ioutils">Members</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="plots.html">Plots</a></li>
+<li class="toctree-l1"><a class="reference internal" href="models.html">Growth Models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="likelihood.html">Likelihood</a></li>
+<li class="toctree-l1"><a class="reference internal" href="competitions.html">Competition Models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cli.html">CLI</a></li>
+<li class="toctree-l1"><a class="reference internal" href="troubleshooting.html">Troubleshooting</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Curveball</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+      <li>I/O Utils</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/ioutils.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="i-o-utils">
+<h1>I/O Utils<a class="headerlink" href="#i-o-utils" title="Permalink to this headline">¶</a></h1>
+<p>The <a class="reference internal" href="#module-curveball.ioutils" title="curveball.ioutils"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ioutils</span></code></a> module contains functions for reading data from automatic plate readers.
+The different functions read the data files and generate a data table of type <a class="reference external" href="http://pandas.pydata.org/pandas-docs/version/0.17.1/generated/pandas.DataFrame.html#pandas.DataFrame" title="(in pandas v0.17.1)"><code class="xref py py-class docutils literal notranslate"><span class="pre">pandas.DataFrame</span></code></a>
+which contains all the relevant data: the read from every well at every time point.</p>
+<p>This data table is in a <a class="reference external" href="http://vita.had.co.nz/papers/tidy-data.html">tidy data</a> format, meaning that each row in the table contains a single measurement with the following values (as columns):</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">Time</span></code>: in hours (mandatory)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">OD</span></code>: optical density which is a proxy for cell density (mandatory)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Well</span></code>: as in the name of the well such as “A1” or “H12” (optional)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Row</span></code>, <code class="docutils literal notranslate"><span class="pre">Col</span></code>: the row and column of the well in the plate (optional)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Strain</span></code>: the name of the strain (optional)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Color</span></code>: the color that should be given to graphs of the data from this well (optional)</p></li>
+</ul>
+<p>Any other columns can also be provided (for example, <code class="docutils literal notranslate"><span class="pre">Cycle</span> <span class="pre">Nr.</span></code> and <code class="docutils literal notranslate"><span class="pre">Temp.</span> <span class="pre">[°C]</span></code> are provided by Tecan Infinity).</p>
+<p>Example of a <a class="reference external" href="http://pandas.pydata.org/pandas-docs/version/0.17.1/generated/pandas.DataFrame.html#pandas.DataFrame" title="(in pandas v0.17.1)"><code class="xref py py-class docutils literal notranslate"><span class="pre">pandas.DataFrame</span></code></a> generated using the <code class="xref py py-mod docutils literal notranslate"><span class="pre">ioutils</span></code> module functions:</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 11%" />
+<col style="width: 11%" />
+<col style="width: 11%" />
+<col style="width: 11%" />
+<col style="width: 11%" />
+<col style="width: 11%" />
+<col style="width: 11%" />
+<col style="width: 11%" />
+<col style="width: 11%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p>Time</p></td>
+<td><p>Temp. [°C]</p></td>
+<td><p>Cycle Nr.</p></td>
+<td><p>Well</p></td>
+<td><p>OD</p></td>
+<td><p>Row</p></td>
+<td><p>Col</p></td>
+<td><p>Strain</p></td>
+<td><p>Color</p></td>
+</tr>
+<tr class="row-even"><td><p>0.0</p></td>
+<td><p>30.0</p></td>
+<td><p>1.0</p></td>
+<td><p>A1</p></td>
+<td><p>0.109999999403954</p></td>
+<td><p>A</p></td>
+<td><p>1</p></td>
+<td><p>G</p></td>
+<td><p>#4daf4a</p></td>
+</tr>
+<tr class="row-odd"><td><p>0.23244444444444445</p></td>
+<td><p>30.3</p></td>
+<td><p>2.0</p></td>
+<td><p>A1</p></td>
+<td><p>0.109899997711182</p></td>
+<td><p>A</p></td>
+<td><p>1</p></td>
+<td><p>G</p></td>
+<td><p>#4daf4a</p></td>
+</tr>
+<tr class="row-even"><td><p>0.46569444444444447</p></td>
+<td><p>30.1</p></td>
+<td><p>3.0</p></td>
+<td><p>A1</p></td>
+<td><p>0.110500000417233</p></td>
+<td><p>A</p></td>
+<td><p>1</p></td>
+<td><p>G</p></td>
+<td><p>#4daf4a</p></td>
+</tr>
+<tr class="row-odd"><td><p>0.6981111111111112</p></td>
+<td><p>30.1</p></td>
+<td><p>4.0</p></td>
+<td><p>A1</p></td>
+<td><p>0.110500000417233</p></td>
+<td><p>A</p></td>
+<td><p>1</p></td>
+<td><p>G</p></td>
+<td><p>#4daf4a</p></td>
+</tr>
+<tr class="row-even"><td><p>0.9305555555555556</p></td>
+<td><p>30.0</p></td>
+<td><p>5.0</p></td>
+<td><p>A1</p></td>
+<td><p>0.111599996685982</p></td>
+<td><p>A</p></td>
+<td><p>1</p></td>
+<td><p>G</p></td>
+<td><p>#4daf4a</p></td>
+</tr>
+</tbody>
+</table>
+<div class="section" id="plate-template">
+<h2>Plate template<a class="headerlink" href="#plate-template" title="Permalink to this headline">¶</a></h2>
+<p>Normally, the output of a plate reader doesn’t include information about the strain in each well.
+To integrate that information
+(as well as the colors that should be used for plotting the data from each well),
+you must provide a plate definition CSV file.</p>
+<p>This plate template file is a table in which each row has four values:
+<code class="docutils literal notranslate"><span class="pre">Row</span></code>, <code class="docutils literal notranslate"><span class="pre">Col</span></code>, <code class="docutils literal notranslate"><span class="pre">Strain</span></code>, and <code class="docutils literal notranslate"><span class="pre">Color</span></code>.
+The <code class="docutils literal notranslate"><span class="pre">Row</span></code> and <code class="docutils literal notranslate"><span class="pre">Col</span></code> values define the wells; the <code class="docutils literal notranslate"><span class="pre">Strain</span></code> and <code class="docutils literal notranslate"><span class="pre">Color</span></code> values
+define the names of the strains and their respective colors (for plotting purposes).
+These template files can be created using the
+<a class="reference external" href="http://plato.yoavram.com">Plato web app</a>, using Excel (save as <code class="docutils literal notranslate"><span class="pre">.csv</span></code>),
+or in any other way that is convinient to you.</p>
+<p>Curveball is also shipped with some plate templates files -
+type <code class="docutils literal notranslate"><span class="pre">curveball</span> <span class="pre">plate</span> <span class="pre">list</span></code> in the <a class="reference internal" href="cli.html#module-curveball.scripts.cli" title="curveball.scripts.cli"><code class="xref py py-mod docutils literal notranslate"><span class="pre">command</span> <span class="pre">line</span></code></a> for a list of the builtin plate templates:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">&gt;</span> <span class="n">curveball</span> <span class="n">plate</span> <span class="o">--</span><span class="nb">list</span>
+<span class="n">checkerboard</span><span class="o">.</span><span class="n">csv</span>
+<span class="n">checkerboard2</span><span class="o">.</span><span class="n">csv</span>
+<span class="n">DH5a</span><span class="o">-</span><span class="n">s12</span><span class="o">-</span><span class="n">TG1</span><span class="o">.</span><span class="n">csv</span>
+<span class="n">DH5a</span><span class="o">-</span><span class="n">TG1</span><span class="o">.</span><span class="n">csv</span>
+<span class="n">G</span><span class="o">-</span><span class="n">RG</span><span class="o">-</span><span class="n">R</span><span class="o">.</span><span class="n">csv</span>
+<span class="n">nine</span><span class="o">-</span><span class="n">strains</span><span class="o">.</span><span class="n">csv</span>
+<span class="n">six</span><span class="o">-</span><span class="n">strains</span><span class="o">.</span><span class="n">csv</span>
+</pre></div>
+</div>
+<p>Example of the first 5 rows of a plate template file:</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p>Row</p></td>
+<td><p>Col</p></td>
+<td><p>Strain</p></td>
+<td><p>Color</p></td>
+</tr>
+<tr class="row-even"><td><p>A</p></td>
+<td><p>1</p></td>
+<td><p>0</p></td>
+<td><p>#ffffff</p></td>
+</tr>
+<tr class="row-odd"><td><p>A</p></td>
+<td><p>2</p></td>
+<td><p>0</p></td>
+<td><p>#ffffff</p></td>
+</tr>
+<tr class="row-even"><td><p>A</p></td>
+<td><p>3</p></td>
+<td><p>0</p></td>
+<td><p>#ffffff</p></td>
+</tr>
+<tr class="row-odd"><td><p>A</p></td>
+<td><p>4</p></td>
+<td><p>0</p></td>
+<td><p>#ffffff</p></td>
+</tr>
+<tr class="row-even"><td><p>A</p></td>
+<td><p>5</p></td>
+<td><p>0</p></td>
+<td><p>#ffffff</p></td>
+</tr>
+</tbody>
+</table>
+<p>A full example can be viewed by typing <code class="docutils literal notranslate"><span class="pre">curveball</span> <span class="pre">plate</span></code> in the <a class="reference internal" href="cli.html#module-curveball.scripts.cli" title="curveball.scripts.cli"><code class="xref py py-mod docutils literal notranslate"><span class="pre">command</span> <span class="pre">line</span></code></a>.</p>
+<div class="section" id="module-curveball.ioutils">
+<span id="members"></span><h3>Members<a class="headerlink" href="#module-curveball.ioutils" title="Permalink to this headline">¶</a></h3>
+<dl class="function">
+<dt id="curveball.ioutils.read_curveball_csv">
+<code class="sig-prename descclassname">curveball.ioutils.</code><code class="sig-name descname">read_curveball_csv</code><span class="sig-paren">(</span><em class="sig-param">filename</em>, <em class="sig-param">max_time=None</em>, <em class="sig-param">plate=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/curveball/ioutils.html#read_curveball_csv"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#curveball.ioutils.read_curveball_csv" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reads growth measurements from a Curveball csv (comma separated values) file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>filename</strong><span class="classifier">str</span></dt><dd><p>path to the file.</p>
+</dd>
+<dt><strong>plate</strong><span class="classifier">pandas.DataFrame, optional</span></dt><dd><p>data frame representing a plate, usually generated by reading a CSV file generated by <a class="reference external" href="http://plato.yoavram.com/">Plato</a>.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt>pandas.DataFrame</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">df</span> <span class="o">=</span> <span class="n">curveball</span><span class="o">.</span><span class="n">ioutils</span><span class="o">.</span><span class="n">read_curveball_csv</span><span class="p">(</span><span class="s2">&quot;data/Tecan_210115.csv&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="curveball.ioutils.read_sunrise_xlsx">
+<code class="sig-prename descclassname">curveball.ioutils.</code><code class="sig-name descname">read_sunrise_xlsx</code><span class="sig-paren">(</span><em class="sig-param">filename</em>, <em class="sig-param">label='OD'</em>, <em class="sig-param">max_time=None</em>, <em class="sig-param">plate=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/curveball/ioutils.html#read_sunrise_xlsx"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#curveball.ioutils.read_sunrise_xlsx" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reads growth measurements from a Tecan Sunrise Excel output file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>filename</strong><span class="classifier">str</span></dt><dd><p>pattern of the XLSX files to be read. Use * and ? in filename to read multiple files and parse them into a single data frame.    label : str, optional</p>
+</dd>
+<dt><strong>label</strong><span class="classifier">str, optional</span></dt><dd><p>measurment name to use for the data in the file, defaults to <code class="docutils literal notranslate"><span class="pre">OD</span></code>.</p>
+</dd>
+<dt><strong>max_time</strong><span class="classifier">float, optional</span></dt><dd><p>maximal time in hours, defaults to infinity</p>
+</dd>
+<dt><strong>plate</strong><span class="classifier">pandas.DataFrame, optional</span></dt><dd><p>data frame representing a plate, usually generated by reading a CSV file generated by <a class="reference external" href="http://plato.yoavram.com/">Plato</a>.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt>pandas.DataFrame</dt><dd><p>Data frame containing the columns:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">Time</span></code> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>, in hours)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">OD</span></code> (or the value of <cite>label</cite>, if given)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Well</span></code> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>): the well name, usually a letter for the row and a number of the column.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Row</span></code> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>): the letter corresponding to the well row.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Col</span></code> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>): the number corresponding to the well column.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Filename</span></code> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>): the filename from which this measurement was read.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Strain</span></code> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>): if a <cite>plate</cite> was given, this is the strain name corresponding to the well from the plate.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Color</span></code> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>, hex format): if a <cite>plate</cite> was given, this is the strain color corresponding to the well from the plate.</p></li>
+</ul>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="curveball.ioutils.read_tecan_mat">
+<code class="sig-prename descclassname">curveball.ioutils.</code><code class="sig-name descname">read_tecan_mat</code><span class="sig-paren">(</span><em class="sig-param">filename</em>, <em class="sig-param">time_label='tps'</em>, <em class="sig-param">value_label='plate_mat'</em>, <em class="sig-param">value_name='OD'</em>, <em class="sig-param">plate_width=12</em>, <em class="sig-param">max_time=None</em>, <em class="sig-param">plate=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/curveball/ioutils.html#read_tecan_mat"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#curveball.ioutils.read_tecan_mat" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reads growth measurements from a Matlab file generated by a propriety script at the <em>Pilpel lab</em>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>filename</strong><span class="classifier">str</span></dt><dd><p>name of the XML file to be read. Use <code class="docutils literal notranslate"><span class="pre">*</span></code> and <code class="docutils literal notranslate"><span class="pre">?</span></code> in filename to read multiple files and parse them into a single data frame.</p>
+</dd>
+<dt><strong>time_label</strong><span class="classifier">str, optional</span></dt><dd><p>name of the field used to store the time values, defaults to <code class="docutils literal notranslate"><span class="pre">tps</span></code>.</p>
+</dd>
+<dt><strong>label</strong><span class="classifier">str</span></dt><dd><p>name of the field used to store the OD values, defaults to <code class="docutils literal notranslate"><span class="pre">plate_mat</span></code>.</p>
+</dd>
+<dt><strong>plate_width</strong><span class="classifier">int</span></dt><dd><p>width of the microwell in plate in number of wells, defaults to 12.</p>
+</dd>
+<dt><strong>max_time</strong><span class="classifier">float, optional</span></dt><dd><p>maximal time in hours, defaults to infinity</p>
+</dd>
+<dt><strong>plate</strong><span class="classifier">pandas.DataFrame, optional</span></dt><dd><p>data frame representing a plate, usually generated by reading a CSV file generated by <a class="reference external" href="http://plato.yoavram.com/">Plato</a>.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt>pandas.DataFrame</dt><dd><p>Data frame containing the columns:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">Time</span></code> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>, in hours)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">OD</span></code> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Well</span></code> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>): the well name, usually a letter for the row and a number of the column.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Row</span></code> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>): the letter corresponding to the well row.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Col</span></code> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>): the number corresponding to the well column.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Filename</span></code> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>): the filename from which this measurement was read.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Strain</span></code> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>): if a <cite>plate</cite> was given, this is the strain name corresponding to the well from the plate.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Color</span></code> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>, hex format): if a <cite>plate</cite> was given, this is the strain color corresponding to the well from the plate.</p></li>
+</ul>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="curveball.ioutils.read_tecan_xlsx">
+<code class="sig-prename descclassname">curveball.ioutils.</code><code class="sig-name descname">read_tecan_xlsx</code><span class="sig-paren">(</span><em class="sig-param">filename</em>, <em class="sig-param">label='OD'</em>, <em class="sig-param">sheets=None</em>, <em class="sig-param">max_time=None</em>, <em class="sig-param">plate=None</em>, <em class="sig-param">PRINT=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/curveball/ioutils.html#read_tecan_xlsx"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#curveball.ioutils.read_tecan_xlsx" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reads growth measurements from a Tecan Infinity Excel output file.</p>
+<dl class="field-list">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>filename</strong><span class="classifier">str</span></dt><dd><p>path to the file.</p>
+</dd>
+<dt><strong>label</strong><span class="classifier">str / sequence of str</span></dt><dd><p>a string or sequence of strings containing measurment names used as titles of the data tables in the file.</p>
+</dd>
+<dt><strong>sheets</strong><span class="classifier">list, optional</span></dt><dd><p>list of sheet numbers, if known. Otherwise the function will try to all the sheets.</p>
+</dd>
+<dt><strong>max_time</strong><span class="classifier">float, optional</span></dt><dd><p>maximal time in hours, defaults to infinity</p>
+</dd>
+<dt><strong>plate</strong><span class="classifier">pandas.DataFrame, optional</span></dt><dd><p>data frame representing a plate, usually generated by reading a CSV file generated by <a class="reference external" href="http://plato.yoavram.com/">Plato</a>.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl>
+<dt>pandas.DataFrame</dt><dd><p>Data frame containing the columns:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">Time</span></code> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>, in hours)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Temp.</span> <span class="pre">[°C]</span></code> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Cycle</span> <span class="pre">Nr.</span></code> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Well</span></code> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>): the well name, usually a letter for the row and a number of the column.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Row</span></code> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>): the letter corresponding to the well row.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Col</span></code> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>): the number corresponding to the well column.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Strain</span></code> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>): if a <cite>plate</cite> was given, this is the strain name corresponding to the well from the plate.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Color</span></code> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>, hex format): if a <cite>plate</cite> was given, this is the strain color corresponding to the well from the plate.</p></li>
+</ul>
+<p>There will also be a separate column for each label, and if there is more than one label, a separate <cite>Time</cite> and <cite>Temp. [°C]</cite> column for each label.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-odd">Raises</dt>
+<dd class="field-odd"><dl class="simple">
+<dt>ValueError</dt><dd><p>if not data was parsed from the file.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">plate</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s2">&quot;plate_templates/G-RG-R.csv&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span> <span class="o">=</span> <span class="n">curveball</span><span class="o">.</span><span class="n">ioutils</span><span class="o">.</span><span class="n">read_tecan_xlsx</span><span class="p">(</span><span class="s2">&quot;data/Tecan_210115.xlsx&quot;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;OD&#39;</span><span class="p">,</span><span class="s1">&#39;Green&#39;</span><span class="p">,</span><span class="s1">&#39;Red&#39;</span><span class="p">),</span> <span class="n">max_time</span><span class="o">=</span><span class="mi">12</span><span class="p">,</span> <span class="n">plate</span><span class="o">=</span><span class="n">plate</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="o">.</span><span class="n">shape</span>
+<span class="go">(8544, 9)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="curveball.ioutils.read_tecan_xml">
+<code class="sig-prename descclassname">curveball.ioutils.</code><code class="sig-name descname">read_tecan_xml</code><span class="sig-paren">(</span><em class="sig-param">filename</em>, <em class="sig-param">label='OD'</em>, <em class="sig-param">max_time=None</em>, <em class="sig-param">plate=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/curveball/ioutils.html#read_tecan_xml"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#curveball.ioutils.read_tecan_xml" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reads growth measurements from a Tecan Infinity XML output files.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>filename</strong><span class="classifier">str</span></dt><dd><p>pattern of the XML files to be read. Use <code class="docutils literal notranslate"><span class="pre">*</span></code> and <code class="docutils literal notranslate"><span class="pre">?</span></code> in filename to read multiple files and parse them into a single data frame.</p>
+</dd>
+<dt><strong>label</strong><span class="classifier">str, optional</span></dt><dd><p>measurment name used as <code class="docutils literal notranslate"><span class="pre">Name</span></code> in the measurement sections in the file, defaults to <code class="docutils literal notranslate"><span class="pre">OD</span></code>.</p>
+</dd>
+<dt><strong>max_time</strong><span class="classifier">float, optional</span></dt><dd><p>maximal time in hours, defaults to infinity</p>
+</dd>
+<dt><strong>plate</strong><span class="classifier">pandas.DataFrame, optional</span></dt><dd><p>data frame representing a plate, usually generated by reading a CSV file generated by <a class="reference external" href="http://plato.yoavram.com/">Plato</a>.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt>pandas.DataFrame</dt><dd><p>Data frame containing the columns:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">Time</span></code> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>, in hours)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Well</span></code> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>): the well name, usually a letter for the row and a number of the column.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Row</span></code> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>): the letter corresponding to the well row.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Col</span></code> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>): the number corresponding to the well column.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Filename</span></code> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>): the filename from which this measurement was read.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Strain</span></code> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>): if a <cite>plate</cite> was given, this is the strain name corresponding to the well from the plate.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Color</span></code> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>, hex format): if a <cite>plate</cite> was given, this is the strain color corresponding to the well from the plate.</p></li>
+</ul>
+</dd>
+<dt>There will also be a separate column for the value of the label.</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>This function was adapted from <a class="reference external" href="https://github.com/choderalab/assaytools/blob/908471e7976e207df3f9b0e31b2a89f84da40607/AssayTools/platereader.py">choderalab/assaytools</a> (licensed under LGPL).</p>
+<p class="rubric">Examples</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">zipfile</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">zipfile</span><span class="o">.</span><span class="n">ZipFile</span><span class="p">(</span><span class="s2">&quot;data/20130211_dh.zip&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">z</span><span class="p">:</span>
+<span class="go">    z.extractall(&quot;data/20130211_dh&quot;)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">plate</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s2">&quot;plate_templates/checkerboard.csv&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span> <span class="o">=</span> <span class="n">curveball</span><span class="o">.</span><span class="n">ioutils</span><span class="o">.</span><span class="n">read_tecan_xlsx</span><span class="p">(</span><span class="s2">&quot;data/20130211_dh/*.xml&quot;</span><span class="p">,</span> <span class="s1">&#39;OD&#39;</span><span class="p">,</span> <span class="n">plate</span><span class="o">=</span><span class="n">plate</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="o">.</span><span class="n">shape</span>
+<span class="go">(2016, 8)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="curveball.ioutils.write_curveball_csv">
+<code class="sig-prename descclassname">curveball.ioutils.</code><code class="sig-name descname">write_curveball_csv</code><span class="sig-paren">(</span><em class="sig-param">df</em>, <em class="sig-param">filename</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/curveball/ioutils.html#write_curveball_csv"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#curveball.ioutils.write_curveball_csv" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reads growth measurements from a Curveball csv (comma separated values) file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>df</strong><span class="classifier">pandas.DataFrame, optional</span></dt><dd><p>data frame to write</p>
+</dd>
+<dt><strong>filename</strong><span class="classifier">str</span></dt><dd><p>path to the output file</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="plots.html" class="btn btn-neutral float-right" title="Plots" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="tutorial.html" class="btn btn-neutral float-left" title="Tutorial" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2015, Yoav Ram
+      <span class="lastupdated">
+        Last updated on 17 Jun, 2019.
+      </span>
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

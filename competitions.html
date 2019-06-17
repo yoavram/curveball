@@ -1,0 +1,644 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Competition Models &mdash; Curveball 0.2.12+18.g2933f0b documentation</title>
+  
+
+  
+  
+    <link rel="shortcut icon" href="_static/favicon.ico"/>
+  
+  
+  
+
+  
+  <script type="text/javascript" src="_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script type="text/javascript" src="_static/jquery.js"></script>
+        <script type="text/javascript" src="_static/underscore.js"></script>
+        <script type="text/javascript" src="_static/doctools.js"></script>
+        <script type="text/javascript" src="_static/language_data.js"></script>
+        <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="CLI" href="cli.html" />
+    <link rel="prev" title="Likelihood" href="likelihood.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="index.html" class="icon icon-home"> Curveball
+          
+
+          
+            
+            <img src="_static/logo_200px.png" class="logo" alt="Logo"/>
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.2.12+18.g2933f0b
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorial.html">Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ioutils.html">I/O Utils</a></li>
+<li class="toctree-l1"><a class="reference internal" href="plots.html">Plots</a></li>
+<li class="toctree-l1"><a class="reference internal" href="models.html">Growth Models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="likelihood.html">Likelihood</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Competition Models</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#how-competitions-work">How competitions work</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-curveball.competitions">Members</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="cli.html">CLI</a></li>
+<li class="toctree-l1"><a class="reference internal" href="troubleshooting.html">Troubleshooting</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Curveball</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+      <li>Competition Models</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/competitions.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="competition-models">
+<h1>Competition Models<a class="headerlink" href="#competition-models" title="Permalink to this headline">¶</a></h1>
+<p>The <a class="reference internal" href="#module-curveball.competitions" title="curveball.competitions"><code class="xref py py-mod docutils literal notranslate"><span class="pre">competitions</span></code></a> module contains functions for predicting
+the results of competitions between different species or strains
+and analysing the competitions results to extract the fitness
+or selection coefficients of the competing strains.</p>
+<p>The model contains:</p>
+<ul class="simple">
+<li><p><strong>Competition function</strong> (<a class="reference internal" href="#curveball.competitions.compete" title="curveball.competitions.compete"><code class="xref py py-func docutils literal notranslate"><span class="pre">compete()</span></code></a>) performs a numerical simulation of a competition.</p></li>
+<li><p><strong>Competition models</strong> (<code class="docutils literal notranslate"><span class="pre">dobule_*_ode*</span></code>) are <em>Python</em> implementations of ODE systems, consistent with <em>Scipy</em>’s <code class="xref py py-func docutils literal notranslate"><span class="pre">odeint</span></code> requirement. These ODE systems define competition models in which two strains/species compete for resources while growing in a well-mixed homogeneous vessel.</p></li>
+<li><p><strong>Fitness and selection coefficient analysis</strong> (<code class="docutils literal notranslate"><span class="pre">fitness_*</span></code>, <code class="docutils literal notranslate"><span class="pre">selection_coefs_*</span></code>) are functions for infering fitness and selection coefficients from competitions time-series.</p></li>
+</ul>
+<div class="section" id="how-competitions-work">
+<h2>How competitions work<a class="headerlink" href="#how-competitions-work" title="Permalink to this headline">¶</a></h2>
+<p>Consider the following double logistic competition model in the form of a system of ordinary differential equations:</p>
+<div class="math notranslate nohighlight">
+\[\frac{dN_i}{dt} = r_i N_i (1 - \frac{\sum_{j}{N_j}}{K_i})\]</div>
+<ul class="simple">
+<li><p><span class="math notranslate nohighlight">\(N_i\)</span>: population size of strain <em>i</em>.</p></li>
+<li><p><span class="math notranslate nohighlight">\(r_i\)</span>: initial per capita growth rate of strain <em>i</em></p></li>
+<li><p><span class="math notranslate nohighlight">\(K_i\)</span>: maximum population size of strain <em>i</em></p></li>
+</ul>
+<p>To simulate a competition between two strains we need to set the values of
+<span class="math notranslate nohighlight">\(N_i(0), r_i, K_i\)</span> for <span class="math notranslate nohighlight">\(i \in {1,2}\)</span>
+where <em>1</em> and <em>2</em> define two strains.
+These values can be estimated from growth curve data using <a class="reference internal" href="models.html#curveball.models.fit_model" title="curveball.models.fit_model"><code class="xref py py-func docutils literal notranslate"><span class="pre">curveball.models.fit_model()</span></code></a>,
+which fits growth models to data and returns model fit results.
+These model fit results can be passed to the <a class="reference internal" href="#curveball.competitions.compete" title="curveball.competitions.compete"><code class="xref py py-func docutils literal notranslate"><span class="pre">compete()</span></code></a> function to simulate a competition:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">curveball</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">plate</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s1">&#39;plate_templates/G-RG-R.csv&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span> <span class="o">=</span> <span class="n">curveball</span><span class="o">.</span><span class="n">ioutils</span><span class="o">.</span><span class="n">read_tecan_xlsx</span><span class="p">(</span><span class="s1">&#39;data/Tecan_280715.xlsx&#39;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;OD&#39;</span><span class="p">,</span> <span class="n">plate</span><span class="o">=</span><span class="n">plate</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">green</span> <span class="o">=</span> <span class="n">curveball</span><span class="o">.</span><span class="n">models</span><span class="o">.</span><span class="n">fit_model</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="n">df</span><span class="o">.</span><span class="n">Strain</span> <span class="o">==</span> <span class="s1">&#39;G&#39;</span><span class="p">],</span> <span class="n">PLOT</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">PRINT</span><span class="o">=</span><span class="kc">False</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">red</span> <span class="o">=</span> <span class="n">curveball</span><span class="o">.</span><span class="n">models</span><span class="o">.</span><span class="n">fit_model</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="n">df</span><span class="o">.</span><span class="n">Strain</span> <span class="o">==</span> <span class="s1">&#39;R&#39;</span><span class="p">],</span> <span class="n">PLOT</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">PRINT</span><span class="o">=</span><span class="kc">False</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">t</span><span class="p">,</span><span class="n">y</span><span class="p">,</span><span class="n">fig</span><span class="p">,</span><span class="n">ax</span> <span class="o">=</span> <span class="n">curveball</span><span class="o">.</span><span class="n">competitions</span><span class="o">.</span><span class="n">compete</span><span class="p">(</span><span class="n">green</span><span class="p">,</span> <span class="n">red</span><span class="p">,</span> <span class="n">PLOT</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">colors</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;green&#39;</span><span class="p">,</span> <span class="s1">&#39;red&#39;</span><span class="p">])</span>
+</pre></div>
+</div>
+<p>The result of <a class="reference internal" href="#curveball.competitions.compete" title="curveball.competitions.compete"><code class="xref py py-func docutils literal notranslate"><span class="pre">compete()</span></code></a>, <code class="docutils literal notranslate"><span class="pre">t</span></code> and <code class="docutils literal notranslate"><span class="pre">y</span></code> are the time array and the frequencies array of the competition:
+specifically, <code class="docutils literal notranslate"><span class="pre">y</span></code> is a 2-dimensional array, containing the frequency of each strain at each time point.</p>
+<div class="figure align-default" id="id6">
+<img alt="_images/example_competition.svg" src="_images/example_competition.svg" /><p class="caption"><span class="caption-number">Fig. 8 </span><span class="caption-text">Fig. 1 - Competition simulation. The figure is the result of calling <code class="docutils literal notranslate"><span class="pre">fig.savefig()</span></code> on the result of the above example code.</span><a class="headerlink" href="#id6" title="Permalink to this image">¶</a></p>
+</div>
+</div>
+<div class="section" id="module-curveball.competitions">
+<span id="members"></span><h2>Members<a class="headerlink" href="#module-curveball.competitions" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="curveball.competitions.baranyi_roberts_gd">
+<code class="sig-prename descclassname">curveball.competitions.</code><code class="sig-name descname">baranyi_roberts_gd</code><span class="sig-paren">(</span><em class="sig-param">y</em>, <em class="sig-param">t</em>, <em class="sig-param">*args</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/curveball/competitions.html#baranyi_roberts_gd"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#curveball.competitions.baranyi_roberts_gd" title="Permalink to this definition">¶</a></dt>
+<dd><p>Fujikawa, Hiroshi, and Mohammad Z Sakha. 2014. Prediction of Microbial Growth in Mixed Culture with a Competition Model. Biocontrol Science 19 (2): 89-92.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="curveball.competitions.baranyi_roberts_lv">
+<code class="sig-prename descclassname">curveball.competitions.</code><code class="sig-name descname">baranyi_roberts_lv</code><span class="sig-paren">(</span><em class="sig-param">y</em>, <em class="sig-param">t</em>, <em class="sig-param">*args</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/curveball/competitions.html#baranyi_roberts_lv"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#curveball.competitions.baranyi_roberts_lv" title="Permalink to this definition">¶</a></dt>
+<dd><p>Fujikawa, Hiroshi, and Mohammad Z Sakha. 2014. Prediction of Microbial Growth in Mixed Culture with a Competition Model. Biocontrol Science 19 (2): 89-92.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="curveball.competitions.compete">
+<code class="sig-prename descclassname">curveball.competitions.</code><code class="sig-name descname">compete</code><span class="sig-paren">(</span><em class="sig-param">m1</em>, <em class="sig-param">m2</em>, <em class="sig-param">p0=(0.5</em>, <em class="sig-param">0.5)</em>, <em class="sig-param">y0=None</em>, <em class="sig-param">t=None</em>, <em class="sig-param">hours=24</em>, <em class="sig-param">num_of_points=100</em>, <em class="sig-param">nsamples=1</em>, <em class="sig-param">lag_phase=True</em>, <em class="sig-param">ode=&lt;function double_baranyi_roberts_ode1 at 0x11fa7d2f0&gt;</em>, <em class="sig-param">params1=None</em>, <em class="sig-param">params2=None</em>, <em class="sig-param">ci=95</em>, <em class="sig-param">colors=None</em>, <em class="sig-param">ax=None</em>, <em class="sig-param">PLOT=False</em>, <em class="sig-param">sampler='covar'</em>, <em class="sig-param">df1=None</em>, <em class="sig-param">df2=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/curveball/competitions.html#compete"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#curveball.competitions.compete" title="Permalink to this definition">¶</a></dt>
+<dd><p>Simulate competitions between two strains using growth parameters estimated
+by fitting growth models to growth curves data.</p>
+<p>Integrates a 2-dimensional ODE system given by <cite>ode</cite>
+with parameters extracted from <a class="reference external" href="https://lmfit.github.io/lmfit-py/model.html#lmfit.model.ModelResult" title="(in lmfit v0.9.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">lmfit.model.ModelResult</span></code></a> instances <cite>m1</cite> and <cite>m2</cite>.
+This implementation includes plotting (if required by <cite>PLOT</cite>);
+resampling from the distribution of model parameters (when <cite>nsamples</cite> &gt; 1);
+changing the ODE system (by providing a different function in <cite>ode</cite>);
+and more.</p>
+<p>The function competes two strains/species;
+therefore it expects two <a class="reference external" href="https://lmfit.github.io/lmfit-py/model.html#lmfit.model.ModelResult" title="(in lmfit v0.9.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">lmfit.model.ModelResult</span></code></a> objects,
+two initial values in <cite>y0</cite>, etc.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>m1, m2</strong><span class="classifier">lmfit.model.ModelResult</span></dt><dd><p>model fitting results of growth models defined in <a class="reference internal" href="models.html#module-curveball.models" title="curveball.models"><code class="xref py py-mod docutils literal notranslate"><span class="pre">curveball.models</span></code></a>.</p>
+</dd>
+<dt><strong>p0, y0</strong><span class="classifier">tuple, optional</span></dt><dd><p><cite>p0</cite> is the initial relative frequencies; <cite>y0</cite> is the initial population sizes.
+if <cite>y0</cite> is given than <code class="docutils literal notranslate"><span class="pre">y0[0]</span></code> and <code class="docutils literal notranslate"><span class="pre">y0[0]</span></code> are the initial population size for <cite>m1</cite> and <cite>m2</cite>, respectively.
+if <cite>y0</cite> is not given, then it will be set to the average estimated <cite>y0</cite> in <cite>m1</cite> and <cite>m2</cite> multiplied by <cite>p0</cite>.</p>
+</dd>
+<dt><strong>t</strong><span class="classifier">numpy.ndarray or None, optional</span></dt><dd><p>array of time points in which to calculate the population sizes.</p>
+</dd>
+<dt><strong>hours</strong><span class="classifier">int, optional</span></dt><dd><p>if <cite>t</cite> is not given, determines how many hours should the competition proceed, defaults to 24.</p>
+</dd>
+<dt><strong>num_of_points</strong><span class="classifier">int, optional</span></dt><dd><p>if <cite>t</cite> is not given, determines the number of time points to use, defaults to 100.</p>
+</dd>
+<dt><strong>nsamples</strong><span class="classifier">int, optional</span></dt><dd><p>how many replicates of the competition should be simulated;
+if <cite>nsamples</cite> = 1, only one competition is simulated with the estimated parameters;
+otherwise <cite>nsamples</cite> competitions are simulated with parameters drawn from a parameter distribution
+determined by <cite>sampler</cite>. Defaults to 1.</p>
+</dd>
+<dt><strong>lag_phase</strong><span class="classifier">bool, optional</span></dt><dd><p>if <cite>True</cite>, use lag phase as given by <cite>m1</cite> and <cite>m2</cite>. Otherwise, override the lag phase parameters to prevent a lag phase. Defaults to <code class="xref py py-const docutils literal notranslate"><span class="pre">True</span></code>.</p>
+</dd>
+<dt><strong>ode</strong><span class="classifier">func, optional</span></dt><dd><p>an ordinary differential systems system defined by a function that accepts <code class="docutils literal notranslate"><span class="pre">y</span></code>, <code class="docutils literal notranslate"><span class="pre">t</span></code>, and additional arguments, and returns the derivate of <code class="docutils literal notranslate"><span class="pre">y</span></code> with respect to <code class="docutils literal notranslate"><span class="pre">t</span></code>. Defaults to <a class="reference internal" href="#curveball.competitions.double_baranyi_roberts_ode0" title="curveball.competitions.double_baranyi_roberts_ode0"><code class="xref py py-func docutils literal notranslate"><span class="pre">double_baranyi_roberts_ode0()</span></code></a>.</p>
+</dd>
+<dt><strong>params1, params2</strong><span class="classifier">dict, optional</span></dt><dd><p>dictionaries of model parameter values; if given, overrides values from <cite>m1</cite> and <cite>m2</cite>.</p>
+</dd>
+<dt><strong>ci</strong><span class="classifier">float, optional</span></dt><dd><p>confidence interval size, in (0, 100), only applicable when <cite>PLOT</cite> is <code class="xref py py-const docutils literal notranslate"><span class="pre">True</span></code>, defaults to 95%.</p>
+</dd>
+<dt><strong>colors</strong><span class="classifier">sequence of str, optional</span></dt><dd><p>if <cite>PLOT</cite> is <code class="xref py py-const docutils literal notranslate"><span class="pre">True</span></code>, this sets the colors of the drawn lines. <cite>colors[0]</cite> will be used for <cite>m1</cite>; <cite>colors[1]</cite> for <cite>m2</cite>. If not provided, defaults to the current pallete.</p>
+</dd>
+<dt><strong>ax</strong><span class="classifier">matplotlib.axes.Axes, optional</span></dt><dd><p>if <cite>PLOT</cite> is <code class="xref py py-const docutils literal notranslate"><span class="pre">True</span></code>, an axes to plot into; if not provided, a new one is created.</p>
+</dd>
+<dt><strong>PLOT</strong><span class="classifier">bool, optional</span></dt><dd><p>if <code class="xref py py-const docutils literal notranslate"><span class="pre">True</span></code>, the function will plot the curves of <em>y</em> as a function of <em>t</em>. Defaults to <code class="xref py py-const docutils literal notranslate"><span class="pre">False</span></code>.</p>
+</dd>
+<dt><strong>sampler</strong><span class="classifier">str, optional</span></dt><dd><p>if <code class="docutils literal notranslate"><span class="pre">covar</span></code>, the parameters will be sampled using the covariance matrix (<a class="reference internal" href="models.html#curveball.models.sample_params" title="curveball.models.sample_params"><code class="xref py py-func docutils literal notranslate"><span class="pre">curveball.models.sample_params()</span></code></a>);
+if <code class="docutils literal notranslate"><span class="pre">bootstrap</span></code> the parameters will be sampled by resampling the growth curves (<a class="reference internal" href="models.html#curveball.models.bootstrap_params" title="curveball.models.bootstrap_params"><code class="xref py py-func docutils literal notranslate"><span class="pre">curveball.models.bootstrap_params()</span></code></a>).</p>
+</dd>
+<dt><strong>df1, df2</strong><span class="classifier">pandas.DataFrame, optional</span></dt><dd><p>the data frames used to fit <cite>m1</cite> and <cite>m2</cite>, only used when <cite>sampler</cite> is <code class="docutils literal notranslate"><span class="pre">bootstrap</span></code>.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>t</strong><span class="classifier">numpy.ndarray</span></dt><dd><p>1d (or 2d, if <cite>nsamples</cite>&gt;1) array of time points, in hours.</p>
+</dd>
+<dt>y: numpy.ndarray</dt><dd><p>2d (or 3d, if <cite>nsamples</cite>&gt;1) array of strain frequencies.
+First axis is time, second axis is strain, third axis (if applicable) is sample.</p>
+</dd>
+<dt><strong>fig</strong><span class="classifier">matplotlib.figure.Figure</span></dt><dd><p>figure object.</p>
+</dd>
+<dt><strong>ax</strong><span class="classifier">numpy.ndarray</span></dt><dd><p>array of <a class="reference external" href="https://matplotlib.org/api/axes_api.html#matplotlib.axes.Axes" title="(in Matplotlib v3.1.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">matplotlib.axes.Axes</span></code></a> objects.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-odd">Raises</dt>
+<dd class="field-odd"><dl class="simple">
+<dt>TypeError</dt><dd><p>if <cite>m1</cite> or <cite>m2</cite> are not <a class="reference external" href="https://lmfit.github.io/lmfit-py/model.html#lmfit.model.ModelResult" title="(in lmfit v0.9.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">lmfit.model.ModelResult</span></code></a>.</p>
+</dd>
+<dt>AssertionError</dt><dd><p>if an intermediate calculation produced an invalid result (not guaranteed).</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>To debug, uncomment lines to return the <code class="docutils literal notranslate"><span class="pre">infodict</span></code> that is returned from <code class="xref py py-func docutils literal notranslate"><span class="pre">scipy.integrate.odeint()</span></code> is run with <code class="docutils literal notranslate"><span class="pre">full_output=1</span></code>.</p>
+<p class="rubric">Examples</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">curveball</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">plate</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s1">&#39;plate_templates/G-RG-R.csv&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span> <span class="o">=</span> <span class="n">curveball</span><span class="o">.</span><span class="n">ioutils</span><span class="o">.</span><span class="n">read_tecan_xlsx</span><span class="p">(</span><span class="s1">&#39;data/Tecan_280715.xlsx&#39;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;OD&#39;</span><span class="p">,</span> <span class="n">plate</span><span class="o">=</span><span class="n">plate</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">green</span> <span class="o">=</span> <span class="n">curveball</span><span class="o">.</span><span class="n">models</span><span class="o">.</span><span class="n">fit_model</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="n">df</span><span class="o">.</span><span class="n">Strain</span> <span class="o">==</span> <span class="s1">&#39;G&#39;</span><span class="p">],</span> <span class="n">PLOT</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">PRINT</span><span class="o">=</span><span class="kc">False</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">red</span> <span class="o">=</span> <span class="n">curveball</span><span class="o">.</span><span class="n">models</span><span class="o">.</span><span class="n">fit_model</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="n">df</span><span class="o">.</span><span class="n">Strain</span> <span class="o">==</span> <span class="s1">&#39;R&#39;</span><span class="p">],</span> <span class="n">PLOT</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">PRINT</span><span class="o">=</span><span class="kc">False</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">t</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">curveball</span><span class="o">.</span><span class="n">competitions</span><span class="o">.</span><span class="n">compete</span><span class="p">(</span><span class="n">green</span><span class="p">,</span> <span class="n">red</span><span class="p">,</span> <span class="n">PLOT</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="curveball.competitions.double_baranyi_roberts_gimenez_delgado_ode">
+<code class="sig-prename descclassname">curveball.competitions.</code><code class="sig-name descname">double_baranyi_roberts_gimenez_delgado_ode</code><span class="sig-paren">(</span><em class="sig-param">y</em>, <em class="sig-param">t</em>, <em class="sig-param">r</em>, <em class="sig-param">K</em>, <em class="sig-param">nu</em>, <em class="sig-param">q0</em>, <em class="sig-param">v</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/curveball/competitions.html#double_baranyi_roberts_gimenez_delgado_ode"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#curveball.competitions.double_baranyi_roberts_gimenez_delgado_ode" title="Permalink to this definition">¶</a></dt>
+<dd><p>A two species Baranyi-Roberts model with competition model inspired by Gimenez and Delgado (2004).
+The function calculates the population growth rate at given time points.</p>
+<div class="math notranslate nohighlight">
+\[\frac{dN_i}{dt} = r_i \alpha_i(t) N_i \prod_j{\Big(1 - \Big(\frac{N_j}{K_j}\Big)^{\nu_j}\Big)}\]</div>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<dl class="simple">
+<dt><a class="reference internal" href="#curveball.competitions.double_baranyi_roberts_ode0" title="curveball.competitions.double_baranyi_roberts_ode0"><code class="xref py py-obj docutils literal notranslate"><span class="pre">curveball.competitions.double_baranyi_roberts_ode0</span></code></a></dt><dd></dd>
+</dl>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="curveball.competitions.double_baranyi_roberts_ode0">
+<code class="sig-prename descclassname">curveball.competitions.</code><code class="sig-name descname">double_baranyi_roberts_ode0</code><span class="sig-paren">(</span><em class="sig-param">y</em>, <em class="sig-param">t</em>, <em class="sig-param">r</em>, <em class="sig-param">K</em>, <em class="sig-param">nu</em>, <em class="sig-param">q0</em>, <em class="sig-param">v</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/curveball/competitions.html#double_baranyi_roberts_ode0"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#curveball.competitions.double_baranyi_roberts_ode0" title="Permalink to this definition">¶</a></dt>
+<dd><p>A two species Baranyi-Roberts model <a class="reference internal" href="#r6185f22b832c-1" id="id1">[1]</a>. The function calculates the population growth rate at given time points.</p>
+<div class="math notranslate nohighlight">
+\[\frac{dN_i}{dt} = r_i \alpha_i(t) N_i \Big(1 - \Big(\frac{\sum_{j}{N_j}}{K_i}\Big)^{\nu_i}\Big)\]</div>
+<ul class="simple">
+<li><p><span class="math notranslate nohighlight">\(N_i\)</span>: population size of strain <em>i</em>.</p></li>
+<li><p><span class="math notranslate nohighlight">\(r_i\)</span>: initial per capita growth rate of strain <em>i</em></p></li>
+<li><p><span class="math notranslate nohighlight">\(K_i\)</span>: maximum population size of strain <em>i</em></p></li>
+<li><p><span class="math notranslate nohighlight">\(\nu_i\)</span>: curvature of the logsitic term of strain <em>i</em></p></li>
+<li><p><span class="math notranslate nohighlight">\(\alpha_i(t)= \frac{q_{0,i}}{q_{0,i} + e^{-v_i t}}\)</span></p></li>
+<li><p><span class="math notranslate nohighlight">\(q_{0,i}\)</span>: initial adjustment of strain <em>i</em> to current environment</p></li>
+<li><p><span class="math notranslate nohighlight">\(v_i\)</span>: adjustment rate of strain <em>i</em></p></li>
+</ul>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>y</strong><span class="classifier">float, float</span></dt><dd><p>population size</p>
+</dd>
+<dt><strong>t</strong><span class="classifier">float</span></dt><dd><p>time, usually in hours</p>
+</dd>
+<dt><strong>r</strong><span class="classifier">float, float</span></dt><dd><p>initial per capita growth rate</p>
+</dd>
+<dt><strong>K</strong><span class="classifier">float, float</span></dt><dd><p>maximum population size (<span class="math notranslate nohighlight">\(K&gt;0\)</span>)</p>
+</dd>
+<dt><strong>nu</strong><span class="classifier">float, float</span></dt><dd><p>curvature of the logsitic term (<span class="math notranslate nohighlight">\(\nu&gt;0\)</span>)</p>
+</dd>
+<dt><strong>q0</strong><span class="classifier">float, float</span></dt><dd><p>initial adjustment to current environment (<span class="math notranslate nohighlight">\(0&lt;q_0&lt;1\)</span>)</p>
+</dd>
+<dt><strong>v</strong><span class="classifier">float, float</span></dt><dd><p>adjustment rate (<span class="math notranslate nohighlight">\(v&gt;0\)</span>)</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt>float, float</dt><dd><p>population growth rate.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">References</p>
+<dl class="citation">
+<dt class="label" id="r6185f22b832c-1"><span class="brackets"><a class="fn-backref" href="#id1">1</a></span></dt>
+<dd><p>Baranyi, J., Roberts, T. A., 1994. <a class="reference external" href="www.ncbi.nlm.nih.gov/pubmed/7873331">A dynamic approach to predicting bacterial growth in food</a>. Int. J. Food Microbiol.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="curveball.competitions.double_baranyi_roberts_ode1">
+<code class="sig-prename descclassname">curveball.competitions.</code><code class="sig-name descname">double_baranyi_roberts_ode1</code><span class="sig-paren">(</span><em class="sig-param">y</em>, <em class="sig-param">t</em>, <em class="sig-param">r</em>, <em class="sig-param">K</em>, <em class="sig-param">nu</em>, <em class="sig-param">q0</em>, <em class="sig-param">v</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/curveball/competitions.html#double_baranyi_roberts_ode1"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#curveball.competitions.double_baranyi_roberts_ode1" title="Permalink to this definition">¶</a></dt>
+<dd><p>A two species Baranyi-Roberts model. The function calculates the population growth rate at given time points.</p>
+<div class="math notranslate nohighlight">
+\[\frac{dN_i}{dt} = r_i \alpha_i(t) N_i \Big(1 - \Big(\sum_{j}{\frac{N_j}{K_j}}\Big)^{\nu_i}\Big)\]</div>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<dl class="simple">
+<dt><a class="reference internal" href="#curveball.competitions.double_baranyi_roberts_ode0" title="curveball.competitions.double_baranyi_roberts_ode0"><code class="xref py py-obj docutils literal notranslate"><span class="pre">curveball.competitions.double_baranyi_roberts_ode0</span></code></a></dt><dd></dd>
+</dl>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="curveball.competitions.double_baranyi_roberts_ode2">
+<code class="sig-prename descclassname">curveball.competitions.</code><code class="sig-name descname">double_baranyi_roberts_ode2</code><span class="sig-paren">(</span><em class="sig-param">y</em>, <em class="sig-param">t</em>, <em class="sig-param">r</em>, <em class="sig-param">K</em>, <em class="sig-param">nu</em>, <em class="sig-param">q0</em>, <em class="sig-param">v</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/curveball/competitions.html#double_baranyi_roberts_ode2"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#curveball.competitions.double_baranyi_roberts_ode2" title="Permalink to this definition">¶</a></dt>
+<dd><p>A two species Baranyi-Roberts model. The function calculates the population growth rate at given time points.</p>
+<div class="math notranslate nohighlight">
+\[\frac{dN_i}{dt} = r_i \alpha_i(t) N_i \Big(1 - \sum_{j}{\Big(\frac{N_j}{K_j}\Big)^{\nu_j}}\Big)\]</div>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<dl class="simple">
+<dt><a class="reference internal" href="#curveball.competitions.double_baranyi_roberts_ode0" title="curveball.competitions.double_baranyi_roberts_ode0"><code class="xref py py-obj docutils literal notranslate"><span class="pre">curveball.competitions.double_baranyi_roberts_ode0</span></code></a></dt><dd></dd>
+</dl>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="curveball.competitions.double_baranyi_roberts_ode3">
+<code class="sig-prename descclassname">curveball.competitions.</code><code class="sig-name descname">double_baranyi_roberts_ode3</code><span class="sig-paren">(</span><em class="sig-param">y</em>, <em class="sig-param">t</em>, <em class="sig-param">r</em>, <em class="sig-param">K</em>, <em class="sig-param">nu</em>, <em class="sig-param">q0</em>, <em class="sig-param">v</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/curveball/competitions.html#double_baranyi_roberts_ode3"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#curveball.competitions.double_baranyi_roberts_ode3" title="Permalink to this definition">¶</a></dt>
+<dd><p>A two species Baranyi-Roberts model. The function calculates the population growth rate at given time points.</p>
+<div class="math notranslate nohighlight">
+\[\frac{dN_i}{dt} = r_i \alpha_i(t) N_i \Big( 1 - \Big(\frac{\sum_j{N_j}}{\bar{K}}\Big)^{\nu_i} \Big)\]</div>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<dl class="simple">
+<dt><a class="reference internal" href="#curveball.competitions.double_baranyi_roberts_ode0" title="curveball.competitions.double_baranyi_roberts_ode0"><code class="xref py py-obj docutils literal notranslate"><span class="pre">curveball.competitions.double_baranyi_roberts_ode0</span></code></a></dt><dd></dd>
+</dl>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="curveball.competitions.double_baranyi_roberts_ode4">
+<code class="sig-prename descclassname">curveball.competitions.</code><code class="sig-name descname">double_baranyi_roberts_ode4</code><span class="sig-paren">(</span><em class="sig-param">y</em>, <em class="sig-param">t</em>, <em class="sig-param">r</em>, <em class="sig-param">K</em>, <em class="sig-param">nu</em>, <em class="sig-param">q0</em>, <em class="sig-param">v</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/curveball/competitions.html#double_baranyi_roberts_ode4"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#curveball.competitions.double_baranyi_roberts_ode4" title="Permalink to this definition">¶</a></dt>
+<dd><p>A two species Baranyi-Roberts model. The function calculates the population growth rate at given time points.</p>
+<div class="math notranslate nohighlight">
+\[\frac{dN_i}{dt} = r_i \alpha_i(t) N_i\]</div>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<dl class="simple">
+<dt><a class="reference internal" href="#curveball.competitions.double_baranyi_roberts_ode0" title="curveball.competitions.double_baranyi_roberts_ode0"><code class="xref py py-obj docutils literal notranslate"><span class="pre">curveball.competitions.double_baranyi_roberts_ode0</span></code></a></dt><dd></dd>
+</dl>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="curveball.competitions.double_baranyi_roberts_ode5">
+<code class="sig-prename descclassname">curveball.competitions.</code><code class="sig-name descname">double_baranyi_roberts_ode5</code><span class="sig-paren">(</span><em class="sig-param">y</em>, <em class="sig-param">t</em>, <em class="sig-param">r</em>, <em class="sig-param">K</em>, <em class="sig-param">nu</em>, <em class="sig-param">q0</em>, <em class="sig-param">v</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/curveball/competitions.html#double_baranyi_roberts_ode5"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#curveball.competitions.double_baranyi_roberts_ode5" title="Permalink to this definition">¶</a></dt>
+<dd><p>A two species Baranyi-Roberts model. The function calculates the population growth rate at given time points.</p>
+<div class="math notranslate nohighlight">
+\[\frac{dN_i}{dt} = r_i \alpha_i(t) N_i \Big( 1 - \Big(\frac{N_i}{K_i}\Big)^{\nu_i}\Big)\]</div>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<dl class="simple">
+<dt><a class="reference internal" href="#curveball.competitions.double_baranyi_roberts_ode0" title="curveball.competitions.double_baranyi_roberts_ode0"><code class="xref py py-obj docutils literal notranslate"><span class="pre">curveball.competitions.double_baranyi_roberts_ode0</span></code></a></dt><dd></dd>
+</dl>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="curveball.competitions.double_baranyi_roberts_ode6">
+<code class="sig-prename descclassname">curveball.competitions.</code><code class="sig-name descname">double_baranyi_roberts_ode6</code><span class="sig-paren">(</span><em class="sig-param">y</em>, <em class="sig-param">t</em>, <em class="sig-param">r</em>, <em class="sig-param">K</em>, <em class="sig-param">nu</em>, <em class="sig-param">q0</em>, <em class="sig-param">v</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/curveball/competitions.html#double_baranyi_roberts_ode6"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#curveball.competitions.double_baranyi_roberts_ode6" title="Permalink to this definition">¶</a></dt>
+<dd><p>A two species Baranyi-Roberts model. The function calculates the population growth rate at given time points.</p>
+<div class="math notranslate nohighlight">
+\[\frac{dN_i}{dt} = r_i \alpha_i(t) N_i \Big(1 - \Big(\frac{\sum_j{N_j}}{K_i}\Big)^{\bar{\nu}}\Big)\]</div>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<dl class="simple">
+<dt><a class="reference internal" href="#curveball.competitions.double_baranyi_roberts_ode0" title="curveball.competitions.double_baranyi_roberts_ode0"><code class="xref py py-obj docutils literal notranslate"><span class="pre">curveball.competitions.double_baranyi_roberts_ode0</span></code></a></dt><dd></dd>
+</dl>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="curveball.competitions.double_baranyi_roberts_ode7">
+<code class="sig-prename descclassname">curveball.competitions.</code><code class="sig-name descname">double_baranyi_roberts_ode7</code><span class="sig-paren">(</span><em class="sig-param">y</em>, <em class="sig-param">t</em>, <em class="sig-param">r</em>, <em class="sig-param">K</em>, <em class="sig-param">nu</em>, <em class="sig-param">q0</em>, <em class="sig-param">v</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/curveball/competitions.html#double_baranyi_roberts_ode7"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#curveball.competitions.double_baranyi_roberts_ode7" title="Permalink to this definition">¶</a></dt>
+<dd><p>A two species Baranyi-Roberts model. The function calculates the population growth rate at given time points.</p>
+<div class="math notranslate nohighlight">
+\[\frac{dN_1}{dt} = 0 \;\;\; \frac{dN_2}{dt} = r_2 \alpha_2(t) N_2 \Big(1 - \Big(\frac{N_2}{K_2}\Big)^{\nu_1}\Big)\]</div>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<dl class="simple">
+<dt><a class="reference internal" href="#curveball.competitions.double_baranyi_roberts_ode0" title="curveball.competitions.double_baranyi_roberts_ode0"><code class="xref py py-obj docutils literal notranslate"><span class="pre">curveball.competitions.double_baranyi_roberts_ode0</span></code></a></dt><dd></dd>
+</dl>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="curveball.competitions.double_baranyi_roberts_ode8">
+<code class="sig-prename descclassname">curveball.competitions.</code><code class="sig-name descname">double_baranyi_roberts_ode8</code><span class="sig-paren">(</span><em class="sig-param">y</em>, <em class="sig-param">t</em>, <em class="sig-param">r</em>, <em class="sig-param">K</em>, <em class="sig-param">nu</em>, <em class="sig-param">q0</em>, <em class="sig-param">v</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/curveball/competitions.html#double_baranyi_roberts_ode8"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#curveball.competitions.double_baranyi_roberts_ode8" title="Permalink to this definition">¶</a></dt>
+<dd><p>A two species Baranyi-Roberts model. The function calculates the population growth rate at given time points.</p>
+<div class="math notranslate nohighlight">
+\[\frac{dN_i}{dt} = r_i N_i \Big(1 - \Big(\frac{\sum_{j}{N_j}}{K_i}\Big)^{\nu_i}\Big)\]</div>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<dl class="simple">
+<dt><a class="reference internal" href="#curveball.competitions.double_baranyi_roberts_ode0" title="curveball.competitions.double_baranyi_roberts_ode0"><code class="xref py py-obj docutils literal notranslate"><span class="pre">curveball.competitions.double_baranyi_roberts_ode0</span></code></a></dt><dd></dd>
+</dl>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="curveball.competitions.fitness_LTEE">
+<code class="sig-prename descclassname">curveball.competitions.</code><code class="sig-name descname">fitness_LTEE</code><span class="sig-paren">(</span><em class="sig-param">y</em>, <em class="sig-param">ref_strain=0</em>, <em class="sig-param">assay_strain=1</em>, <em class="sig-param">t0=0</em>, <em class="sig-param">t1=-1</em>, <em class="sig-param">ci=0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/curveball/competitions.html#fitness_LTEE"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#curveball.competitions.fitness_LTEE" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate relative fitness according to the definition used in the <em>Long Term Evolutionary Experiment</em> (LTEE) <a class="reference internal" href="#r918951748399-3" id="id3">[3]</a>,
+where <span class="math notranslate nohighlight">\(A(t), B(t)\)</span> are population densities of assay strain <em>A</em> and reference strain <em>B</em> at time <em>t</em>:</p>
+<div class="math notranslate nohighlight">
+\[\omega = \frac{\log{(A(t) / A(0))}}{\log{(B(t) / B(0))}}\]</div>
+<p>If <cite>ci</cite> &gt; 0, treats the third axis of <cite>y</cite> as replicates (from a parameteric boostrap) to calculate the confidence interval on the fitness.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>y</strong><span class="classifier">numpy.ndarray</span></dt><dd><p>array of population densities, as produced by <a class="reference internal" href="#curveball.competitions.compete" title="curveball.competitions.compete"><code class="xref py py-func docutils literal notranslate"><span class="pre">compete()</span></code></a>, where the first axis is time and the second axis is strain. A third axis is also applicable if <cite>ci</cite>&gt;0.</p>
+</dd>
+<dt><strong>ref_strain</strong><span class="classifier">int, optional</span></dt><dd><p>the index of the reference strain within <cite>y</cite>. This strain’s fitness is set to 1 by definition. Defaults to 0 (first).</p>
+</dd>
+<dt><strong>assay_strain</strong><span class="classifier">int, optional</span></dt><dd><p>the index of the assay strain within <cite>y</cite>. The result will be the fitness of this strain relative to the fitness of the reference strain. Defaults to 1 (second).</p>
+</dd>
+<dt><strong>t0</strong><span class="classifier">int, optional</span></dt><dd><p>the index of the time point from which to start the calculation of the relative fitness, defaults to 0 (first).</p>
+</dd>
+<dt><strong>t1</strong><span class="classifier">int, optional</span></dt><dd><p>the index of the time point at which to end the calculation of the relative fitness, defaults to -1 (last).</p>
+</dd>
+<dt><strong>ci</strong><span class="classifier">float between 0 and 1, optional</span></dt><dd><p>if not zero, a confidence interval will be calculated using the third axis of <cite>y</cite> as replicates.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>w</strong><span class="classifier">float</span></dt><dd><p>the fitness of the assay strain relative to the reference strain.</p>
+</dd>
+<dt><strong>low</strong><span class="classifier">float</span></dt><dd><p>if <cite>ci</cite> &gt; 0 and <cite>y.ndim</cite> = 3, this is the low limit of the confidence interval of the fitness</p>
+</dd>
+<dt><strong>high</strong><span class="classifier">float</span></dt><dd><p>if <cite>ci</cite> &gt; 0 and <cite>y.ndim</cite> = 3, this is the higher limit of the confidence interval of the fitness</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-odd">Raises</dt>
+<dd class="field-odd"><dl class="simple">
+<dt>ValueError</dt><dd><p>if confidence interval is requested (<cite>ci</cite> &gt; 0) but there are no replicates (<cite>y.ndim</cite> != 3).</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>The result may depend on the choice of <cite>t0</cite> and <cite>t1</cite> as well as the strain designations (<cite>ref_strain</cite> and <cite>assay_strain</cite>).</p>
+<p class="rubric">References</p>
+<dl class="citation">
+<dt class="label" id="r918951748399-3"><span class="brackets"><a class="fn-backref" href="#id3">3</a></span></dt>
+<dd><p>Wiser, M. J. &amp; Lenski, R. E. 2015 <a class="reference external" href="http://dx.plos.org/10.1371/journal.pone.0126210">A Comparison of Methods to Measure Fitness in Escherichia coli</a>. PLoS One.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="curveball.competitions.selection_coefs_ts">
+<code class="sig-prename descclassname">curveball.competitions.</code><code class="sig-name descname">selection_coefs_ts</code><span class="sig-paren">(</span><em class="sig-param">t</em>, <em class="sig-param">y</em>, <em class="sig-param">ax=None</em>, <em class="sig-param">PLOT=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/curveball/competitions.html#selection_coefs_ts"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#curveball.competitions.selection_coefs_ts" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate selection coefficient according to the following formula[2]_,
+where <span class="math notranslate nohighlight">\(A(t), B(t)\)</span> are population densities of assay strain <em>A</em> and reference strain <em>B</em> at time <em>t</em>:</p>
+<div class="math notranslate nohighlight">
+\[s = \frac{d}{dt} \log{\frac{A(t)}{B(t)}}\]</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>t</strong><span class="classifier">numpy.ndarray</span></dt><dd><p>array of time points, as produced by <a class="reference internal" href="#curveball.competitions.compete" title="curveball.competitions.compete"><code class="xref py py-func docutils literal notranslate"><span class="pre">compete()</span></code></a></p>
+</dd>
+<dt><strong>y</strong><span class="classifier">numpy.ndarray</span></dt><dd><p>array of population densities, as produced by <a class="reference internal" href="#curveball.competitions.compete" title="curveball.competitions.compete"><code class="xref py py-func docutils literal notranslate"><span class="pre">compete()</span></code></a>, where the first axis is time and the second axis is strain.</p>
+</dd>
+<dt><strong>ax</strong><span class="classifier">matplotlib.axes.Axes, optional</span></dt><dd><p>if <cite>PLOT</cite> is <code class="xref py py-const docutils literal notranslate"><span class="pre">True</span></code>, an axes to plot into; if not provided, a new one is created.</p>
+</dd>
+<dt><strong>PLOT</strong><span class="classifier">bool, optional</span></dt><dd><p>if <code class="xref py py-const docutils literal notranslate"><span class="pre">True</span></code>, the function will plot the curve of <em>s</em> as a function of <em>t</em>.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>svals</strong><span class="classifier">numpy.ndarray</span></dt><dd><p>the selection coefficients of the assay strain relative to the reference strain over time.</p>
+</dd>
+<dt><strong>fig</strong><span class="classifier">matplotlib.figure.Figure</span></dt><dd><p>figure object.</p>
+</dd>
+<dt><strong>ax</strong><span class="classifier">numpy.ndarray of matplotlib.axes.Axes</span></dt><dd><p>array of axes objects.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>This formula assumes that the frequencies of the strains follow a logistic curve.
+Lag phases, interactions, etc. may cause this formula to become irrelevant.</p>
+<p class="rubric">References</p>
+<dl class="citation">
+<dt class="label" id="r0c7603ff93ff-12"><span class="brackets">12</span></dt>
+<dd><p>Chevin, L-M. 2011. <a class="reference external" href="http://dx.doi.org/10.1098/rsbl.2010.0580">On Measuring Selection in Experimental Evolution</a>. Biology Letters.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="cli.html" class="btn btn-neutral float-right" title="CLI" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="likelihood.html" class="btn btn-neutral float-left" title="Likelihood" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2015, Yoav Ram
+      <span class="lastupdated">
+        Last updated on 17 Jun, 2019.
+      </span>
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>
