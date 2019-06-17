@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Plots &mdash; Curveball 0.2.12+18.g2933f0b documentation</title>
+  <title>Plots &mdash; Curveball 0.2.12+19.g9d53765.dirty documentation</title>
   
 
   
@@ -66,7 +66,7 @@
             
             
               <div class="version">
-                0.2.12+18.g2933f0b
+                0.2.12+19.g9d53765.dirty
               </div>
             
           
@@ -176,7 +176,7 @@ Functions that plot the results of growth model fitting often expect the result 
 <span id="members"></span><h2>Members<a class="headerlink" href="#module-curveball.plots" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
 <dt id="curveball.plots.plot_model_residuals">
-<code class="sig-prename descclassname">curveball.plots.</code><code class="sig-name descname">plot_model_residuals</code><span class="sig-paren">(</span><em class="sig-param">model_fit</em>, <em class="sig-param">rv=&lt;scipy.stats._continuous_distns.norm_gen object at 0x1199bfdd8&gt;</em>, <em class="sig-param">color='k'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/curveball/plots.html#plot_model_residuals"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#curveball.plots.plot_model_residuals" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">curveball.plots.</code><code class="sig-name descname">plot_model_residuals</code><span class="sig-paren">(</span><em class="sig-param">model_fit</em>, <em class="sig-param">rv=&lt;scipy.stats._continuous_distns.norm_gen object at 0x113ffbda0&gt;</em>, <em class="sig-param">color='k'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/curveball/plots.html#plot_model_residuals"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#curveball.plots.plot_model_residuals" title="Permalink to this definition">¶</a></dt>
 <dd><p>Plot of the residuals of a model fit.</p>
 <p>The function will plot the residuals - the difference between data and model - for a given model fit.
 The left panel shows the residuals over time; the right panel shows the histogram of the residuals with a fitted distribution curve.</p>
@@ -254,7 +254,7 @@ where the color of each grid cell given by the <code class="docutils literal not
 
 <dl class="function">
 <dt id="curveball.plots.plot_residuals">
-<code class="sig-prename descclassname">curveball.plots.</code><code class="sig-name descname">plot_residuals</code><span class="sig-paren">(</span><em class="sig-param">df</em>, <em class="sig-param">time='Time'</em>, <em class="sig-param">value='OD'</em>, <em class="sig-param">resid_func=&lt;function &lt;lambda&gt; at 0x11e5980d0&gt;</em>, <em class="sig-param">rv=&lt;scipy.stats._continuous_distns.norm_gen object at 0x1199bfdd8&gt;</em>, <em class="sig-param">color='k'</em>, <em class="sig-param">ax=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/curveball/plots.html#plot_residuals"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#curveball.plots.plot_residuals" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">curveball.plots.</code><code class="sig-name descname">plot_residuals</code><span class="sig-paren">(</span><em class="sig-param">df</em>, <em class="sig-param">time='Time'</em>, <em class="sig-param">value='OD'</em>, <em class="sig-param">resid_func=&lt;function &lt;lambda&gt; at 0x118b020d0&gt;</em>, <em class="sig-param">rv=&lt;scipy.stats._continuous_distns.norm_gen object at 0x113ffbda0&gt;</em>, <em class="sig-param">color='k'</em>, <em class="sig-param">ax=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/curveball/plots.html#plot_residuals"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#curveball.plots.plot_residuals" title="Permalink to this definition">¶</a></dt>
 <dd><p>Plot of the residuals of in the data.</p>
 <p>The function will plot the residuals - the difference between data and average at each time point.
 The left panel shows the residuals over time.
@@ -318,7 +318,7 @@ will be fitted to the histogram. Defaults the normal distribution (<code class="
 
 <dl class="function">
 <dt id="curveball.plots.plot_strains">
-<code class="sig-prename descclassname">curveball.plots.</code><code class="sig-name descname">plot_strains</code><span class="sig-paren">(</span><em class="sig-param">data</em>, <em class="sig-param">x='Time'</em>, <em class="sig-param">y='OD'</em>, <em class="sig-param">plot_func=&lt;function plot at 0x11a6f4bf8&gt;</em>, <em class="sig-param">by=None</em>, <em class="sig-param">agg_func=&lt;function mean at 0x117115048&gt;</em>, <em class="sig-param">hue='Strain'</em>, <em class="sig-param">color=None</em>, <em class="sig-param">output_filename=None</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/curveball/plots.html#plot_strains"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#curveball.plots.plot_strains" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">curveball.plots.</code><code class="sig-name descname">plot_strains</code><span class="sig-paren">(</span><em class="sig-param">data</em>, <em class="sig-param">x='Time'</em>, <em class="sig-param">y='OD'</em>, <em class="sig-param">plot_func=&lt;function plot at 0x114d2ebf8&gt;</em>, <em class="sig-param">by=None</em>, <em class="sig-param">agg_func=&lt;function mean at 0x10ba9d048&gt;</em>, <em class="sig-param">hue='Strain'</em>, <em class="sig-param">color=None</em>, <em class="sig-param">output_filename=None</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/curveball/plots.html#plot_strains"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#curveball.plots.plot_strains" title="Permalink to this definition">¶</a></dt>
 <dd><p>Aggregate by strain and plot the results on one figure with different color for each strain.</p>
 <p>The grouping of the data is done by the <code class="docutils literal notranslate"><span class="pre">Strain</span></code> and either <code class="docutils literal notranslate"><span class="pre">Cycle</span> <span class="pre">Nr.</span></code> or <code class="docutils literal notranslate"><span class="pre">Time</span></code> columns of <cite>data</cite>;
 the aggregation is done by the <cite>agg_func</cite>, which defaults to <code class="xref py py-func docutils literal notranslate"><span class="pre">numpy.mean()</span></code>.
@@ -361,7 +361,7 @@ The colors are given by the <code class="docutils literal notranslate"><span cla
 
 <dl class="function">
 <dt id="curveball.plots.plot_wells">
-<code class="sig-prename descclassname">curveball.plots.</code><code class="sig-name descname">plot_wells</code><span class="sig-paren">(</span><em class="sig-param">df</em>, <em class="sig-param">x='Time'</em>, <em class="sig-param">y='OD'</em>, <em class="sig-param">plot_func=&lt;function plot at 0x11a6f4bf8&gt;</em>, <em class="sig-param">output_filename=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/curveball/plots.html#plot_wells"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#curveball.plots.plot_wells" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">curveball.plots.</code><code class="sig-name descname">plot_wells</code><span class="sig-paren">(</span><em class="sig-param">df</em>, <em class="sig-param">x='Time'</em>, <em class="sig-param">y='OD'</em>, <em class="sig-param">plot_func=&lt;function plot at 0x114d2ebf8&gt;</em>, <em class="sig-param">output_filename=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/curveball/plots.html#plot_wells"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#curveball.plots.plot_wells" title="Permalink to this definition">¶</a></dt>
 <dd><p>Plot a grid of plots, one for each well in the plate.</p>
 <p>The facetting is done by the <code class="docutils literal notranslate"><span class="pre">Row</span></code> and <code class="docutils literal notranslate"><span class="pre">Col</span></code> columns of <cite>df</cite>.
 The colors are given by the <code class="docutils literal notranslate"><span class="pre">Color</span></code> column, 
