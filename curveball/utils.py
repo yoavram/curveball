@@ -17,7 +17,10 @@ import seaborn as sns
 import sklearn.linear_model
 import sklearn.preprocessing
 import sklearn.pipeline
-import sklearn.grid_search
+try:
+    from sklearn.model_selection import GridSearchCV
+except ImportError:
+    from sklearn.grid_search import GridSearchCV
 import webcolors
 
 
@@ -52,7 +55,7 @@ def smooth(x, y, PLOT=False, **kwargs):
     y = np.array(y)
 
     # do a grid search to find the optimal polynomial degree
-    model = sklearn.grid_search.GridSearchCV(
+    model = GridSearchCV(
         # use a linear model with polynomial features
         sklearn.pipeline.Pipeline([
             ('poly', sklearn.preprocessing.PolynomialFeatures(degree=3)),
