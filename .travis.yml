@@ -38,7 +38,7 @@ before_deploy:
 - npm install -g netlify-cli
 deploy:
   - provider: script
-    script: netlify deploy -p docs/_build/html --access-token $NETLIFY_TOKEN
+    script: netlify deploy --dir docs/_build/html --prod --site $NETLIFY_SITE_ID 10e75ab1-9669-4c24-97a0-462cd805c2e1 --auth $NETLIFY_TOKEN
     on:
       repo: yoavram/curveball
       branch: master
