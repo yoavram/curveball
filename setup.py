@@ -21,6 +21,7 @@ setup(
     cmdclass=versioneer.get_cmdclass(),
     description='Predicting competition results from growth curves',
     long_description=README,
+    long_description_content_type='text/markdown',
     keywords='microbiology biomath evolution',
     author='Yoav Ram',
     author_email='yoav@yoavram.com',
