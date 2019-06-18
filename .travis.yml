@@ -37,7 +37,6 @@ before_deploy:
 - cd ..
 - npm install -g netlify-cli
 deploy:
-  matrix:
   - provider: script
     script: netlify deploy -p docs/_build/html --access-token $NETLIFY_TOKEN
     on:
@@ -48,6 +47,7 @@ deploy:
     on:
       tags: true
       repo: yoavram/curveball
+      branch: master
     skip_cleanup: true
     distributions: "sdist bdist_wheel"
     password:
