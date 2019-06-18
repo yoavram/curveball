@@ -643,7 +643,7 @@ def fit_and_compete(m1, m2, df_mixed, y0=None, aguess=(1, 1), fixed=False,
         params['a2'].set(min=1e-1, max=10)
         
         result = model.fit(data=y_mixed, t=t_mixed, params=params, weights=1.0 / y_mixed_std, 
-            method=method, fit_kws=dict(nan_policy='propagate'))
+            method=method, nan_policy='propagate')
 
         a = result.best_values['a1'], result.best_values['a2']
         a1, a2 = a
