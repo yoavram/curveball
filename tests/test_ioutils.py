@@ -30,8 +30,8 @@ class CurveballCSVTestCase(TestCase):
         df = curveball.ioutils.read_curveball_csv(self.filename)
         self.assertIsNotNone(df)
         self.assertIsInstance(df, pd.DataFrame)
-        self.assertEquals(df.shape, (4992, 9))
-        self.assertEquals(df.columns.tolist() , ['Time', u'Temp. [\xb0C]', 'Cycle Nr.', 'Well', 'OD', 'Row', 'Col', 'Strain', 'Color'])
+        self.assertEqual(df.shape, (4992, 9))
+        self.assertEqual(df.columns.tolist() , ['Time', u'Temp. [\xb0C]', 'Cycle Nr.', 'Well', 'OD', 'Row', 'Col', 'Strain', 'Color'])
 
     def test_write_curveball_csv(self):
         df = curveball.models.randomize(random_seed=RANDOM_SEED)
@@ -50,29 +50,29 @@ class TecanXLSXTestCase(TestCase):
         df = curveball.ioutils.read_tecan_xlsx(self.filename, 'OD')
         self.assertIsNotNone(df)
         self.assertIsInstance(df, pd.DataFrame)
-        self.assertEquals(df.shape, (8544, 9))
-        self.assertEquals(df.columns.tolist() , ['Time', u'Temp. [\xb0C]', 'Cycle Nr.', 'Well', 'OD', 'Row', 'Col', 'Strain', 'Color'])
+        self.assertEqual(df.shape, (8544, 9))
+        self.assertEqual(df.columns.tolist() , ['Time', u'Temp. [\xb0C]', 'Cycle Nr.', 'Well', 'OD', 'Row', 'Col', 'Strain', 'Color'])
 
     def test_read_tecan_xlsx_full(self):
         df = curveball.ioutils.read_tecan_xlsx(self.filename, ('OD', 'Green', 'Red'))
         self.assertIsNotNone(df)
         self.assertIsInstance(df, pd.DataFrame)
-        self.assertEquals(df.shape, (8352, 15))
-        self.assertEquals(sorted(df.columns.tolist()) , sorted(['Time_OD', u'Temp. [\xb0C]_OD', 'Cycle Nr.', 'Well', 'OD', 'Row', 'Col', 'Strain', 'Color', 'Time_Green', u'Temp. [\xb0C]_Green', 'Green', 'Time', u'Temp. [\xb0C]', 'Red']))
+        self.assertEqual(df.shape, (8352, 15))
+        self.assertEqual(sorted(df.columns.tolist()) , sorted(['Time_OD', u'Temp. [\xb0C]_OD', 'Cycle Nr.', 'Well', 'OD', 'Row', 'Col', 'Strain', 'Color', 'Time_Green', u'Temp. [\xb0C]_Green', 'Green', 'Time', u'Temp. [\xb0C]', 'Red']))
 
     def test_read_tecan_xlsx_12hrs(self):
         df = curveball.ioutils.read_tecan_xlsx(self.filename, 'OD', max_time=12)
         self.assertIsNotNone(df)
         self.assertIsInstance(df, pd.DataFrame)
-        self.assertEquals(df.shape, (4992, 9))
-        self.assertEquals(df.columns.tolist() , ['Time', u'Temp. [\xb0C]', 'Cycle Nr.', 'Well', 'OD', 'Row', 'Col', 'Strain', 'Color'])
+        self.assertEqual(df.shape, (4992, 9))
+        self.assertEqual(df.columns.tolist() , ['Time', u'Temp. [\xb0C]', 'Cycle Nr.', 'Well', 'OD', 'Row', 'Col', 'Strain', 'Color'])
 
     def test_read_tecan_xlsx_with_plate(self):
         df = curveball.ioutils.read_tecan_xlsx(self.filename, 'OD', plate=self.plate)
         self.assertIsNotNone(df)
         self.assertIsInstance(df, pd.DataFrame)
-        self.assertEquals(df.shape, (8544, 9))
-        self.assertEquals(df.columns.tolist() , ['Time', u'Temp. [\xb0C]', 'Cycle Nr.', 'Well', 'OD', 'Row', 'Col', 'Strain', 'Color'])
+        self.assertEqual(df.shape, (8544, 9))
+        self.assertEqual(df.columns.tolist() , ['Time', u'Temp. [\xb0C]', 'Cycle Nr.', 'Well', 'OD', 'Row', 'Col', 'Strain', 'Color'])
 
 
 class BioTekXLSXTestCase(TestCase):
@@ -83,7 +83,7 @@ class BioTekXLSXTestCase(TestCase):
         df = curveball.ioutils.read_biotek_xlsx(self.filename)
         self.assertIsNotNone(df)
         self.assertIsInstance(df, pd.DataFrame)
-        self.assertEquals(df.columns.tolist(), ['Time', u'T\xb0 600', 'Well', 'OD', 'Row', 'Col', 'Strain', 'Color'])
+        self.assertEqual(df.columns.tolist(), ['Time', u'T\xb0 600', 'Well', 'OD', 'Row', 'Col', 'Strain', 'Color'])
 
 
 # class XMLTestCase(TestCase):
@@ -104,8 +104,8 @@ class BioTekXLSXTestCase(TestCase):
 #         df = curveball.ioutils.read_tecan_xml(os.path.join(self.folder, "*.xml"), 'OD', plate=self.plate)
 #         self.assertIsNotNone(df)
 #         self.assertIsInstance(df, pd.DataFrame)
-#         self.assertEquals(df.shape, (2016, 8))
-#         self.assertEquals(df.columns.tolist() , ['OD', 'Well', 'Row', 'Col', 'Time', 'Filename', 'Strain', 'Color'])    
+#         self.assertEqual(df.shape, (2016, 8))
+#         self.assertEqual(df.columns.tolist() , ['OD', 'Well', 'Row', 'Col', 'Time', 'Filename', 'Strain', 'Color'])    
 
 
 class SunriseTestCase(TestCase):
@@ -117,15 +117,15 @@ class SunriseTestCase(TestCase):
         df = curveball.ioutils.read_sunrise_xlsx(self.filename)
         self.assertIsNotNone(df)
         self.assertIsInstance(df, pd.DataFrame)
-        self.assertEquals(df.shape, (96, 8))
-        self.assertEquals(sorted(df.columns.tolist()) , sorted([u'Time', u'Well', u'OD', u'Row', u'Col', 'Strain', 'Color', 'Filename']))
+        self.assertEqual(df.shape, (96, 8))
+        self.assertEqual(sorted(df.columns.tolist()) , sorted([u'Time', u'Well', u'OD', u'Row', u'Col', 'Strain', 'Color', 'Filename']))
 
     def test_read_sunrise_xlsx_plate(self):
         df = curveball.ioutils.read_sunrise_xlsx(self.filename, plate=self.plate)
         self.assertIsNotNone(df)
         self.assertIsInstance(df, pd.DataFrame)
-        self.assertEquals(df.shape, (96, 8))
-        self.assertEquals(sorted(df.columns.tolist()) , sorted([u'Time', u'Well', u'OD', u'Row', u'Col', 'Strain', 'Color', 'Filename']))
+        self.assertEqual(df.shape, (96, 8))
+        self.assertEqual(sorted(df.columns.tolist()) , sorted([u'Time', u'Well', u'OD', u'Row', u'Col', 'Strain', 'Color', 'Filename']))
 
 
 class MatTestCase(TestCase):
@@ -137,8 +137,8 @@ class MatTestCase(TestCase):
         df = curveball.ioutils.read_tecan_mat(self.filename, plate=self.plate)
         self.assertIsNotNone(df)
         self.assertIsInstance(df, pd.DataFrame)
-        self.assertEquals(df.shape, (2496, 8))
-        self.assertEquals(df.columns.tolist() , [u'Cycle Nr.', u'Time', u'Well', u'OD', u'Row', u'Col', 'Strain', 'Color'])
+        self.assertEqual(df.shape, (2496, 8))
+        self.assertEqual(df.columns.tolist() , [u'Cycle Nr.', u'Time', u'Well', u'OD', u'Row', u'Col', 'Strain', 'Color'])
 
 
 if __name__ == '__main__':

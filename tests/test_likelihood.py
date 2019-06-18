@@ -40,14 +40,14 @@ class LoglikTestCase(TestCase):
 	def test_ridge_regularization_lam0(self):
 		penalty = ridge_regularization(0, **self.params)
 		self.assertIsInstance(penalty, types.FunctionType)
-		self.assertEquals(penalty(**self.params), 0)
-		self.assertEquals(penalty(K=0.6), 0)
+		self.assertEqual(penalty(**self.params), 0)
+		self.assertEqual(penalty(K=0.6), 0)
 
 
 	def test_ridge_regularization_lam1(self):
 		penalty = ridge_regularization(1, **self.params)
 		self.assertIsInstance(penalty, types.FunctionType)
-		self.assertEquals(penalty(**self.params), 0)
+		self.assertEqual(penalty(**self.params), 0)
 		self.assertTrue(penalty(K=0.6) > 0)
 
 
@@ -96,7 +96,7 @@ class LoglikTestCase(TestCase):
                 	ax_titles=['1', '2'], cmap='jet', colorbar=True, 
                 	ax_width=4, ax_height=4)
 		self.assertIsInstance(fig, mpl.figure.Figure)
-		self.assertEquals(ax.size, 2)
+		self.assertEqual(ax.size, 2)
 
 
 	def test_plot_model_loglik(self):

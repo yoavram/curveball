@@ -76,8 +76,8 @@ class CompetitionTestCase(TestCase):
 
     def test_compete(self):
         t, y = curveball.competitions.compete(self.m1, self.m2, PLOT=False)
-        self.assertEquals(t.shape[0], y.shape[0])
-        self.assertEquals(y.shape[1], 2)
+        self.assertEqual(t.shape[0], y.shape[0])
+        self.assertEqual(y.shape[1], 2)
         self.assertTrue(y[-1,0] > y[0,0])
         self.assertTrue(y[-1,1] > y[0,1])
 
@@ -86,18 +86,18 @@ class CompetitionTestCase(TestCase):
         K1 = self.m1.best_values['K']
         r2 = self.m2.best_values['r']
         t, y = curveball.competitions.compete(self.m1, self.m2, params1={'K': 1.0}, params2={'r': 0.01}, PLOT=False)
-        self.assertEquals(t.shape[0], y.shape[0])
-        self.assertEquals(y.shape[1], 2)
+        self.assertEqual(t.shape[0], y.shape[0])
+        self.assertEqual(y.shape[1], 2)
         self.assertTrue(y[-1,0] > y[0,0])
         self.assertTrue(y[-1,1] > y[0,1])
-        self.assertEquals(self.m1.best_values['K'], K1)
-        self.assertEquals(self.m2.best_values['r'], r2)
+        self.assertEqual(self.m1.best_values['K'], K1)
+        self.assertEqual(self.m2.best_values['r'], r2)
 
 
     def test_compete_plot(self):
         t, y, fig, ax = curveball.competitions.compete(self.m1, self.m2, colors=['r','b'], PLOT=True)
-        self.assertEquals(t.shape[0], y.shape[0])
-        self.assertEquals(y.shape[1], 2)
+        self.assertEqual(t.shape[0], y.shape[0])
+        self.assertEqual(y.shape[1], 2)
         self.assertTrue(y[-1,0] > y[0,0])
         self.assertTrue(y[-1,1] > y[0,1])
         self.assertIsInstance(fig, matplotlib.figure.Figure)
@@ -110,9 +110,9 @@ class CompetitionTestCase(TestCase):
     def test_compete_resample(self):
         nsamples = 100
         t, y = curveball.competitions.compete(self.m1, self.m2, nsamples=nsamples, PLOT=False)
-        self.assertEquals(t.shape[0], y.shape[0])
-        self.assertEquals(y.shape[1], 2)
-        self.assertEquals(y.shape[2], nsamples)
+        self.assertEqual(t.shape[0], y.shape[0])
+        self.assertEqual(y.shape[1], 2)
+        self.assertEqual(y.shape[2], nsamples)
         self.assertTrue((y[-1,0,:] > y[0,0,:]).all())
         self.assertTrue((y[-1,1,:] > y[0,1,:]).all())
 
@@ -123,10 +123,10 @@ class CompetitionTestCase(TestCase):
         self.m2.covar = np.ones((3,3)) * 0.01
 
         t, y, fig, ax = curveball.competitions.compete(self.m1, self.m2, nsamples=nsamples, PLOT=True)
-        self.assertEquals(t.shape[0], y.shape[0])
-        self.assertEquals(y.shape[1], 2)
+        self.assertEqual(t.shape[0], y.shape[0])
+        self.assertEqual(y.shape[1], 2)
         ## FIXME
-        #self.assertEquals(y.shape[2], nsamples)
+        #self.assertEqual(y.shape[2], nsamples)
         # self.assertTrue((y[-1,0,:] > y[0,0,:]).all())
         # self.assertTrue((y[-1,1,:] > y[0,1,:]).all())
         self.assertIsInstance(fig, matplotlib.figure.Figure)
@@ -138,11 +138,11 @@ class CompetitionTestCase(TestCase):
 
     def test_fit_and_compete(self):
         t, y, a = curveball.competitions.fit_and_compete(self.m1, self.m2, self.df_mixed, PLOT=False)
-        self.assertEquals(t.shape[0], y.shape[0])
-        self.assertEquals(y.shape[1], 2)
+        self.assertEqual(t.shape[0], y.shape[0])
+        self.assertEqual(y.shape[1], 2)
         self.assertTrue(y[-1,0] > y[0,0])
         self.assertTrue(y[-1,1] > y[0,1])
-        self.assertEquals(len(a), 2)
+        self.assertEqual(len(a), 2)
         self.assertIsInstance(a[0], numbers.Real)
         self.assertIsInstance(a[1], numbers.Real)
 
@@ -156,7 +156,7 @@ class FitnessTestCase(TestCase):
         y = np.array((y1, y2)).T
         shape = y.shape
         w = curveball.competitions.fitness_LTEE(y)
-        self.assertEquals(y.shape, shape)
+        self.assertEqual(y.shape, shape)
         self.assertTrue(1 < w < 1.1)
 
 
@@ -171,7 +171,7 @@ class FitnessTestCase(TestCase):
             y[:,1,i] = logistic(t, 0.1, 0.4 + rand(), 1 + rand())
         shape = y.shape
         w, low, high = curveball.competitions.fitness_LTEE(y, ci=0.95)
-        self.assertEquals(y.shape, shape)
+        self.assertEqual(y.shape, shape)
         self.assertTrue(1 < w < 1.1)
         self.assertTrue(low < w < high)
 
@@ -183,7 +183,7 @@ class FitnessTestCase(TestCase):
         y = np.array((y1, y2)).T
         shape = y.shape
         svals = curveball.competitions.selection_coefs_ts(t, y, PLOT=False)
-        self.assertEquals(y.shape, shape)
+        self.assertEqual(y.shape, shape)
         self.assertIsInstance(svals, np.ndarray)
         self.assertIsInstance(svals[0], numbers.Real)
         self.assertTrue(np.isfinite(svals).all())

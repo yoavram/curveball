@@ -164,11 +164,11 @@ class ModelSelectionTestCase(TestCase):
 		self.assertIsNotNone(models)
 		for mod in models:
 			self.assertIsInstance(mod, ModelResult)
-		self.assertEquals(models[0].nvarys, 2) # one less param as we fixed K
-		self.assertEquals(models[0].best_values['K'], 1)
-		self.assertEquals(models[0].best_values.get('nu', 1), 1)
-		self.assertEquals(models[0].best_values.get('v', np.inf), np.inf)
-		self.assertEquals(models[0].best_values.get('q0', np.inf), np.inf)
+		self.assertEqual(models[0].nvarys, 2) # one less param as we fixed K
+		self.assertEqual(models[0].best_values['K'], 1)
+		self.assertEqual(models[0].best_values.get('nu', 1), 1)
+		self.assertEqual(models[0].best_values.get('v', np.inf), np.inf)
+		self.assertEqual(models[0].best_values.get('q0', np.inf), np.inf)
 		self.assertTrue(mean_residual(models[0]) < NOISE_STD)
 
 
@@ -634,7 +634,7 @@ class OutliersTestCase(TestCase):
 
 	def test_cooks_distance(self):
 		D = curveball.models.cooks_distance(self.df, self.model_fit)
-		self.assertEquals(set(D.keys()), set(self.df.Well), msg=D.keys())
+		self.assertEqual(set(D.keys()), set(self.df.Well), msg=D.keys())
 		distances = np.array(list(D.values()))
 		for d in distances:
 			self.assertIsInstance(d, float)
@@ -676,7 +676,7 @@ class SamplingTestCase(TestCase):
 		self.assertIsNotNone(model_fit.covar)
 		sample_params = curveball.models.sample_params(model_fit, 100)
 		self.assertIsNotNone(sample_params)
-		self.assertEquals(sample_params.shape, (100, 3))
+		self.assertEqual(sample_params.shape, (100, 3))
 
 
 	def test_sample_params_with_params(self):
@@ -687,7 +687,7 @@ class SamplingTestCase(TestCase):
 		self.assertIsNotNone(model_fit.covar)
 		sample_params = curveball.models.sample_params(model_fit, 100, params={'K': 1.0})
 		self.assertIsNotNone(sample_params)
-		self.assertEquals(sample_params.shape, (100, 3))
+		self.assertEqual(sample_params.shape, (100, 3))
 
 
 	def test_sample_params_with_covar(self):
@@ -701,7 +701,7 @@ class SamplingTestCase(TestCase):
 		covar = rng.exponential(0.001, (3, 3))
 		sample_params = curveball.models.sample_params(model_fit, 100, covar=covar)
 		self.assertIsNotNone(sample_params)
-		self.assertEquals(sample_params.shape[1], 3)
+		self.assertEqual(sample_params.shape[1], 3)
 		self.assertTrue(95 <= sample_params.shape[0] <= 100)
 
 
@@ -713,7 +713,7 @@ class SamplingTestCase(TestCase):
 			PLOT=False, PRINT=False)[0]
 		sample_params = curveball.models.bootstrap_params(df, model_result, 10)
 		self.assertIsInstance(sample_params, pd.DataFrame)
-		self.assertEquals(sample_params.shape, (10, 6))
+		self.assertEqual(sample_params.shape, (10, 6))
 
 
 class GuessTestCase(TestCase):
@@ -812,7 +812,7 @@ class IssuesTestCase(TestCase):
 		t, y = curveball.models.randomize(as_df=False)
 		res = Dfun(params, y, None, t)
 		self.assertIsInstance(res, np.ndarray)
-		self.assertEquals(res.shape, (len(params), len(t)))
+		self.assertEqual(res.shape, (len(params), len(t)))
 
 
 if __name__ == '__main__':
