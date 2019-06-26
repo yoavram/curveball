@@ -54,7 +54,7 @@ Quickstart
 
 Install `Anaconda <https://www.continuum.io/downloads>`_, then run:
 
->>> conda install -c conda-forge -c https://conda.anaconda.org/t/yo-4760086a-c28d-467d-bd46-53bea521edac/yoavram curveball
+>>> python -m pip install curveball
 >>> curveball --help
 
 For more detailed instructions, Proceed to the :doc:`Installation instructions <install>` and then to the :doc:`tutorial`.
@@ -86,9 +86,9 @@ API
 References
 ----------
 
-* `Documentation <https://curveball.netlify.com>`_
+* `Documentation <https://curveball.yoavram.com>`_
 * Source code: `GitHub  <https://github.com/yoavram/curveball>`_
-* Download: `Anaconda <https://anaconda.org/yoavram/curveball>`_
+* Download: `PyPI <https://pypi.org/project/curveball/>`_
 * Bugs, comments or questions: `GitHub Issues <https://github.com/yoavram/curveball/issues>`_
 * Buildbot: `Travis-CI <https://magnum.travis-ci.com/yoavram/curveball>`_
 * Code coverage: `Codecov <http://codecov.io/github/yoavram/curveball>`_

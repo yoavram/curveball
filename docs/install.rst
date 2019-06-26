@@ -10,7 +10,7 @@ on the different operating systems.
 Dependencies
 ------------
 
--  Python 3.5, 3.4 or 2.7
+-  Python 3
 -  numpy
 -  scipy
 -  pandas
@@ -37,13 +37,13 @@ Users
 -----
 
 The recommended way to install the dependencies is to download and install 
-`Anaconda <https://www.continuum.io/downloads>`_ (Python 3.5, 3.4 or 2.7),
+`Anaconda <https://www.anaconda.com/downloads>`_ (Python 3),
 available for free on Windows, OS X, and Linux.
 
 After installing Anaconda, open a terminal or command line, and write the following commands to install the dependencies:
 
 >>> conda update --yes conda
->>> conda install -c conda-forge -c https://conda.anaconda.org/t/yo-4760086a-c28d-467d-bd46-53bea521edac/yoavram curveball
+>>> python -m pip install curveball
 
 .. tip::
 
@@ -70,7 +70,7 @@ Updating
 
 To update Curveball:
 
->>> conda update -c conda-forge -c https://conda.anaconda.org/t/yo-4760086a-c28d-467d-bd46-53bea521edac/yoavram curveball
+>>> python -m pip install -U curveball
 
 
 Dependencies versions

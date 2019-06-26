@@ -1,12 +1,9 @@
 # Curveball
 ## Predicting competition results from growth curves
 
-
-[![Anaconda](https://anaconda.org/yoavram/curveball/badges/version.svg)](https://anaconda.org/yoavram/curveball)
-[![Anaconda](https://anaconda.org/yoavram/curveball/badges/latest_release_date.svg)](https://anaconda.org/yoavram/curveball)
-[![Install](https://anaconda.org/yoavram/curveball/badges/installer/conda.svg)](https://anaconda.org/yoavram/curveball/)
-[![Supported Python versions](https://img.shields.io/pypi/pyversions/curveball.svg)](https://pypi.python.org/pypi/curveball/)
-[![License](https://anaconda.org/yoavram/curveball/badges/license.svg)](https://github.com/yoavram/curveball/blob/master/LICENCE.txt)
+[![Version](https://img.shields.io/pypi/v/curveball.svg)](https://pypi.org/project/curveball/)
+[![License](https://img.shields.io/pypi/l/curveball.svg)](https://pypi.org/project/curveball/)
+[![Supported Python versions](https://img.shields.io/pypi/pyversions/curveball.svg)](https://pypi.org/project/curveball/)
 [![Build Status](https://magnum.travis-ci.com/yoavram/curveball.svg?token=jdWtkbZwtnsj5TaFxVKJ&branch=travis)](https://magnum.travis-ci.com/yoavram/curveball)
 [![Docs](https://img.shields.io/badge/docs-latest-yellow.svg)](https://curveball.yoavram.com)
 [![codecov.io](http://codecov.io/github/yoavram/curveball/coverage.svg?branch=master&token=PV0HysT5gx)](http://codecov.io/github/yoavram/curveball?branch=master)
