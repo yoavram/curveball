@@ -57,7 +57,7 @@ To find the path to Curveball:
 
 
 >>> curveball --where
-C:\Anaconda\lib\site-packages\curveball-0.1.4.dev0-py2.7.egg\curveball
+C:\Anaconda\lib\site-packages\curveball-0.2.14-py3.7.egg\curveball
 
 
 Of course, the path might be different on your machine. 
