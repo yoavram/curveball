@@ -72,6 +72,13 @@ To update Curveball:
 
 >>> python -m pip install -U curveball
 
+.. attention::
+
+	If you previously installed Curveball using `conda` (prior to July 2019), please remove the installation and re-install using `pip`:
+
+	>>> conda remove curveball
+	>>> python -m pip install curveball
+
 
 Dependencies versions
 ^^^^^^^^^^^^^^^^^^^^^
