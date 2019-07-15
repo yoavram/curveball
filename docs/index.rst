@@ -40,7 +40,7 @@ basic familiarity with the **Python programming language** is recommended for us
 
    .. pull-quote::
 
-      Ram, Dellus-Gur, Bibi, Karkare, Obolski, Feldman, Cooper, Berman, Hadany. (2019) `Predicting microbial relative growth in a mixed culture from growth curve data <https://doi.org/https://doi.org/10.1073/pnas.1902217116>`_. *Proceedings of the National Academy of Science USA*. doi:10.1073/pnas.1902217116
+      Ram, Dellus-Gur, Bibi, Karkare, Obolski, Feldman, Cooper, Berman, Hadany. (2019) `Predicting microbial relative growth in a mixed culture from growth curve data <https://doi.org/10.1073/pnas.1902217116>`_. *Proceedings of the National Academy of Science USA*. doi:10.1073/pnas.1902217116
 
    or the preprint:
 
