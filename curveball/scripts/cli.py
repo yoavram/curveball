@@ -211,11 +211,10 @@ def plate(plate_folder, plate_file, output_file, list, show):
 @click.option('--param_max', type=(str, float), multiple=True, callback=to_dict, help='set the maximum allowed value for a parameter')
 @click.option('--param_fix', type=str, multiple=True, callback=to_set, help='fix a parameter to it\'s initial guess')
 @click.option('--weights/--no-weights', default=False, help="use weights for the fitting procedure")
-@click.option('--clean', default=False, is_flag=True, help="input is pre-cleaned, with headers for Time, OD, etc")
 @click.option('--ci/--no-ci', default=False, help="find confidence intervals for lag and max growth rate")
 @click.option('--nsamples', default=1000, help="number of bootstrap samples to use, only applicable when using --ci")
 @cli.command()
-def analyse(path, output_file, plate_folder, plate_file, blank_strain, ref_strain, max_time, guess, param_min, param_max, param_fix, weights, clean, ci, nsamples):
+def analyse(path, output_file, plate_folder, plate_file, blank_strain, ref_strain, max_time, guess, param_min, param_max, param_fix, weights, ci, nsamples):
 	"""Analyse growth curves data using Curveball.
 
 	To get help for the parameters, run:
@@ -224,11 +223,10 @@ def analyse(path, output_file, plate_folder, plate_file, blank_strain, ref_strai
 	"""
 	results = []
 	if plate_file is None:
-		if not clean:
-			raise ValueError("Must provide --plate_file unless using --clean")
-		else:
-			plate = None
-			plate_path = None
+		if VERBOSE:
+			click.echo('- Plate file not provided; processing precleaned file%s' % click.format_filename(path))
+		plate = None
+		plate_path = None
 	else:
 		plate_path = find_plate_file(plate_folder, plate_file)
 		plate = load_plate(plate_path)
