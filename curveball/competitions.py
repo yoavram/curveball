@@ -406,8 +406,8 @@ def compete(m1, m2, p0=(0.5, 0.5), y0=None, t=None, hours=24, num_of_points=100,
 
         if colors is not None:
             colors = {i:c for i,c in enumerate(colors)}
-        sns.tsplot(df, time='Time', unit='Replicate', condition='Strain', value='y',
-                        ci=ci, color=colors, ax=ax)
+        sns.lineplot(data=df, x='Time', hue='Strain', y='y',
+                        ci=ci, palette=colors, ax=ax)
         ax.set_xlabel('Time (hour)')
         ax.set_ylabel('OD')
         sns.despine()
