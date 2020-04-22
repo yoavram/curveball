@@ -1170,11 +1170,11 @@ def fit_model(df, param_guess=None, param_min=None, param_max=None, param_fix=No
         param_fix = set()
 
     df = df.sort_values(by=['Time', 'OD'])
-    time = df.Time.as_matrix()
-    OD = df.OD.as_matrix()
+    time = df['Time'].values
+    OD = df['OD'].values
     weights =  calc_weights(df) if use_weights else None
     # TODO why should we use weights if we use the whole data set?
-    ODerr = df.groupby('Time').OD.transform(lambda x: np.repeat(x.std(), len(x))).as_matrix()
+    ODerr = df.groupby('Time').OD.transform(lambda x: np.repeat(x.std(), len(x))).values
    
     if models is None:
         models = get_models(curveball.baranyi_roberts_model)
@@ -1195,8 +1195,8 @@ def fit_model(df, param_guess=None, param_min=None, param_max=None, param_fix=No
     if PRINT:
         print(results[0].fit_report(show_correl=False))
     if PLOT:        
-        dy = df.OD.max() / 50.0
-        dx = df.Time.max() / 25.0
+        dy = df['OD'].max() / 50.0
+        dx = df['Time'].max() / 25.0
         columns = min(3, len(results))
         rows = int(np.ceil(len(results) / columns))
         w = max(8, 4 * columns)
@@ -1222,8 +1222,8 @@ def fit_model(df, param_guess=None, param_min=None, param_max=None, param_fix=No
                 _ax.set_ylabel('OD')
             if row == rows - 1:
                 _ax.set_xlabel('Time')
-        _ax.set_xlim(0, 1.1 * df.Time.max())
-        _ax.set_ylim(0.9 * df.OD.min(), 1.1 * df.OD.max())
+        _ax.set_xlim(0, 1.1 * df['Time'].max())
+        _ax.set_ylim(0.9 * df['OD'].min(), 1.1 * df['OD'].max())
         sns.despine()
         fig.tight_layout()
         return results, fig, ax
