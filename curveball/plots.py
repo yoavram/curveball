@@ -122,12 +122,11 @@ def plot_strains(data, x='Time', y='OD', plot_func=plt.plot, by=None, agg_func=n
 		palette = color or sns.color_palette()
 	if by is None:
 		if 'Cycle Nr.' in data and 'Strain' in data:
-			by = ('Strain', 'Cycle Nr.')
+			by = ['Strain', 'Cycle Nr.']
 		elif 'Time' in data and 'Strain' in data:
-			by = ('Strain', 'Time')
+			by = ['Strain', 'Time']
 		else:
 			raise ValueError("If by is not set then data must have column Strain and either Time or Cycle Nr.")
-		
 	grp = data.groupby(by=by)
 	agg = grp.aggregate(agg_func).reset_index()
 	g = sns.FacetGrid(agg, hue=hue, size=5, aspect=1.5, palette=palette, hue_order=data[hue].unique())
