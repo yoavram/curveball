@@ -142,7 +142,7 @@ def tsplot(data, x='Time', y='OD', ci_level=95, ax=None, color=None, output_file
 
 	The grouping of the data is done by the value of `x` and ``Strain``, if such a column exists in `data`; 
 	otherwise it is done by `x` and ``Well``.
-	The aggregation is done by :py:func:`seaborn.tsplot` which calculates the mean with a confidence interval.
+	The aggregation is done by :py:func:`seaborn.lineplot` which calculates the mean with a confidence interval.
 	The colors are given by the ``Color`` column, the labels of the colors are given by the ``Strain`` column; 
 	if ``Strain`` and ``Color`` don't exist in `data` then
 	the function will use a default palette and color the lines by well.
@@ -179,8 +179,8 @@ def tsplot(data, x='Time', y='OD', ci_level=95, ax=None, color=None, output_file
 	else: 
 		palette = color or sns.color_palette()
 
-	g = sns.tsplot(data, time=x, unit='Well', condition=condition, value=y,
-					err_style='ci_band', ci=ci_level, color=palette, ax=ax)
+	g = sns.lineplot(data=data, x=x, hue=condition, y=y,
+					err_style='ci_band', ci=ci_level, palette=palette, ax=ax)
 	sns.despine()
 	if output_filename:
 		g.figure.savefig(output_filename, bbox_inches='tight', pad_inches=1)
