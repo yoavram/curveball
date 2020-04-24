@@ -174,13 +174,13 @@ def tsplot(data, x='Time', y='OD', ci_level=95, ax=None, color=None, output_file
 	else:
 		condition = 'Well'
 	if 'Color' in data:
-		palette = data.Color.unique()
+		palette = data['Color'].unique()
 		palette[palette == '#ffffff'] = '#000000'
 	else: 
 		palette = color or sns.color_palette()
 
 	g = sns.lineplot(data=data, x=x, hue=condition, y=y,
-					err_style='ci_band', ci=ci_level, palette=palette, ax=ax)
+					err_style='band', ci=ci_level, palette=list(palette), ax=ax)
 	sns.despine()
 	if output_filename:
 		g.figure.savefig(output_filename, bbox_inches='tight', pad_inches=1)
