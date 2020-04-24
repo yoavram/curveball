@@ -208,7 +208,7 @@ def plot_plate(data, edge_color='#888888', output_filename=None):
 	ax : numpy.ndarray
 		array of axis objects.
 	"""
-	plate = data.pivot('Row', 'Col', 'Color').as_matrix()
+	plate = data.pivot('Row', 'Col', 'Color').values
 	height, width = plate.shape
 	fig = plt.figure(figsize=((width + 2.0) / 3.0, (height + 2.0) / 3.0))
 	ax = fig.add_axes((0.05, 0.05, 0.9, 0.9),
@@ -366,7 +366,7 @@ def plot_residuals(df, time='Time', value='OD', resid_func=lambda x: x - x.mean(
 	w, h= plt.rcParams['figure.figsize']
 	fig,ax = plt.subplots(1, 3, figsize=(w * 3, h))
 
-	residuals = df.groupby(time)[value].transform(resid_func).as_matrix()
+	residuals = df.groupby(time)[value].transform(resid_func).values
 
 	ax[0].plot(df[time], residuals, ls='', marker='o', color=color)
 	ax[0].set(xlabel=time, ylabel='Residuals')	
@@ -375,7 +375,7 @@ def plot_residuals(df, time='Time', value='OD', resid_func=lambda x: x - x.mean(
 	ax[1].set(xlabel='Residuals', ylabel='Frequency')
 	
 	sigmas = df.groupby(time)[value].std()	
-	linreg = scipy.stats.linregress(sigmas.as_matrix()[:-1], sigmas.as_matrix()[1:])
+	linreg = scipy.stats.linregress(sigmas.values[:-1], sigmas.values[1:])
 	eq = r'$\sigma_{{t+1}} = {:.2g} + {:.2g} \sigma_{{t}}$'.format(linreg.intercept, linreg.slope)
 	sigma_range = np.linspace(sigmas.min(), sigmas.max())
 	ax[2].plot(sigma_range, sigma_range, color='k', ls='--', label=r'$\sigma_{t+1}=\sigma_{t}$')
