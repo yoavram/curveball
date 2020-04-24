@@ -1,5 +1,9 @@
 # Change log
 
+## v0.2.15
+
+- Bug fixes
+
 ## v0.2.8
 
 - Removed central estimation in `curveball.models.*_ci` functions.
