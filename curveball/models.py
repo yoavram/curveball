@@ -856,8 +856,8 @@ def cooks_distance(df, model_fit, use_weights=True):
     
     for well in wells:    
         _df = df[df.Well != well]
-        time = _df.Time.as_matrix()
-        OD = _df.OD.as_matrix()
+        time = _df['Time'].values
+        OD = _df['OD'].values
         weights =  calc_weights(_df) if use_weights else None
         model_fit_i = copy.deepcopy(model_fit)
         model_fit_i.fit(data=OD, t=time, weights=weights)
@@ -999,7 +999,7 @@ def calc_weights(df, PLOT=False):
     ax : matplotlib.axes.Axes
         if the argument `PLOT` was :const:`True`, the generated axis.
     """
-    deviations = df.groupby('Time').OD.transform(lambda x: np.repeat(x.std(), len(x))).as_matrix()
+    deviations = df.groupby('Time')['OD'].transform(lambda x: np.repeat(x.std(), len(x))).values
     if np.isnan(deviations).any():
         warn("NaN in deviations, can't use weights")
         weights = None
