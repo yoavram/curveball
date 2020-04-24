@@ -277,7 +277,7 @@ def _plot_fitted_histogram(data, rv=scipy.stats.norm, color='k', label=None, alp
 	rv_params = rv.fit(data)
 	rv_inst = rv(*rv_params)	
 	nbins = min(100, len(data))
-	n, bins, patches = ax.hist(data, bins=nbins, color=color, alpha=alpha, normed=1)
+	n, bins, patches = ax.hist(data, bins=nbins, color=color, alpha=alpha, density=True)
 	ax.plot(bins, rv_inst.pdf(bins), color='k', lw=2)
 	ax.annotate(
 		r'$\mu={:.2g}, \sigma={:.2g}$'.format(rv_inst.mean(), 
