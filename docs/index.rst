@@ -52,7 +52,7 @@ basic familiarity with the **Python programming language** is recommended for us
 Quickstart
 ----------
 
-Install `Anaconda <https://www.continuum.io/downloads>`_, then run:
+Install `Anaconda with Python 3 <https://www.anaconda.com/downloads>`_, then run:
 
 >>> python -m pip install curveball
 >>> curveball --help

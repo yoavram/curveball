@@ -52,50 +52,27 @@ where ``x.x.x`` will be replaced by the current version number (|release|).
 Getting the data
 ----------------
 
-The dataset we will be using is packaged with Curveball.
-To find the path to Curveball:
-
-
->>> curveball --where
-C:\Anaconda\lib\site-packages\curveball-0.2.14-py3.7.egg\curveball
-
-
-Of course, the path might be different on your machine. 
-From now on if you see ``CURVEBALL_PATH``, replace that with the path you just got.
-
-The data file resided at ``CURVEBALL_PATH/../data/Tecan_280715.xlsx``. 
-Let's check it's there. On **Windows**:
-
-
->>> dir CURVEBALL_PATH\..\data\Tecan_280715.xlsx /B
-Tecan_280715.xlsx
-
-
-On **Linux** and **OS X**:
-
-
->>> ls CURVEBALL_PATH/../data/Tecan_280715.xlsx
-CURVEBALL_PATH/../data/Tecan_280715.xlsx
-
-
-If you see ``File Not Found`` or ``No such file or directory`` then something went wrong; start again.
-
-Now let's create a new folder and copy the data file to it.
+The dataset we will be using is available online.
+Let's start by creating a new folder for the tutorial.
 On **Windows**:
 
 
 >>> mkdir curveball-tutorial
 >>> cd curveball-tutorial
->>> copy PATH\..\data\Tecan_280715.xlsx .
-1 file(s) copied.
-
 
 On **Linux** and **OS X**:
 
 
 >>> mkdir curveball-tutorial
 >>> cd curveball-tutorial
->>> cp PATH/../data/Tecan_280715.xlsx .
+
+Now download the `data file <https://github.com/yoavram/curveball/raw/master/data/Tecan_280715.xlsx>`_ and the `plate template file <https://github.com/yoavram/curveball/raw/master/plate_templates/G-RG-R.csv>`_.
+Download the files using the links above and place themin the new folder.
+On **Linux** and **OS X** you can also download directly from the terminal:
+
+
+>>> wget https://github.com/yoavram/curveball/raw/master/data/Tecan_280715.xlsx
+>>> wget https://github.com/yoavram/curveball/raw/master/plate_templates/G-RG-R.csv
 
 
 Analysing the data
@@ -106,7 +83,7 @@ Now we can proceed to analyse the data using Curveball.
 For this, we will use the :command:`curveball analyse` command:
 
 
->>> curveball analyse Tecan_280715.xlsx --plate_file=G-RG-R.csv --ref_strain=G
+>>> curveball analyse Tecan_280715.xlsx --plate_file=G-RG-R.csv --plate_folder=. --ref_strain=G
 
 
 This command will:
@@ -122,6 +99,7 @@ This command will:
 	Some interesting options we used:
 
 	- ``--plate_file``: sets the plate template file to be :file:`G-RG-R.csv` (:numref:`fig-plate`). Plate template files can be generated with `Plato <http://plato.yoavram.com>`_.
+	- ``--plate_folder``: this tells Curveball where to find the plate file; by default it will look is a special plate templates folder.
 	- ``--ref_strain``: sets the green strain (``G``) to be the reference strain when infering fitness; *i.e.*, the fitness of ``G`` is set to 1 and other strains are compared to it.
 
 
@@ -226,5 +204,4 @@ Please don't hesitate to contact me (`Yoav Ram <http://www.yoavram.com>`_) with 
 
 - `Email <mailto:yoav@yoavram.com>`_
 - `Twitter <https://twitter.com/yoavram>`_
-- `Gitter <https://gitter.im/yoavram/curveball>`_
 - `GitHub Issues <https://github.com/yoavram/curveball/issues>`_

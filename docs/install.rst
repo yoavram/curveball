@@ -37,7 +37,7 @@ Users
 -----
 
 The recommended way to install the dependencies is to download and install 
-`Anaconda <https://www.anaconda.com/downloads>`_ (Python 3),
+`Anaconda with Python 3 <https://www.anaconda.com/downloads>`_,
 available for free on Windows, OS X, and Linux.
 
 After installing Anaconda, open a terminal or command line, and write the following commands to install the dependencies:
@@ -96,4 +96,4 @@ from new file format parser to new growth and competition models.
 
 Please see the `guidelines for contributing <https://github.com/yoavram/curveball/blob/master/CONTRIBUTING.md>`_
 for instructions and best practices and feel free to contact me via 
-`Email <mailto:yoav@yoavram.com>`_, `Twitter <https://twitter.com/yoavram>`_, and `Gitter <https://gitter.im/yoavram/curveball>`_
+`Email <mailto:yoav@yoavram.com>`_ and `Twitter <https://twitter.com/yoavram>`_.
