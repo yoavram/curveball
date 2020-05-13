@@ -71,8 +71,8 @@ Download the files using the links above and place themin the new folder.
 On **Linux** and **OS X** you can also download directly from the terminal:
 
 
->>> wget https://github.com/yoavram/curveball/raw/master/data/Tecan_280715.xlsx
->>> wget https://github.com/yoavram/curveball/raw/master/plate_templates/G-RG-R.csv
+>>> curl -L https://github.com/yoavram/curveball/raw/master/data/Tecan_280715.xlsx -o Tecan_280715.xlsx
+>>> curl -L https://github.com/yoavram/curveball/raw/master/plate_templates/G-RG-R.csv -o G-RG-R.csv
 
 
 Analysing the data
