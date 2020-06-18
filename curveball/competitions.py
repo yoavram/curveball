@@ -614,6 +614,13 @@ def fit_and_compete(m1, m2, df_mixed, y0=None, aguess=(1, 1), fixed=False,
                     ode=baranyi_roberts_yr, num_of_points=100, method='nelder',
                     value_var = 'OD', time_var = 'Time',
                     PLOT=False, colors=sns.color_palette('Set1', 3)):
+    """Fit the competition model to the growth curve from mixed growth.
+
+    Parameters
+    ----------
+    m1, m2 : Model or dictionary of model parameters
+    df_mixed : DataFrame of mixed growth
+    """
     best_values1 = m1.best_values if hasattr(m1, 'best_values') else m1
     best_values2 = m2.best_values if hasattr(m2, 'best_values') else m2
     K = best_values1['K'], best_values2['K']
@@ -663,8 +670,8 @@ def fit_and_compete(m1, m2, df_mixed, y0=None, aguess=(1, 1), fixed=False,
         ax[0].plot(t, y[:, 0], color=colors[0])
         ax[0].plot(t, y[:, 1], color=colors[1])
         ax[0].plot(t, ysum, color=colors[2])
-        if not fixed:
-            ax[0].plot(t_mixed, result.init_fit, ls='-.', color=colors[2])
+        # if not fixed:
+        #     ax[0].plot(t_mixed, result.init_fit, ls='-.', color=colors[2])
         ax[0].errorbar(t_mixed, y_mixed, y_mixed_std, fmt='o', color=colors[2])
 
         ax[0].set(xlabel='Time (hour)', ylabel='OD',
