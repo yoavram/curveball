@@ -49,7 +49,7 @@ setup(
         'future',
         'click',
         'lxml',
-        'xlrd',
+        'xlrd==1',
         'numpy',
         'scipy',
         'matplotlib',
