@@ -322,65 +322,65 @@ def _process_file(filepath, plate, blank_strain, ref_strain, max_time, guess, pa
 			echo_info("Wrote strain %s plot to %s" % (strain, click.format_filename(strain_plot_fn)))
 		else:
 			fit_results = _
+		
+		for fit in fit_results:
+			res = {}
+			res['folder'] = os.path.dirname(filepath)
+			res['filename'] = os.path.splitext(os.path.basename(fn))[0]
+			res['strain'] = strain
+			res['model'] = fit.model.name
+			res['RSS'] = fit.chisqr
+			res['RMSD'] = np.sqrt(res['RSS'] / fit.ndata)
+			res['NRMSD'] = res['RMSD'] / (strain_df.OD.max() - strain_df.OD.min())
+			res['CV(RMSD)'] = res['RMSD'] / (strain_df.OD.mean())
+			res['bic'] = fit.bic
+			res['aic'] = fit.aic
+			res['weighted_bic'] = fit.weighted_bic
+			res['weighted_aic'] = fit.weighted_aic
+			params = fit.params
+			res['y0'] = params['y0'].value
+			res['K'] = params['K'].value
+			res['r'] = params['r'].value
+			res['nu'] = params['nu'].value if 'nu' in params else 1
+			res['q0'] = params['q0'].value if 'q0' in params else 0
+			res['v'] = params['v'].value if 'v' in params else 0
+			res['has_lag'] = curveball.models.has_lag(fit_results)
+			res['has_nu'] = curveball.models.has_nu(fit_results, PRINT=VERBOSE)
+			res['max_growth_rate'] = curveball.models.find_max_growth(fit)[-1]
+			res['min_doubling_time'] = curveball.models.find_min_doubling_time(fit)
+			res['lag'] = curveball.models.find_lag(fit)
+			if ci:
+				param_samples = curveball.models.bootstrap_params(strain_df, fit, nsamples=nsamples)
+				_, _, low, high = curveball.models.find_max_growth_ci(fit, param_samples)
+				res['max_growth_rate_low'] = low
+				res['max_growth_rate_high'] = high			
+				low, high = curveball.models.find_lag_ci(fit, param_samples)
+				res['lag_low'] = low
+				res['lag_high'] = high			
+				low, high = curveball.models.find_min_doubling_time_ci(fit, param_samples)
+				res['min_doubling_time_low'] = low
+				res['min_doubling_time_high'] = high
+				low, high = curveball.models.find_K_ci(param_samples)
+				res['K_low'] = low
+				res['K_high'] = high
 
-		res = {}
-		fit = fit_results[0]
-		res['folder'] = os.path.dirname(filepath)
-		res['filename'] = os.path.splitext(os.path.basename(fn))[0]
-		res['strain'] = strain
-		res['model'] = fit.model.name
-		res['RSS'] = fit.chisqr
-		res['RMSD'] = np.sqrt(res['RSS'] / fit.ndata)
-		res['NRMSD'] = res['RMSD'] / (strain_df.OD.max() - strain_df.OD.min())
-		res['CV(RMSD)'] = res['RMSD'] / (strain_df.OD.mean())
-		res['bic'] = fit.bic
-		res['aic'] = fit.aic
-		res['weighted_bic'] = fit.weighted_bic
-		res['weighted_aic'] = fit.weighted_aic
-		params = fit.params
-		res['y0'] = params['y0'].value
-		res['K'] = params['K'].value
-		res['r'] = params['r'].value
-		res['nu'] = params['nu'].value if 'nu' in params else 1
-		res['q0'] = params['q0'].value if 'q0' in params else 0
-		res['v'] = params['v'].value if 'v' in params else 0
-		res['has_lag'] = curveball.models.has_lag(fit_results)
-		res['has_nu'] = curveball.models.has_nu(fit_results, PRINT=VERBOSE)
-		res['max_growth_rate'] = curveball.models.find_max_growth(fit)[-1]
-		res['min_doubling_time'] = curveball.models.find_min_doubling_time(fit)
-		res['lag'] = curveball.models.find_lag(fit)
-		if ci:
-			param_samples = curveball.models.bootstrap_params(strain_df, fit, nsamples=nsamples)
-			_, _, low, high = curveball.models.find_max_growth_ci(fit, param_samples)
-			res['max_growth_rate_low'] = low
-			res['max_growth_rate_high'] = high			
-			low, high = curveball.models.find_lag_ci(fit, param_samples)
-			res['lag_low'] = low
-			res['lag_high'] = high			
-			low, high = curveball.models.find_min_doubling_time_ci(fit, param_samples)
-			res['min_doubling_time_low'] = low
-			res['min_doubling_time_high'] = high
-			low, high = curveball.models.find_K_ci(param_samples)
-			res['K_low'] = low
-			res['K_high'] = high
-
-		if strain == ref_strain:
-			ref_fit = fit
-			res['w'] = 1
-		elif ref_strain in strains:
-			colors = plate[plate.Strain.isin([strain, ref_strain])].Color.unique()
-			_ = curveball.competitions.compete(fit, ref_fit, hours=df.Time.max(), colors=colors, PLOT=PLOT)
-			if PLOT:
-				t,y,fig,ax = _
-				competition_plot_fn = fn + ('_%s_vs_%s.png' % (strain, ref_strain))
-				fig.savefig(competition_plot_fn)
-				echo_info("Wrote competition %s vs %s plot to %s" % (strain, ref_strain, click.format_filename(strain_plot_fn)))
-			else:
-				t,y = _
-			res['w'] = curveball.competitions.fitness_LTEE(y, assay_strain=0, ref_strain=1)
-			# TODO CI for w
-		results.append(res)
-		plt.clf()
+			if strain == ref_strain:
+				ref_fit = fit
+				res['w'] = 1
+			elif ref_strain in strains:
+				colors = plate[plate.Strain.isin([strain, ref_strain])].Color.unique()
+				_ = curveball.competitions.compete(fit, ref_fit, hours=df.Time.max(), colors=colors, PLOT=PLOT)
+				if PLOT:
+					t,y,fig,ax = _
+					competition_plot_fn = fn + ('_%s_vs_%s.png' % (strain, ref_strain))
+					fig.savefig(competition_plot_fn)
+					echo_info("Wrote competition %s vs %s plot to %s" % (strain, ref_strain, click.format_filename(strain_plot_fn)))
+				else:
+					t,y = _
+				res['w'] = curveball.competitions.fitness_LTEE(y, assay_strain=0, ref_strain=1)
+				# TODO CI for w
+			results.append(res)
+			plt.clf()
 	return results
 
 
