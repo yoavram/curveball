@@ -33,7 +33,7 @@ after_success:
 - codecov --token=$CODECOV_TOKEN
 - chmod +x ./deploy_anaconda.sh
 before_deploy:
-- python -m pip install --upgrade sphinx sphinx-rtd-theme numpydoc | cat
+- python -m pip install --upgrade sphinx sphinx-rtd-theme | cat
 - cd docs
 - make html
 - cd ..
