@@ -245,7 +245,7 @@ def plot_loglik(Ls, xrange, yrange, xlabel=None, ylabel=None, columns=4, fig_tit
         col = i % columns
         _ax = ax[row, col]
         
-        im = _ax.imshow(L.T, cmap=cmap, aspect=1, origin=(0,0))
+        im = _ax.imshow(L.T, cmap=cmap, aspect=1, origin='lower')
         if normalize:
             im.set_norm(norm)
     

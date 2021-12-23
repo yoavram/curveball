@@ -65,7 +65,7 @@ def plot_wells(df, x='Time', y='OD', plot_func=plt.plot, output_filename=None):
 	width = len(df.Col.unique())
 	g = sns.FacetGrid(df, hue=hue, col='Col', row='Row',
                       palette=palette, hue_order=hue_order,
-                      sharex=True, sharey=True, size=1,
+                      sharex=True, sharey=True, height=1,
                       aspect=old_div(width,float(height)), despine=True,margin_titles=True)
 	g.map(plot_func, x, y)
 	g.fig.set_figwidth(width)
@@ -129,7 +129,7 @@ def plot_strains(data, x='Time', y='OD', plot_func=plt.plot, by=None, agg_func=n
 			raise ValueError("If by is not set then data must have column Strain and either Time or Cycle Nr.")
 	grp = data.groupby(by=by)
 	agg = grp.aggregate(agg_func).reset_index()
-	g = sns.FacetGrid(agg, hue=hue, size=5, aspect=1.5, palette=palette, hue_order=data[hue].unique())
+	g = sns.FacetGrid(agg, hue=hue, height=5, aspect=1.5, palette=palette, hue_order=data[hue].unique())
 	g.map(plot_func, x, y);
 	g.add_legend()
 	if output_filename:
