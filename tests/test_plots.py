@@ -19,6 +19,8 @@ import seaborn as sns
 import curveball
 import lmfit
 import matplotlib
+import logging
+logging.getLogger('matplotlib').setLevel(logging.INFO)
 
 
 CI = os.environ.get('CI', 'false').lower() == 'true'
