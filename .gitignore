@@ -86,3 +86,6 @@ notebooks/Untitled*.ipynb
 
 # pycharm
 .idea
+
+# Local Netlify folder
+.netlify
