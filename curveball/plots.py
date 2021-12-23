@@ -316,7 +316,7 @@ def plot_model_residuals(model_fit, rv=scipy.stats.norm, color='k'):
 	w, h= plt.rcParams['figure.figsize']
 	fig,ax = plt.subplots(1, 2, figsize=(w * 2, h))
 
-	model_fit.plot_residuals(ax=ax[0], data_kws={'color': color}, fit_kws={'color': color})
+	model_fit.plot_residuals(ax=ax[0], data_kws={'color': color}) # removed, causes bug in lmfit: fit_kws={'color': color})
 	ax[0].set_xlabel('Time (hr)')
 	ax[0].set_ylabel('Residuals')
 	ax[0].legend().set_visible(False)
