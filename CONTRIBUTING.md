@@ -122,30 +122,16 @@ If you only changed the documentation, just make sure it is built and looks good
 
 ### Build Curveball
 
-Build the package using conda. 
-You first need to install `conda-build`:
-
-```
-conda install conda-build
-```
-
-The command
-
-```
-conda build conda-recipe -c yoavram
-```
-
-will create a new `curveball-<curveball-version>-<python-version>-<build-number>.tar.bz2` or similar package file in the `CONDAPATH/conda-bld/<operating-system>` folder, where `CONDAPATH` is the path to your Anaconda/Miniconda install (for example, on my PC it's at ` d:\Anaconda3\conda-bld\win-64\curveball-v0.1.10b-py34_7.tar.bz2`; on Travis-CI Ubuntu machine it's at `~/miniconda/conda-bld/linux-64/curveball-v0.1.10b-py34_2.tar.bz2`). 
-The build will fail if any dependencies are missing.
+Build the package using `setup.py`.
 
 ### Test the build
 
-Now create a new environment using `conda` and try to install Curveball from the package you just built (replace `PYTHON_VERSION` with the Python version you are using, either 2.7 or 3.4):
+Now create a new environment using `conda` and try to install Curveball from the package you just built (replace `PYTHON_VERSION` with the Python version you are using):
 
 ```
-conda create -n test python=PYTHON_VERSION
-activate test
-conda install --use-local curveball
+conda create -n test_curveball python=PYTHON_VERSION
+conda activate test_curveball
+pip install curveball
 ```
 
 Verify the installation:
@@ -156,8 +142,8 @@ curveball --version
 
 If everything worked out you can remove the environment:
 ```
-deactivate
-conda env remove -n test
+conda deactivate
+conda env remove -n test_curveball
 ```
 
 ### Releasing a new version
@@ -187,15 +173,18 @@ No change in the code itself is required as everything is handled by [versioneer
 
 ```
 git tag v#.#.#
+```
+Run `curveball --version` to make sure the version is clean (`x.x.x` without `+xxxxxx.dirty`) and then push it to github:
+```
 git push
 git push --tags
 ```
 
-#### Automatic deployment
+#### Deployment
 
-Pushing the tags will cause [Travis-CI](https://magnum.travis-ci.com/yoavram/curveball)
-to pull the code, install dependencies, and test the code. 
-If the tests succeed, Travis-CI will **build the package and deploy it to Anaconda.org**,
-but only on tagged commits from the `master` branch.
+Build the docs again (see above) and deploy to [netlify](https://curveball.netlify.com) -- make sure you are at the base folder and not it the `docs` folder.
+```
+netlify deploy --prod --dir docs/_build/html
+```
 
-Travis-CI will also **build the documentation and deploy it to [netlify](https://curveball.netlify.com)**.
+Build the package and deploy to PyPI.
