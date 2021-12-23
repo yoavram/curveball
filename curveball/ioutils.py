@@ -221,7 +221,7 @@ def read_tecan_xlsx(filename, label=u'OD', sheets=None, max_time=None, plate=Non
         df.Time = [(t - min_time).total_seconds() / 3600.0 for t in df.Time]
         if max_time is not None:
             df = df[df.Time <= max_time]
-        df.sort_values([u'Row', u'Col', u'Time'], inplace=True)
+        df = df.sort_values([u'Row', u'Col', u'Time'])
         label_dataframes.append((lbl,df))
 
     n_label_dataframes = len(label_dataframes)
