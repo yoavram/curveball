@@ -4,6 +4,8 @@
 
 - Docs: use curl instead of wget, update figures and tables
 - Force xlrd v1 because v2 does not support xlsx
+- Bumped some dependency versions
+- Fixed small minor bugs
 
 ## v0.2.15
 
