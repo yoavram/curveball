@@ -1,6 +1,6 @@
 # Written by Joshua Guthrie (Department of Physics, University of Alberta, jdguthri@ualberta.ca), Feb 2025
 # Docker file to build a container (with a bash shell) that has Python 3.9, curveball, and the dependency versions from 2021 required to run it
-# The docker file should work to build the container on any OS - instructions for ubuntu-based linux distros are provided below
+# The docker file should work to build the container on any OS - instructions for Ubuntu-based Linux distros are provided below
 
 ## Instructions
 # To install docker from an ubuntu command line using apt: sudo apt install docker
