@@ -31,7 +31,7 @@ PROMPT = True
 ERROR_COLOR = 'red'
 INFO_COLOR = 'white'
 file_extension_handlers = {
-	'.mat': curveball.ioutils.read_tecan_mat, 
+	'.mat': curveball.ioutils.read_tecan_mat,
 	'.xlsx': curveball.ioutils.read_tecan_xlsx,
 	'.csv': curveball.ioutils.read_curveball_csv,
 }
@@ -116,7 +116,7 @@ def load_plate(plate_path):
 	See also
 	--------
 	find_plate_file
-	"""	
+	"""
 	try:
 		plate = pd.read_csv(plate_path)
 	except IOError as e:
@@ -127,10 +127,10 @@ def load_plate(plate_path):
 
 
 def where(ctx, param, value):
-	"""Prints the path where Curveball is installed and exits. 
+	"""Prints the path where Curveball is installed and exits.
 
-	Parameters are generally ignored; 
-	if `value` or `ctx.resilient_parsing` are not empty/:const:`False`/:const:`None`, 
+	Parameters are generally ignored;
+	if `value` or `ctx.resilient_parsing` are not empty/:const:`False`/:const:`None`,
 	the function returns without doing anything.
 	"""
 	if not value or ctx.resilient_parsing:
@@ -201,7 +201,7 @@ def plate(plate_folder, plate_file, output_file, list, show):
 
 @click.argument('path', type=click.Path(exists=True, readable=True))
 @click.option('--plate_folder', default='plate_templates', help='plate templates default folder', type=click.Path())
-@click.option('--plate_file', default='checkerboard.csv', help='plate templates csv file')
+@click.option('--plate_file',  help='plate templates csv file')
 @click.option('-o', '--output_file', default='-', help='output csv file path', type=click.File(mode='w', lazy=True))
 @click.option('--blank_strain', default='0', type=str, help='blank strain for background calibration')
 @click.option('--ref_strain', default='1',  type=str, help='reference strain for competitions')
@@ -222,18 +222,24 @@ def analyse(path, output_file, plate_folder, plate_file, blank_strain, ref_strai
 	>>> curveball plate --help
 	"""
 	results = []
-	plate_path = find_plate_file(plate_folder, plate_file)
+	if plate_file is None:
+		if VERBOSE:
+			click.echo('- Plate file not provided; processing precleaned file%s' % click.format_filename(path))
+		plate = None
+		plate_path = None
+	else:
+		plate_path = find_plate_file(plate_folder, plate_file)
+		plate = load_plate(plate_path)
+		plate.Strain = list(map(str, plate.Strain))
+		plate_strains = plate.Strain.unique().tolist()
 
 	if VERBOSE:
-		click.echo('- Processing %s' % click.format_filename(path))		
+		click.echo('- Processing %s' % click.format_filename(path))
 		click.echo('- Using plate template from %s' % click.format_filename(plate_path))
 		click.echo('- Blank strain: %s; Reference strain: %s' % (blank_strain, ref_strain))
 		click.echo('- Omitting data after %.2f hours' % max_time)
 		click.echo('-' * 40)
-	
-	plate = load_plate(plate_path)
-	plate.Strain = list(map(str, plate.Strain))
-	plate_strains = plate.Strain.unique().tolist()	
+
 	if PROMPT:
 		fig,ax = curveball.plots.plot_plate(plate)
 		fig.show()
@@ -244,16 +250,16 @@ def analyse(path, output_file, plate_folder, plate_file, blank_strain, ref_strai
 		#files = [os.path.join(path, fn) for fn in files]
 	else:
 		files = glob.glob(path)
-	
+
 	files = [fn for fn in files if os.path.splitext(fn)[-1].lower() in file_extension_handlers.keys()]
 	if not files:
 		raise click.ClickException("No data files found in folder {0}".format(click.format_filename(path)))
-	
+
 	with click.progressbar(files, label='Processing files:', item_show_func=get_filename, color='green') as bar:
 		for filepath in bar:
 			file_results = _process_file(filepath, plate, blank_strain, ref_strain, max_time, guess, param_min, param_max, param_fix, weights, ci, nsamples)
 			results.extend(file_results)
-	
+
 	output_table = pd.DataFrame(results)
 	output_table.to_csv(output_file, index=False)
 	if VERBOSE and output_file.name != '-':
@@ -267,15 +273,15 @@ def _process_file(filepath, plate, blank_strain, ref_strain, max_time, guess, pa
 	--------
 	analyse
 	"""
-	results = []	
+	results = []
 	fn, ext = os.path.splitext(filepath)
 	echo_info("\tHandler: {1}\n".format(filepath, ext))
 	handler = file_extension_handlers.get(ext)
 	if handler is None:
 		echo_info("No handler found for file {0}".format(click.format_filename(filepath)))
 		return results
-	try: 
-		if np.isfinite(max_time):			
+	try:
+		if np.isfinite(max_time):
 			df = handler(filepath, plate=plate, max_time=max_time)
 		else:
 			df = handler(filepath, plate=plate)
@@ -283,10 +289,18 @@ def _process_file(filepath, plate, blank_strain, ref_strain, max_time, guess, pa
 		ioerror_to_click_exception(e)
 	except xlrd.biffh.XLRDError as e:
 		raise click.FileError(filepath, hint="parser error, probably not a {1} file, {0}".format(e.args[0], ext))
+	try:
+		strains = plate.Strain.unique().tolist()
+	except AttributeError:
+		try:
+			strains = df.Strain.unique().tolist()
+		except Exception as e:
+			raise e
+	except Exception as e:
+		raise e
 
-	strains = plate.Strain.unique().tolist()
 
-	if blank_strain is not None and blank_strain != 'none': 
+	if blank_strain is not None and blank_strain != 'none':
 		if blank_strain in strains:
 			bg = df[(df.Strain == blank_strain) & (df.Time == df.Time.min())]
 			bg = bg.OD.mean()
@@ -303,8 +317,8 @@ def _process_file(filepath, plate, blank_strain, ref_strain, max_time, guess, pa
 		strains_plot_fn = fn + '_strains.png'
 		g = curveball.plots.plot_strains(df, output_filename=strains_plot_fn)
 		echo_info("Wrote strains plot to %s" % click.format_filename(strains_plot_fn))
-	
-	if blank_strain in strains: 
+
+	if blank_strain in strains:
 		strains.remove(blank_strain)
 	if ref_strain in strains:
 		strains.remove(ref_strain)
@@ -353,10 +367,10 @@ def _process_file(filepath, plate, blank_strain, ref_strain, max_time, guess, pa
 			param_samples = curveball.models.bootstrap_params(strain_df, fit, nsamples=nsamples)
 			_, _, low, high = curveball.models.find_max_growth_ci(fit, param_samples)
 			res['max_growth_rate_low'] = low
-			res['max_growth_rate_high'] = high			
+			res['max_growth_rate_high'] = high
 			low, high = curveball.models.find_lag_ci(fit, param_samples)
 			res['lag_low'] = low
-			res['lag_high'] = high			
+			res['lag_high'] = high
 			low, high = curveball.models.find_min_doubling_time_ci(fit, param_samples)
 			res['min_doubling_time_low'] = low
 			res['min_doubling_time_high'] = high
