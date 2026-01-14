@@ -10,7 +10,7 @@
 from builtins import map
 import sys
 import os.path
-import pkg_resources
+from importlib import resources
 import glob
 import warnings
 # catch some future warnings, mostly caused by matplotlib
@@ -94,7 +94,7 @@ def find_plate_file(plate_folder, plate_file):
 	plate_path = os.path.join(plate_folder, plate_file)
 	if not os.path.exists(plate_path):
 		# if plate path doesn't exist try to get it from package data
-		plate_path = pkg_resources.resource_filename(plate_folder, plate_file)
+		plate_path = _resource_path(plate_folder, plate_file)
 	if not os.path.exists(plate_path):
 		raise click.FileError(plate_path, hint="can't find file.")
 	return plate_path
@@ -180,7 +180,7 @@ def plate(plate_folder, plate_file, output_file, list, show):
 	>>> curveball plate --help
 	"""
 	if list:
-		files = pkg_resources.resource_listdir('plate_templates', '')
+		files = [p.name for p in resources.files('plate_templates').iterdir()]
 		files = [fn for fn in files if os.path.splitext(fn)[-1].lower() == '.csv']
 		files = os.linesep.join(files)
 		click.echo(files)
@@ -386,3 +386,5 @@ def _process_file(filepath, plate, blank_strain, ref_strain, max_time, guess, pa
 
 if __name__ == '__main__':
     cli()
+def _resource_path(package, name):
+	return os.fspath(resources.files(package).joinpath(name))

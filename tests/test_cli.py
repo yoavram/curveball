@@ -14,7 +14,7 @@ import os
 import glob
 import io
 import shutil
-import pkg_resources
+from importlib import resources
 import pandas as pd
 from click.testing import CliRunner # See reference on testing Click applications: http://click.pocoo.org/5/testing/
 from curveball.scripts import cli
@@ -100,7 +100,7 @@ class PlateTestCase(TestCase):
 
 	def test_plate_not_found(self):
 		result = self.runner.invoke(cli.cli, ['plate', '--plate_file=untitled.csv'])
-		self.assertNotEquals(result.exit_code, 0)
+		self.assertNotEqual(result.exit_code, 0)
 		self.assertIn('untitled.csv', result.output)
 
 
@@ -111,7 +111,7 @@ class PlateTestCase(TestCase):
 				import this
 				f.write(this.s)
 			result = self.runner.invoke(cli.cli, ['plate', '--plate_file={0}'.format(filename)])
-			self.assertNotEquals(result.exit_code, 0, result.output)
+			self.assertNotEqual(result.exit_code, 0, result.output)
 			self.assertIn(filename, result.output)
 
 
@@ -149,7 +149,7 @@ class AnalysisTestCase(TestCase):
 
 
 	def setUp(self):
-		self.files = pkg_resources.resource_listdir('data', '')
+		self.files = [p.name for p in resources.files('data').iterdir()]
 		self.files = [fn for fn in self.files if os.path.splitext(fn)[-1] in ['.xlsx', '.mat']]
 		self.files = [fn for fn in self.files if not fn.lower().startswith('sunrise')]
 		self.files = [fn for fn in self.files if not fn.lower().startswith('biotek')]
@@ -162,7 +162,7 @@ class AnalysisTestCase(TestCase):
 
 		print("files:", self.files)
 		for fn in self.files:
-			src = pkg_resources.resource_filename('data', fn)
+			src = resources.files('data').joinpath(fn)
 			shutil.copy(src, '.')
 			self.assertTrue(os.path.exists(os.path.join(self.dirpath, fn)))
 			self.assertTrue(os.path.isfile(os.path.join(self.dirpath, fn)))
@@ -273,7 +273,7 @@ class AnalysisTestCase(TestCase):
 
 	def test_path_not_found(self):
 		result = self.runner.invoke(cli.cli, ['analyse', 'untitled.xlsx'])
-		self.assertNotEquals(result.exit_code, 0)
+		self.assertNotEqual(result.exit_code, 0)
 		self.assertIn('untitled.xlsx', result.output)
 
 
@@ -282,14 +282,14 @@ class AnalysisTestCase(TestCase):
 			os.remove(fn)
 		self.assertEqual(len(glob.glob("*")), 0)
 		result = self.runner.invoke(cli.cli, ['--no-plot', '--verbose', '--no-prompt', 'analyse', '.'])
-		self.assertNotEquals(result.exit_code, 0)
+		self.assertNotEqual(result.exit_code, 0)
 		self.assertIn('.', result.output)
 
 
 	def test_bad_data_file(self):
 		shutil.copyfile(__file__, 'untitled.xlsx')
 		result = self.runner.invoke(cli.cli, ['analyse', 'untitled.xlsx'])
-		self.assertNotEquals(result.exit_code, 0)
+		self.assertNotEqual(result.exit_code, 0)
 		self.assertIn('untitled.xlsx', result.output)
 
 

@@ -8,7 +8,7 @@
 # http://www.opensource.org/licenses/MIT-license
 # Copyright (c) 2015, Yoav Ram <yoav@yoavram.com>
 from unittest import TestCase, main
-import pkg_resources
+from importlib import resources
 import shutil
 import tempfile
 import os
@@ -49,21 +49,21 @@ class PlotsTestCase(TestCase):
 		
 
 	def test_plot_wells(self):
-		df = pd.read_csv(pkg_resources.resource_filename("data", "Tecan_210115.csv"))
+		df = pd.read_csv(resources.files("data").joinpath("Tecan_210115.csv"))
 		g = curveball.plots.plot_wells(df, output_filename=self.output_filename)
 		self.assertIsInstance(g, sns.axisgrid.Grid)
 		self.check_image()
 
 
 	def test_plot_strains(self):
-		df = pd.read_csv(pkg_resources.resource_filename("data", "Tecan_210115.csv"))
+		df = pd.read_csv(resources.files("data").joinpath("Tecan_210115.csv"))
 		g = curveball.plots.plot_strains(df, output_filename=self.output_filename)
 		self.assertIsInstance(g, sns.axisgrid.Grid)
 		self.check_image()
 
 
 	def test_plot_strains_no_output(self):
-		df = pd.read_csv(pkg_resources.resource_filename("data", "Tecan_210115.csv"))
+		df = pd.read_csv(resources.files("data").joinpath("Tecan_210115.csv"))
 		g = curveball.plots.plot_strains(df)
 		self.assertIsInstance(g, sns.axisgrid.Grid)
 		with self.assertRaises(IOError):
@@ -71,14 +71,14 @@ class PlotsTestCase(TestCase):
 
 
 	def test_tsplot(self):
-		df = pd.read_csv(pkg_resources.resource_filename("data", "Tecan_210115.csv"))		
+		df = pd.read_csv(resources.files("data").joinpath("Tecan_210115.csv"))		
 		g = curveball.plots.tsplot(df, output_filename=self.output_filename)
 		self.assertIsInstance(g, matplotlib.axes.Axes)
 		self.check_image()
 
 
 	def test_plot_plate(self):
-		df = pd.read_csv(pkg_resources.resource_filename("plate_templates", "checkerboard.csv"))		
+		df = pd.read_csv(resources.files("plate_templates").joinpath("checkerboard.csv"))		
 		fig, ax = curveball.plots.plot_plate(df, output_filename=self.output_filename)
 		self.assertIsInstance(fig, matplotlib.figure.Figure)
 		self.check_image()

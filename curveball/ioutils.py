@@ -24,6 +24,7 @@ import re
 import datetime
 import dateutil.parser
 from glob import glob
+import os
 import os.path
 from warnings import warn
 
@@ -431,6 +432,7 @@ def read_sunrise_xlsx(filename, label=u'OD', max_time=None, plate=None):
     """
     import xlrd
     dataframes = []
+    filename = os.fspath(filename)
     files = glob(filename)
     if not files:
         return pd.DataFrame()

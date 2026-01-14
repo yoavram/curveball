@@ -13,7 +13,7 @@ import tempfile
 import os
 import shutil
 import zipfile
-import pkg_resources
+from importlib import resources
 import curveball
 import pandas as pd
 from pandas.testing import assert_frame_equal
@@ -24,8 +24,8 @@ RANDOM_SEED = int(os.environ.get('RANDOM_SEED', 0))
 
 class CurveballCSVTestCase(TestCase):
     def setUp(self):
-        self.filename = pkg_resources.resource_filename("data", "Tecan_210115.csv")
-        self.plate = pd.read_csv(pkg_resources.resource_filename("plate_templates", "G-RG-R.csv"))
+        self.filename = resources.files("data").joinpath("Tecan_210115.csv")
+        self.plate = pd.read_csv(resources.files("plate_templates").joinpath("G-RG-R.csv"))
 
     def test_read_curveball_csv(self):
         df = curveball.ioutils.read_curveball_csv(self.filename)
@@ -44,8 +44,8 @@ class CurveballCSVTestCase(TestCase):
 
 class TecanXLSXTestCase(TestCase):
     def setUp(self):
-        self.filename = pkg_resources.resource_filename("data", "Tecan_210115.xlsx")
-        self.plate = pd.read_csv(pkg_resources.resource_filename("plate_templates", "G-RG-R.csv"))
+        self.filename = resources.files("data").joinpath("Tecan_210115.xlsx")
+        self.plate = pd.read_csv(resources.files("plate_templates").joinpath("G-RG-R.csv"))
 
     def test_read_tecan_xlsx_OD(self):
         df = curveball.ioutils.read_tecan_xlsx(self.filename, 'OD')
@@ -78,7 +78,7 @@ class TecanXLSXTestCase(TestCase):
 
 class BioTekXLSXTestCase(TestCase):
     def setUp(self):
-        self.filename = pkg_resources.resource_filename("data", "BioTekSynergy.xlsx")
+        self.filename = resources.files("data").joinpath("BioTekSynergy.xlsx")
 
     def test_read_biotek_xlsx(self):
         df = curveball.ioutils.read_biotek_xlsx(self.filename)
@@ -111,8 +111,8 @@ class BioTekXLSXTestCase(TestCase):
 
 class SunriseTestCase(TestCase):
     def setUp(self):
-        self.filename = pkg_resources.resource_filename("data", "Sunrise_180515_0916.xlsx")
-        self.plate = pd.read_csv(pkg_resources.resource_filename("plate_templates", "G-RG-R.csv"))
+        self.filename = resources.files("data").joinpath("Sunrise_180515_0916.xlsx")
+        self.plate = pd.read_csv(resources.files("plate_templates").joinpath("G-RG-R.csv"))
 
     def test_read_sunrise_xlsx(self):
         df = curveball.ioutils.read_sunrise_xlsx(self.filename)
@@ -133,8 +133,8 @@ class SunriseTestCase(TestCase):
 
 class MatTestCase(TestCase):
     def setUp(self):
-        self.filename = pkg_resources.resource_filename("data", "plate_9_OD.mat")
-        self.plate = pd.read_csv(pkg_resources.resource_filename("plate_templates", "checkerboard.csv"))
+        self.filename = resources.files("data").joinpath("plate_9_OD.mat")
+        self.plate = pd.read_csv(resources.files("plate_templates").joinpath("checkerboard.csv"))
 
     def test_read_tecan_mat(self):
         df = curveball.ioutils.read_tecan_mat(self.filename, plate=self.plate)
