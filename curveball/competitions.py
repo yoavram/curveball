@@ -628,8 +628,8 @@ def fit_and_compete(m1, m2, df_mixed, y0=None, aguess=(1, 1), fixed=False,
     if y0 is None:
         y0 = best_values1['y0']/2, best_values2['y0']/2
 
-    y_mixed = df_mixed.groupby(time_var)[value_var].mean().values
-    y_mixed_std = df_mixed.groupby(time_var)[value_var].std().values
+    y_mixed = df_mixed.groupby(time_var)[value_var].mean().to_numpy()
+    y_mixed_std = df_mixed.groupby(time_var)[value_var].std().to_numpy()
     t_mixed = np.unique(df_mixed[time_var])
     t = np.linspace(0, t_mixed.max(), num_of_points)
 
