@@ -526,6 +526,10 @@ def fitness_LTEE(y, ref_strain=0, assay_strain=1, t0=0, t1=-1, ci=0):
     for i in range(y.shape[2]):
         At0, Bt0 = y[t0, assay_strain, i], y[t0, ref_strain, i]
         At1, Bt1 = y[t1, assay_strain, i], y[t1, ref_strain, i]
+        At0 = np.asarray(At0, dtype=float).squeeze()
+        Bt0 = np.asarray(Bt0, dtype=float).squeeze()
+        At1 = np.asarray(At1, dtype=float).squeeze()
+        Bt1 = np.asarray(Bt1, dtype=float).squeeze()
         w[i] = np.log(At1 / At0) / np.log(Bt1 / Bt0)
 
     if ci == 0:

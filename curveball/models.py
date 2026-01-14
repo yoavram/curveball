@@ -23,7 +23,16 @@ try:
 except ImportError:
 	from scipy.stats import chisqprob
 from scipy.stats import linregress
-from scipy.misc import derivative
+try:
+    from scipy.misc import derivative
+except Exception:
+    def derivative(func, x0, dx=1.0, n=1, order=3):
+        """Finite-difference derivative fallback for SciPy>=1.10 compatibility."""
+        if n == 1:
+            return (func(x0 + dx) - func(x0 - dx)) / (2.0 * dx)
+        if n == 2:
+            return (func(x0 + dx) - 2.0 * func(x0) + func(x0 - dx)) / (dx ** 2)
+        return derivative(lambda t: derivative(func, t, dx, n - 1, order), x0, dx, 1, order)
 import pandas as pd
 import copy
 import inspect

@@ -9,7 +9,7 @@ from builtins import map
 # http://www.opensource.org/licenses/MIT-license
 # Copyright (c) 2015, Yoav Ram <yoav@yoavram.com>
 from unittest import TestCase, main
-from nose.plugins.skip import SkipTest
+import pytest
 import os
 import glob
 import io

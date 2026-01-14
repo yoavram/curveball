@@ -17,7 +17,7 @@ setup:
 
 # test your application (tests in the tests/ directory)
 test:
-	@nosetests --with-coverage --cover-package=curveball --cover-inclusive --cover-min-percentage=80 --cover-html --cover-html-dir=coverage_report
+	@pytest -q --cov=curveball --cov-report=html:coverage_report --cov-fail-under=80
 	@open coverage_report/index.html
 
 # run tests against all supported python versions
@@ -26,4 +26,3 @@ tox:
 
 doc:
 	@cd docs && make html && open _build/html/index.html
-

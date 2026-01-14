@@ -1,4 +1,4 @@
-include setup.py setup.cfg README.md LICENCE.txt MANIFEST.in PKG-INFO CHANGELOG.md environment.yml requirements.txt
+include setup.py setup.cfg README.md LICENCE.txt MANIFEST.in PKG-INFO CHANGELOG.md requirements.txt
 exclude *.pyc .* divshot.json Makefile tox.ini
 recursive-include curveball *.py
 recursive-include curveball/scripts *.py

@@ -16,6 +16,7 @@ import zipfile
 import pkg_resources
 import curveball
 import pandas as pd
+from pandas.testing import assert_frame_equal
 
 
 RANDOM_SEED = int(os.environ.get('RANDOM_SEED', 0))
@@ -38,7 +39,7 @@ class CurveballCSVTestCase(TestCase):
         f, fn = tempfile.mkstemp()
         curveball.ioutils.write_curveball_csv(df, fn)
         df1 = pd.read_csv(fn)
-        pd.util.testing.assert_frame_equal(df, df1, check_dtype=False)
+        assert_frame_equal(df, df1, check_dtype=False)
 
 
 class TecanXLSXTestCase(TestCase):

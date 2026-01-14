@@ -125,10 +125,11 @@ def plot_strains(data, x='Time', y='OD', plot_func=plt.plot, by=None, agg_func=n
 			by = ['Strain', 'Cycle Nr.']
 		elif 'Time' in data and 'Strain' in data:
 			by = ['Strain', 'Time']
-		else:
-			raise ValueError("If by is not set then data must have column Strain and either Time or Cycle Nr.")
+	else:
+		raise ValueError("If by is not set then data must have column Strain and either Time or Cycle Nr.")
 	grp = data.groupby(by=by)
-	agg = grp.aggregate(agg_func).reset_index()
+	numeric_cols = [col for col in data.select_dtypes(include=[np.number]).columns if col not in by]
+	agg = grp[numeric_cols].aggregate(agg_func).reset_index()
 	g = sns.FacetGrid(agg, hue=hue, height=5, aspect=1.5, palette=palette, hue_order=data[hue].unique())
 	g.map(plot_func, x, y);
 	g.add_legend()
@@ -208,7 +209,7 @@ def plot_plate(data, edge_color='#888888', output_filename=None):
 	ax : numpy.ndarray
 		array of axis objects.
 	"""
-	plate = data.pivot('Row', 'Col', 'Color').values
+	plate = data.pivot(index='Row', columns='Col', values='Color').values
 	height, width = plate.shape
 	fig = plt.figure(figsize=((width + 2.0) / 3.0, (height + 2.0) / 3.0))
 	ax = fig.add_axes((0.05, 0.05, 0.9, 0.9),

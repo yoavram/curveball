@@ -48,24 +48,25 @@ setup(
     ],
     install_requires=[
         # remember to use 'package-name>=x.y.z,<x.y+1.0' notation (this way you get bugfixes)
-        'future',
-        'click',
-        'lxml',
-        'xlrd==1',
-        'numpy',
-        'scipy',
-        'matplotlib',
-        'pandas',
-        'seaborn>=0.7.1',
-        'scikit-learn',
-        'sympy',
-        'lmfit>=0.9.3',
-        'webcolors'
+        'future>=0.18.0',
+        'click>=7.0',
+        'lxml>=4.7.0',
+        'xlrd>=1.2.0,<2.0',
+        'numpy>=1.20.0',
+        'scipy>=1.6.0',
+        'matplotlib>=3.2.0',
+        'pandas>=1.3.0',
+        'seaborn>=0.11.0',
+        'scikit-learn>=0.24.0',
+        'sympy>=1.9.0',
+        'lmfit>=1.0.0',
+        'webcolors>=1.7',
+        'python-dateutil>=2.8.0'
     ],
     extras_require={
         'tests': [
-            'nose',
-            'coverage',
+            'pytest',
+            'pytest-cov',
             'pillow'
         ],
         'docs': [

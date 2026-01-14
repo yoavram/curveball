@@ -109,13 +109,13 @@ If you changed the source code, you need to run the tests.
 First, install the tests dependencies:
 
 ```
-pip install nose pillow
+pip install pytest pytest-cov pillow
 ```
 
 Then run the tests:
 
 ```
-nosetests -v tests
+pytest -v tests
 ```
 
 If you only changed the documentation, just make sure it is built and looks good (see above).
