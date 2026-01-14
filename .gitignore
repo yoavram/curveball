@@ -89,3 +89,24 @@ notebooks/Untitled*.ipynb
 
 # Local Netlify folder
 .netlify
+# pixi environments
+.pixi/*
+!.pixi/config.toml
+# pixi manifests (keep local-only)
+pixi.toml
+pixi.lock
+
+# Node artifacts
+node_modules/
+package-lock.json
+
+# Local build artifacts
+README.html
+default.profraw
+log/
+
+# Generated plots and test outputs
+test_*.png
+data/*.png
+data/Spectramax_growth_curve.txt
+docs/_static/*.png
