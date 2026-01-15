@@ -138,62 +138,108 @@ def read_tecan_xlsx(filename, label=u'OD', sheets=None, max_time=None, plate=Non
     >>> df.shape
     (8544, 9)
     """
-    import xlrd
-    wb = xlrd.open_workbook(filename)
+    import numbers
+    import openpyxl
+    from openpyxl.utils.datetime import from_excel
+    wb = openpyxl.load_workbook(filename, data_only=True, read_only=True)
     dateandtime = datetime.datetime.now() # default
 
     if isinstance(label, string_types):
         label = [label]
     if sheets is None:
-        sheets = range(wb.nsheets)
+        sheets = range(len(wb.worksheets))
     if PRINT: print("Reading {0} worksheets from workbook {1}".format(len(sheets), filename))
     label_dataframes = []
     for lbl in label:
         sheet_dataframes = []        
         ## FOR sheet
         for sh_i in sheets:
-            sh = wb.sheet_by_index(sh_i)
-            if sh.nrows == 0:
+            sh = wb.worksheets[sh_i]
+            rows = list(sh.iter_rows(values_only=True))
+            if not rows:
                 continue # to next sheet
         
-            for i in range(sh.nrows):
+            for i in range(len(rows)):
                 ## FOR row
-                row = sh.row_values(i)
-                if row[0].startswith(u'Date'):
+                row = rows[i]
+                first = row[0]
+                if isinstance(first, string_types) and first.startswith(u'Date'):
                     if isinstance(row[1], string_types):
-                        date = ''.join(row[1:])
-                        next_row = sh.row_values(i + 1)
-                        if next_row[0].startswith(u'Time'):
-                            time = ''.join(next_row[1:])
+                        date = ''.join([x for x in row[1:] if x])
+                        next_row = rows[i + 1]
+                        if isinstance(next_row[0], string_types) and next_row[0].startswith(u'Time'):
+                            time = ''.join([x for x in next_row[1:] if x])
                         else:
                             warn(u"Warning: time row missing (sheet '{0}', row{1}), found row starting with {2}".format(sh.name, i, row[0]))
                         dateandtime = dateutil.parser.parse("%s %s" % (date, time))
-                    elif isinstance(row[1], float):
-                        date_tuple = xlrd.xldate_as_tuple(row[1], wb.datemode)
-                        next_row = sh.row_values(i + 1)
-                        if next_row[0].startswith(u'Time'):
-                            time = tuple(map(int, next_row[1].split(':')))[:3]
-                            date_tuple = date_tuple[:3] + time
+                    elif isinstance(row[1], datetime.datetime):
+                        date_dt = row[1]
+                        next_row = rows[i + 1]
+                        if isinstance(next_row[0], string_types) and next_row[0].startswith(u'Time'):
+                            time_val = next_row[1]
+                            if isinstance(time_val, string_types):
+                                time = dateutil.parser.parse(time_val).time()
+                            elif isinstance(time_val, datetime.time):
+                                time = time_val
+                            elif isinstance(time_val, numbers.Number):
+                                time = from_excel(time_val, wb.epoch).time()
+                            else:
+                                time = date_dt.time()
+                            dateandtime = datetime.datetime.combine(date_dt.date(), time)
                         else:
                             warn(u"Warning: time row missing (sheet '{0}', row{1}), found row starting with {2}".format(sh.name, i, row[0]))
-                        dateandtime = datetime.datetime(*date_tuple)
+                            dateandtime = date_dt
+                    elif isinstance(row[1], datetime.date):
+                        date_dt = datetime.datetime.combine(row[1], datetime.time())
+                        next_row = rows[i + 1]
+                        if isinstance(next_row[0], string_types) and next_row[0].startswith(u'Time'):
+                            time_val = next_row[1]
+                            if isinstance(time_val, string_types):
+                                time = dateutil.parser.parse(time_val).time()
+                            elif isinstance(time_val, datetime.time):
+                                time = time_val
+                            elif isinstance(time_val, numbers.Number):
+                                time = from_excel(time_val, wb.epoch).time()
+                            else:
+                                time = datetime.time()
+                            dateandtime = datetime.datetime.combine(date_dt.date(), time)
+                        else:
+                            warn(u"Warning: time row missing (sheet '{0}', row{1}), found row starting with {2}".format(sh.name, i, row[0]))
+                            dateandtime = date_dt
+                    elif isinstance(row[1], numbers.Number):
+                        date_dt = from_excel(row[1], wb.epoch)
+                        next_row = rows[i + 1]
+                        if isinstance(next_row[0], string_types) and next_row[0].startswith(u'Time'):
+                            time_val = next_row[1]
+                            if isinstance(time_val, string_types):
+                                time = dateutil.parser.parse(time_val).time()
+                            elif isinstance(time_val, datetime.time):
+                                time = time_val
+                            elif isinstance(time_val, numbers.Number):
+                                time = from_excel(time_val, wb.epoch).time()
+                            else:
+                                time = date_dt.time()
+                            dateandtime = datetime.datetime.combine(date_dt.date(), time)
+                        else:
+                            warn(u"Warning: time row missing (sheet '{0}', row{1}), found row starting with {2}".format(sh.name, i, row[0]))
+                            dateandtime = date_dt
                     else:
                         warn(u"Warning: date row (sheet '{2}', row {3}) could not be parsed: {0} {1}".format(row[1], type(row[1]), sh.name, i))
-                if row[0] == lbl:
+                if first == lbl:
                     break
                 ## FOR row ENDS
             
             data = {}            
-            for j in range(i + 1, sh.nrows):
+            for j in range(i + 1, len(rows)):
                 ## FOR row
-                row = sh.row(j)
-                if not row[0].value:
+                row = rows[j]
+                if not row[0]:
                     break
-                data[row[0].value] = [x.value for x in row[1:] if x.ctype == 2]
+                data[row[0]] = [x for x in row[1:] if isinstance(x, numbers.Number)]
                 ## FOR row ENDS
 
             if not data:
-                raise ValueError("No data found in sheet {1} of workbook {0}".format(filename, sh_i))
+                continue
 
             min_length = min(map(len, data.values()))
             for k,v in data.items():
@@ -210,7 +256,7 @@ def read_tecan_xlsx(filename, label=u'OD', sheets=None, max_time=None, plate=Non
 
         n_sheet_dataframes = len(sheet_dataframes)
         if n_sheet_dataframes == 0:
-            df = pd.DataFrame()
+            raise ValueError("No data found in any sheet of workbook {0}".format(filename))
         elif n_sheet_dataframes == 1:
             df = sheet_dataframes[0]
         else:
@@ -430,40 +476,56 @@ def read_sunrise_xlsx(filename, label=u'OD', max_time=None, plate=None):
         - ``Strain`` (:py:class:`str`): if a `plate` was given, this is the strain name corresponding to the well from the plate.
         - ``Color`` (:py:class:`str`, hex format): if a `plate` was given, this is the strain color corresponding to the well from the plate.
     """
-    import xlrd
+    import numbers
+    import openpyxl
+    from openpyxl.utils.datetime import from_excel
     dataframes = []
     filename = os.fspath(filename)
     files = glob(filename)
     if not files:
         return pd.DataFrame()
     for filename in files:
-        wb = xlrd.open_workbook(filename)
-        for sh in wb.sheets():
-            if sh.nrows > 0:
+        wb = openpyxl.load_workbook(filename, data_only=True, read_only=True)
+        for sh in wb.worksheets:
+            rows = list(sh.iter_rows(values_only=True))
+            if rows:
                 break
         parse_data = False # start with metadata
         index = []
         data = []
 
-        for i in range(sh.nrows):
-            row = sh.row_values(i)
+        for i in range(len(rows)):
+            row = rows[i]
             if row[0] == u'Date:':
-                date = next(filter(lambda x: isinstance(x, float), row[1:]))
-                date = xlrd.xldate_as_tuple(date, 0)        
+                date_val = next(filter(lambda x: x is not None, row[1:]))
+                if isinstance(date_val, datetime.datetime):
+                    date_dt = date_val
+                elif isinstance(date_val, datetime.date):
+                    date_dt = datetime.datetime.combine(date_val, datetime.time())
+                elif isinstance(date_val, numbers.Number):
+                    date_dt = from_excel(date_val, wb.epoch)
+                else:
+                    raise ValueError("Unexpected date value in file {}".format(filename))
             elif row[0] == u'Time:':
-                time = next(filter(lambda x: isinstance(x, float), row[1:]))
-                time = xlrd.xldate_as_tuple(time, 0)
+                time_val = next(filter(lambda x: x is not None, row[1:]))
+                if isinstance(time_val, datetime.datetime):
+                    time_dt = time_val.time()
+                elif isinstance(time_val, datetime.time):
+                    time_dt = time_val
+                elif isinstance(time_val, numbers.Number):
+                    time_dt = from_excel(time_val, wb.epoch).time()
+                else:
+                    raise ValueError("Unexpected time value in file {}".format(filename))
             elif row[0] == u'<>':
-                columns = list(map(int, row[1:]))
+                columns = list(map(int, filter(lambda x: x is not None, row[1:])))
                 parse_data = True
-            elif len(row[0]) == 0 and parse_data:
+            elif (row[0] is None or row[0] == '') and parse_data:
                 break
             elif parse_data:
                 index.append(row[0])
-                data.append(list(map(float, row[1:])))
+                data.append(list(map(float, filter(lambda x: x is not None, row[1:]))))
                 
-        dateandtime = date[:3] + time[-3:]
-        dateandtime = datetime.datetime(*dateandtime)
+        dateandtime = datetime.datetime.combine(date_dt.date(), time_dt)
         
         df = pd.DataFrame(data, columns=columns, index=index)
         df[u'Row'] = index
@@ -488,32 +550,41 @@ def read_sunrise_xlsx(filename, label=u'OD', max_time=None, plate=None):
 
 
 def read_biotek_xlsx(filename, max_time=None, plate=None, PRINT=False):
-    import xlrd
-    wb = xlrd.open_workbook(filename)
-    for sh_i in range(wb.nsheets):
-        sh = wb.sheet_by_index(sh_i)
-        if sh.nrows > 0:
+    import openpyxl
+    wb = openpyxl.load_workbook(filename, data_only=True, read_only=True)
+    for sh_i in range(len(wb.worksheets)):
+        sh = wb.worksheets[sh_i]
+        rows = list(sh.iter_rows(values_only=True))
+        if rows:
             break
     else: # all sheets are empty
         warnings.warn('All sheets are empty in {}'.format(filename))
         return pd.DataFrame()
 
     if PRINT:
-        print("Reading worksheet {0} with {2} lines from workbook {1}".format(sh_i, filename, sh.nrows))
+        print("Reading worksheet {0} with {2} lines from workbook {1}".format(sh_i, filename, len(rows)))
 
     in_data = False
     data = []
     dfs = []
     i = 0
-    while i < sh.nrows:
-        row = sh.row_values(i)
+    while i < len(rows):
+        row = rows[i]
         if not in_data and row[1] == 'Time':
             columns = row[1:]
             in_data = True
-        elif in_data and row[1] != '':
-            row[1] *= 24 # days -> hours
+        elif in_data and row[1] not in (None, ''):
+            row = list(row)
+            if isinstance(row[1], datetime.time):
+                row[1] = row[1].hour + row[1].minute / 60.0 + row[1].second / 3600.0
+            elif isinstance(row[1], datetime.timedelta):
+                row[1] = row[1].total_seconds() / 3600.0
+            elif isinstance(row[1], datetime.datetime):
+                row[1] = row[1].hour + row[1].minute / 60.0 + row[1].second / 3600.0
+            else:
+                row[1] *= 24 # days -> hours
             data.append(row[1:])
-        elif in_data and row[1] == '':
+        elif in_data and row[1] in (None, ''):
             in_data = False
             df = pd.DataFrame(data, columns=columns)
             df = pd.melt(df, [u'Time', u'T° 600'], var_name=u'Well', value_name=u'OD')

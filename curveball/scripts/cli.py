@@ -19,7 +19,8 @@ import curveball
 import numpy as np
 import pandas as pd
 import click
-import xlrd
+import zipfile
+from openpyxl.utils.exceptions import InvalidFileException
 import matplotlib.pyplot as plt
 import seaborn as sns
 sns.set_style("ticks")
@@ -281,8 +282,8 @@ def _process_file(filepath, plate, blank_strain, ref_strain, max_time, guess, pa
 			df = handler(filepath, plate=plate)
 	except IOError as e:
 		ioerror_to_click_exception(e)
-	except xlrd.biffh.XLRDError as e:
-		raise click.FileError(filepath, hint="parser error, probably not a {1} file, {0}".format(e.args[0], ext))
+	except (InvalidFileException, zipfile.BadZipFile, OSError, ValueError) as e:
+		raise click.FileError(filepath, hint="parser error, probably not a {1} file, {0}".format(e, ext))
 
 	strains = plate.Strain.unique().tolist()
 

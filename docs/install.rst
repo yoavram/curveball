@@ -19,7 +19,7 @@ Dependencies
 -  lmfit
 -  scikit-learn
 -  sympy
--  xlrd
+-  openpyxl
 -  lxml
 -  click
 -  future
