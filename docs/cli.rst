@@ -6,6 +6,18 @@ through a command line or terminal, without any knowledge in Python programming.
 
 The :doc:`tutorial` includes a complete walkthrough on using the CLI to analyse growth cruves data.
 
+Fit-and-compete
+---------------
+
+Use ``curveball fit_compete`` to estimate competition coefficients from mixed-culture data (requires a plate template that includes a ``total`` strain):
+
+>>> curveball fit_compete mixed.xlsx --analyse_file=summary.csv --ref_strain=G --total=RG
+
+The output CSV contains:
+
+- ``a1``, ``a2``: competition coefficients from :py:func:`curveball.competitions.fit_and_compete`
+- ``MSE``: mean squared error of the mixed-culture fit
+
 Analyse output columns
 ----------------------
 
