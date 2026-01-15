@@ -75,7 +75,7 @@ def read_curveball_csv(filename, max_time=None, plate=None):
     if plate is None and 'Color' not in df.columns:
         df[u'Color'] = u'#000000'
     if max_time is not None:
-        df = df[df.Time <= max_time]
+        df = df[df.Time <= max_time].copy()
     _fix_dtypes(df)
     return df
 
@@ -267,7 +267,7 @@ def read_tecan_xlsx(filename, label=u'OD', sheets=None, max_time=None, plate=Non
             print("Starting time", min_time)
         df.Time = [(t - min_time).total_seconds() / 3600.0 for t in df.Time]
         if max_time is not None:
-            df = df[df.Time <= max_time]
+            df = df[df.Time <= max_time].copy()
         df = df.sort_values([u'Row', u'Col', u'Time'])
         label_dataframes.append((lbl,df))
 
@@ -348,7 +348,7 @@ def read_tecan_mat(filename, time_label=u'tps', value_label=u'plate_mat', value_
         df = pd.merge(df, plate, on=(u'Row', u'Col'))
     if not max_time:
         max_time = df.Time.max()
-    df = df[df.Time < max_time]
+    df = df[df.Time < max_time].copy()
     df.sort_values([u'Row', u'Col', u'Time'], inplace=True)    
     _fix_dtypes(df)
     return df
@@ -442,7 +442,7 @@ def read_tecan_xml(filename, label=u'OD', max_time=None, plate=None):
     else:
         df = pd.merge(df, plate, on=(u'Row', u'Col'))
     if max_time is not None:
-        df = df[df.Time <= max_time]
+        df = df[df.Time <= max_time].copy()
     df.sort_values([u'Row', u'Col', u'Time'], inplace=True)
     _fix_dtypes(df)
     return df
@@ -543,7 +543,7 @@ def read_sunrise_xlsx(filename, label=u'OD', max_time=None, plate=None):
     else:
         df = pd.merge(df, plate, on=(u'Row', u'Col'))
     if max_time is not None:
-        df = df[df.Time <= max_time]
+        df = df[df.Time <= max_time].copy()
     df.sort_values([u'Row', u'Col', u'Time'], inplace=True)
     _fix_dtypes(df)
     return df
@@ -599,7 +599,7 @@ def read_biotek_xlsx(filename, max_time=None, plate=None, PRINT=False):
     if PRINT:
         print("Starting time", min_time)
     if max_time is not None:
-        df = df[df.Time <= max_time]
+        df = df[df.Time <= max_time].copy()
     df.sort_values([u'Row', u'Col', u'Time'], inplace=True)
 
     if df.shape[0] == 0: # no dataframes
