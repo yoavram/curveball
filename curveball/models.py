@@ -177,7 +177,9 @@ def sample_params(model_fit, nsamples, params=None, covar=None):
     if covar is None:
         covar = model_fit.covar
     if covar is None:
-        raise ValueError("Covariance matrix for {0} is invalid (None).".format(model_fit.model))
+        warn("Warning: covariance matrix is None for {0}; cannot sample parameters from covar.".format(model_fit.model))
+        names = [p.name for p in params.values() if p.vary]
+        return pd.DataFrame(columns=names)
     if covar.ndim != 2:
         warn("Covariance matrix doesn't have 2 dimensions: \n{}".format(covar))
     w, h = covar.shape
@@ -686,6 +688,9 @@ def find_lag_ci(model_fit, param_samples, ci=0.95):
     """    
     if not 0 <= ci <= 1:
         raise ValueError("ci must be between 0 and 1")
+    if param_samples is None or param_samples.shape[0] == 0:
+        warn("Warning: no parameter samples available for lag CI")
+        return np.nan, np.nan
     nsamples = param_samples.shape[0]
     lags = np.zeros(nsamples)    
     for i in range(param_samples.shape[0]):
@@ -705,7 +710,7 @@ def find_lag_ci(model_fit, param_samples, ci=0.95):
     if not idx.all():
         warn("Warning: omitting {0} negative lag values".format(len(lags) - idx.sum()))
     if not idx.any(): # no legal lag values left
-        return np.nan, np.nan, np.nan
+        return np.nan, np.nan
     lags = lags[idx]
     low = np.percentile(lags, margin)
     high = np.percentile(lags, ci * 100.0 + margin)
