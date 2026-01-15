@@ -16,10 +16,11 @@ import io
 import shutil
 from importlib import resources
 import pandas as pd
-from click.testing import CliRunner # See reference on testing Click applications: http://click.pocoo.org/5/testing/
+from click.testing import CliRunner # ...
 from curveball.scripts import cli
 import curveball
 import click
+import numpy as np
 
 
 CI = os.environ.get('CI', 'false').lower() == 'true'
@@ -236,6 +237,28 @@ class AnalysisTestCase(TestCase):
 		lines = [line for line in result.output.splitlines() if len(line) > 0] 
 		data = os.linesep.join(lines[-4:]) # only last 4 lines
 		self.assertTrue(is_csv(data))
+
+	def test_constant_od_emits_nan(self):
+		filename = 'constant.csv'
+		with self.runner.isolated_filesystem():
+			constant_df = pd.DataFrame({
+				'Time': [0, 1],
+				'OD': [0.1, 0.1],
+				'Well': ['A1', 'A1'],
+				'Strain': ['G', 'G'],
+				'Row': ['A', 'A'],
+				'Col': [1, 1]
+			})
+			constant_df.to_csv(filename, index=False)
+			result = self.runner.invoke(
+				cli.cli, ['--no-plot', '--verbose', '--no-prompt', 'analyse', filename,
+					'--output_file=out.csv', '--plate_file=G-RG-R.csv', '--ref_strain=G']
+			)
+			self.assertEqual(result.exit_code, 0, result.output)
+			output_df = pd.read_csv('out.csv')
+			self.assertIn('NRMSD', output_df.columns)
+			self.assertTrue(np.isnan(output_df.loc[0, 'NRMSD']))
+			self.assertTrue(np.isnan(output_df.loc[0, 'CV(RMSD)']))
 
 
 	# this test works but takes too long (10 min) see #129

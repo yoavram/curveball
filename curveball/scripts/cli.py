@@ -392,6 +392,37 @@ def _process_file(filepath, plate, blank_strain, ref_strain, max_time, guess, pa
 
 	for strain in strains:
 		strain_df = df[df.Strain == strain]
+		if strain_df.OD.nunique() <= 1:
+			warnings.warn("Strain %s has constant OD values; skipping fit." % strain)
+			res = {
+				'folder': os.path.dirname(filepath),
+				'filename': os.path.splitext(os.path.basename(fn))[0],
+				'strain': strain,
+				'model': None,
+				'RSS': np.nan,
+				'RMSD': np.nan,
+				'NRMSD': np.nan,
+				'CV(RMSD)': np.nan,
+				'bic': np.nan,
+				'aic': np.nan,
+				'weighted_bic': np.nan,
+				'weighted_aic': np.nan,
+				'y0': np.nan,
+				'K': np.nan,
+				'r': np.nan,
+				'nu': np.nan,
+				'q0': np.nan,
+				'v': np.nan,
+				'has_lag': False,
+				'has_nu': False,
+				'max_growth_rate': np.nan,
+				'min_doubling_time': np.nan,
+				'lag': np.nan,
+				'w': np.nan
+			}
+			results.append(res)
+			plt.clf()
+			continue
 		_ = curveball.models.fit_model(strain_df, param_guess=guess, param_min=param_min, param_max=param_max, param_fix=param_fix, use_weights=weights, PLOT=PLOT, PRINT=VERBOSE)
 		if PLOT:
 			fit_results,fig,ax = _
@@ -409,8 +440,18 @@ def _process_file(filepath, plate, blank_strain, ref_strain, max_time, guess, pa
 		res['model'] = fit.model.name
 		res['RSS'] = fit.chisqr
 		res['RMSD'] = np.sqrt(res['RSS'] / fit.ndata)
-		res['NRMSD'] = res['RMSD'] / (strain_df.OD.max() - strain_df.OD.min())
-		res['CV(RMSD)'] = res['RMSD'] / (strain_df.OD.mean())
+		od_range = strain_df.OD.max() - strain_df.OD.min()
+		if od_range == 0:
+			warnings.warn("Strain %s has constant OD; normalized metrics undefined" % strain)
+			res['NRMSD'] = np.nan
+		else:
+			res['NRMSD'] = res['RMSD'] / od_range
+		od_mean = strain_df.OD.mean()
+		if od_mean == 0:
+			warnings.warn("Strain %s has mean OD zero; CV undefined" % strain)
+			res['CV(RMSD)'] = np.nan
+		else:
+			res['CV(RMSD)'] = res['RMSD'] / od_mean
 		res['bic'] = fit.bic
 		res['aic'] = fit.aic
 		res['weighted_bic'] = fit.weighted_bic
