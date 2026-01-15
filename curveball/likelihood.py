@@ -126,8 +126,8 @@ def loglik_r_nu(r_range, nu_range, df, f=curveball.baranyi_roberts_model.baranyi
     if not params:
         params = dict()
     t = df.Time.unique()
-    y = df.groupby('Time')['OD'].mean().values
-    y_sig = df.groupby('Time')['OD'].std().values
+    y = df.groupby('Time')['OD'].mean().to_numpy()
+    y_sig = df.groupby('Time')['OD'].std().to_numpy()
     
     output = np.empty((len(r_range), len(nu_range)))
     for i, r in enumerate(r_range):
@@ -170,8 +170,8 @@ def loglik_r_q0(r_range, q0_range, df, f=curveball.baranyi_roberts_model.baranyi
     if not params:
         params = dict()
     t = df.Time.unique()
-    y = df.groupby('Time')['OD'].mean().values
-    y_sig = df.groupby('Time')['OD'].std().values
+    y = df.groupby('Time')['OD'].mean().to_numpy()
+    y_sig = df.groupby('Time')['OD'].std().to_numpy()
     
     output = np.empty((len(r_range), len(q0_range)))
     for i, r in enumerate(r_range):

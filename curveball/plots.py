@@ -125,10 +125,12 @@ def plot_strains(data, x='Time', y='OD', plot_func=plt.plot, by=None, agg_func=n
 			by = ['Strain', 'Cycle Nr.']
 		elif 'Time' in data and 'Strain' in data:
 			by = ['Strain', 'Time']
-		else:
-			raise ValueError("If by is not set then data must have column Strain and either Time or Cycle Nr.")
+	else:
+		raise ValueError("If by is not set then data must have column Strain and either Time or Cycle Nr.")
 	grp = data.groupby(by=by)
-	agg = grp.aggregate(agg_func).reset_index()
+	numeric_cols = [col for col in data.select_dtypes(include=[np.number]).columns if col not in by]
+	agg_func_name = 'mean' if agg_func is np.mean else agg_func
+	agg = grp[numeric_cols].aggregate(agg_func_name).reset_index()
 	g = sns.FacetGrid(agg, hue=hue, height=5, aspect=1.5, palette=palette, hue_order=data[hue].unique())
 	g.map(plot_func, x, y);
 	g.add_legend()
@@ -179,8 +181,27 @@ def tsplot(data, x='Time', y='OD', ci_level=95, ax=None, color=None, output_file
 	else: 
 		palette = color or sns.color_palette()
 
-	g = sns.lineplot(data=data, x=x, hue=condition, y=y,
-					err_style='band', ci=ci_level, palette=list(palette), ax=ax)
+	try:
+		g = sns.lineplot(
+			data=data,
+			x=x,
+			hue=condition,
+			y=y,
+			errorbar=("ci", ci_level),
+			palette=list(palette),
+			ax=ax
+		)
+	except TypeError:
+		g = sns.lineplot(
+			data=data,
+			x=x,
+			hue=condition,
+			y=y,
+			err_style='band',
+			ci=ci_level,
+			palette=list(palette),
+			ax=ax
+		)
 	sns.despine()
 	if output_filename:
 		g.figure.savefig(output_filename, bbox_inches='tight', pad_inches=1)
@@ -208,7 +229,7 @@ def plot_plate(data, edge_color='#888888', output_filename=None):
 	ax : numpy.ndarray
 		array of axis objects.
 	"""
-	plate = data.pivot('Row', 'Col', 'Color').values
+	plate = data.pivot(index='Row', columns='Col', values='Color').to_numpy()
 	height, width = plate.shape
 	fig = plt.figure(figsize=((width + 2.0) / 3.0, (height + 2.0) / 3.0))
 	ax = fig.add_axes((0.05, 0.05, 0.9, 0.9),
@@ -261,7 +282,7 @@ def plot_params_distribution(param_samples, color='k', cmap="viridis", alpha=Non
 	if alpha is None:
 		alpha = 1.0 / np.power(nsamples, 1.0 / 4.0)
 	g.map_upper(plt.scatter, alpha=alpha, color=color)
-	g.map_lower(sns.kdeplot, cmap=cmap, legend=False, shade=True, shade_lowest=False)
+	g.map_lower(sns.kdeplot, cmap=cmap, legend=False, fill=True, thresh=0.05)
 	g.map_diag(plt.hist, facecolor=color) # https://github.com/mwaskom/seaborn/pull/788
 	return g
 
@@ -366,7 +387,7 @@ def plot_residuals(df, time='Time', value='OD', resid_func=lambda x: x - x.mean(
 	w, h= plt.rcParams['figure.figsize']
 	fig,ax = plt.subplots(1, 3, figsize=(w * 3, h))
 
-	residuals = df.groupby(time)[value].transform(resid_func).values
+	residuals = df.groupby(time)[value].transform(resid_func).to_numpy()
 
 	ax[0].plot(df[time], residuals, ls='', marker='o', color=color)
 	ax[0].set(xlabel=time, ylabel='Residuals')	
@@ -375,7 +396,7 @@ def plot_residuals(df, time='Time', value='OD', resid_func=lambda x: x - x.mean(
 	ax[1].set(xlabel='Residuals', ylabel='Frequency')
 	
 	sigmas = df.groupby(time)[value].std()	
-	linreg = scipy.stats.linregress(sigmas.values[:-1], sigmas.values[1:])
+	linreg = scipy.stats.linregress(sigmas.to_numpy()[:-1], sigmas.to_numpy()[1:])
 	eq = r'$\sigma_{{t+1}} = {:.2g} + {:.2g} \sigma_{{t}}$'.format(linreg.intercept, linreg.slope)
 	sigma_range = np.linspace(sigmas.min(), sigmas.max())
 	ax[2].plot(sigma_range, sigma_range, color='k', ls='--', label=r'$\sigma_{t+1}=\sigma_{t}$')

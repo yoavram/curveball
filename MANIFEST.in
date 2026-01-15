@@ -1,4 +1,4 @@
-include setup.py setup.cfg README.md LICENCE.txt MANIFEST.in PKG-INFO CHANGELOG.md environment.yml requirements.txt
+include setup.py setup.cfg README.md LICENCE.txt MANIFEST.in PKG-INFO CHANGELOG.md requirements.txt
 exclude *.pyc .* divshot.json Makefile tox.ini
 recursive-include curveball *.py
 recursive-include curveball/scripts *.py
@@ -8,14 +8,7 @@ recursive-exclude curveball *.pyc
 recursive-exclude curveball/scripts *.pyc
 recursive-exclude tests *.pyc
 recursive-exclude examples *.pyc
-include plate_templates/checkerboard.csv
-include plate_templates/G-RG-R.csv
-include data/Tecan_280715.xlsx
-include data/Tecan_210115.xlsx
-include data/Tecan_210115.csv
-include data/BioTekSynergy.xlsx
-include data/20130211_dh.zip
-include data/plate_9_OD.mat
-include data/Sunrise_180515_0916.xlsx
+recursive-include plate_templates *
+recursive-include data *
 include versioneer.py
 include curveball/_version.py

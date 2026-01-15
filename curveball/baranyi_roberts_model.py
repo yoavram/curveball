@@ -14,7 +14,13 @@ import inspect
 from warnings import warn
 import numpy as np
 from scipy.optimize import minimize
-from scipy.misc import derivative
+def derivative(func, x0, dx=1.0, n=1, order=3):
+	"""Finite-difference derivative fallback for SciPy>=1.10 compatibility."""
+	if n == 1:
+		return (func(x0 + dx) - func(x0 - dx)) / (2.0 * dx)
+	if n == 2:
+		return (func(x0 + dx) - 2.0 * func(x0) + func(x0 - dx)) / (dx ** 2)
+	return derivative(lambda t: derivative(func, t, dx, n - 1, order), x0, dx, 1, order)
 import matplotlib.pyplot as plt
 import pandas as pd
 import lmfit
@@ -186,12 +192,12 @@ def guess_nu(t, N, K=None, PLOT=False, PRINT=False):
 	t, N, dNdt = t[idx], N[idx], dNdt[idx]
 	# find N at inflexion point
 	i = dNdt.argmax()
-	Ninf = N_smooth(t[i])
+	Ninf = float(np.asarray(N_smooth(t[i])).squeeze())
 	# find nu that gives Ninf at inflexion point
 	def target(nu):
 		return np.abs(K * (1 + nu)**(-1.0 / nu)  - Ninf)
 	opt_res = minimize(target, x0=1, bounds=[(0, None)])
-	x = opt_res.x
+	x = float(opt_res.x.item())
 	y = target(x)
 	y1 = target(1.0)
 	
@@ -230,7 +236,7 @@ def guess_nu(t, N, K=None, PLOT=False, PRINT=False):
 		ax2.set_xscale('log')
 		
 		fig.tight_layout()        
-		return x[0], fig, ax
+		return x, fig, ax
 	return x[0]
 
 

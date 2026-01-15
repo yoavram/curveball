@@ -9,17 +9,18 @@ from builtins import map
 # http://www.opensource.org/licenses/MIT-license
 # Copyright (c) 2015, Yoav Ram <yoav@yoavram.com>
 from unittest import TestCase, main
-from nose.plugins.skip import SkipTest
+import pytest
 import os
 import glob
 import io
 import shutil
-import pkg_resources
+from importlib import resources
 import pandas as pd
-from click.testing import CliRunner # See reference on testing Click applications: http://click.pocoo.org/5/testing/
+from click.testing import CliRunner # ...
 from curveball.scripts import cli
 import curveball
 import click
+import numpy as np
 
 
 CI = os.environ.get('CI', 'false').lower() == 'true'
@@ -100,7 +101,7 @@ class PlateTestCase(TestCase):
 
 	def test_plate_not_found(self):
 		result = self.runner.invoke(cli.cli, ['plate', '--plate_file=untitled.csv'])
-		self.assertNotEquals(result.exit_code, 0)
+		self.assertNotEqual(result.exit_code, 0)
 		self.assertIn('untitled.csv', result.output)
 
 
@@ -111,7 +112,7 @@ class PlateTestCase(TestCase):
 				import this
 				f.write(this.s)
 			result = self.runner.invoke(cli.cli, ['plate', '--plate_file={0}'.format(filename)])
-			self.assertNotEquals(result.exit_code, 0, result.output)
+			self.assertNotEqual(result.exit_code, 0, result.output)
 			self.assertIn(filename, result.output)
 
 
@@ -149,7 +150,7 @@ class AnalysisTestCase(TestCase):
 
 
 	def setUp(self):
-		self.files = pkg_resources.resource_listdir('data', '')
+		self.files = [p.name for p in resources.files('data').iterdir()]
 		self.files = [fn for fn in self.files if os.path.splitext(fn)[-1] in ['.xlsx', '.mat']]
 		self.files = [fn for fn in self.files if not fn.lower().startswith('sunrise')]
 		self.files = [fn for fn in self.files if not fn.lower().startswith('biotek')]
@@ -162,7 +163,7 @@ class AnalysisTestCase(TestCase):
 
 		print("files:", self.files)
 		for fn in self.files:
-			src = pkg_resources.resource_filename('data', fn)
+			src = resources.files('data').joinpath(fn)
 			shutil.copy(src, '.')
 			self.assertTrue(os.path.exists(os.path.join(self.dirpath, fn)))
 			self.assertTrue(os.path.isfile(os.path.join(self.dirpath, fn)))
@@ -237,6 +238,28 @@ class AnalysisTestCase(TestCase):
 		data = os.linesep.join(lines[-4:]) # only last 4 lines
 		self.assertTrue(is_csv(data))
 
+	def test_constant_od_emits_nan(self):
+		filename = 'constant.csv'
+		with self.runner.isolated_filesystem():
+			constant_df = pd.DataFrame({
+				'Time': [0, 1],
+				'OD': [0.1, 0.1],
+				'Well': ['A1', 'A1'],
+				'Strain': ['G', 'G'],
+				'Row': ['A', 'A'],
+				'Col': [1, 1]
+			})
+			constant_df.to_csv(filename, index=False)
+			result = self.runner.invoke(
+				cli.cli, ['--no-plot', '--verbose', '--no-prompt', 'analyse', filename,
+					'--output_file=out.csv', '--plate_file=G-RG-R.csv', '--ref_strain=G']
+			)
+			self.assertEqual(result.exit_code, 0, result.output)
+			output_df = pd.read_csv('out.csv')
+			self.assertIn('NRMSD', output_df.columns)
+			self.assertTrue(np.isnan(output_df.loc[0, 'NRMSD']))
+			self.assertTrue(np.isnan(output_df.loc[0, 'CV(RMSD)']))
+
 
 	# this test works but takes too long (10 min) see #129
 	def test_process_file_with_ci(self):
@@ -273,7 +296,7 @@ class AnalysisTestCase(TestCase):
 
 	def test_path_not_found(self):
 		result = self.runner.invoke(cli.cli, ['analyse', 'untitled.xlsx'])
-		self.assertNotEquals(result.exit_code, 0)
+		self.assertNotEqual(result.exit_code, 0)
 		self.assertIn('untitled.xlsx', result.output)
 
 
@@ -282,14 +305,14 @@ class AnalysisTestCase(TestCase):
 			os.remove(fn)
 		self.assertEqual(len(glob.glob("*")), 0)
 		result = self.runner.invoke(cli.cli, ['--no-plot', '--verbose', '--no-prompt', 'analyse', '.'])
-		self.assertNotEquals(result.exit_code, 0)
+		self.assertNotEqual(result.exit_code, 0)
 		self.assertIn('.', result.output)
 
 
 	def test_bad_data_file(self):
 		shutil.copyfile(__file__, 'untitled.xlsx')
 		result = self.runner.invoke(cli.cli, ['analyse', 'untitled.xlsx'])
-		self.assertNotEquals(result.exit_code, 0)
+		self.assertNotEqual(result.exit_code, 0)
 		self.assertIn('untitled.xlsx', result.output)
 
 

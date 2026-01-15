@@ -10,7 +10,7 @@
 from builtins import map
 import sys
 import os.path
-import pkg_resources
+from importlib import resources
 import glob
 import warnings
 # catch some future warnings, mostly caused by matplotlib
@@ -18,8 +18,10 @@ warnings.simplefilter(action="ignore", category=FutureWarning)
 import curveball
 import numpy as np
 import pandas as pd
+from scipy.integrate import odeint
 import click
-import xlrd
+import zipfile
+from openpyxl.utils.exceptions import InvalidFileException
 import matplotlib.pyplot as plt
 import seaborn as sns
 sns.set_style("ticks")
@@ -94,7 +96,7 @@ def find_plate_file(plate_folder, plate_file):
 	plate_path = os.path.join(plate_folder, plate_file)
 	if not os.path.exists(plate_path):
 		# if plate path doesn't exist try to get it from package data
-		plate_path = pkg_resources.resource_filename(plate_folder, plate_file)
+		plate_path = _resource_path(plate_folder, plate_file)
 	if not os.path.exists(plate_path):
 		raise click.FileError(plate_path, hint="can't find file.")
 	return plate_path
@@ -180,7 +182,7 @@ def plate(plate_folder, plate_file, output_file, list, show):
 	>>> curveball plate --help
 	"""
 	if list:
-		files = pkg_resources.resource_listdir('plate_templates', '')
+		files = [p.name for p in resources.files('plate_templates').iterdir()]
 		files = [fn for fn in files if os.path.splitext(fn)[-1].lower() == '.csv']
 		files = os.linesep.join(files)
 		click.echo(files)
@@ -197,6 +199,74 @@ def plate(plate_folder, plate_file, output_file, list, show):
 		plate.to_csv(output_file, index=False)
 	if output_file.name != '-':
 		echo_info("Wrote output to {0}".format(click.format_filename(output_file.name)))
+
+
+@click.argument('filepath', type=click.Path(exists=True, readable=True))
+@click.option('--analyse_file', default='-', help='analyse output csv file path', type=click.Path(exists=True, readable=True))
+@click.option('--ref_strain', type=str, help='strain used as reference, w=1')
+@click.option('--total', type=str, help='strain used as total of mixed growth')
+@click.option('--max_time', default=np.inf, help='omit data after max_time hours')
+@click.option('--plate_folder', default='plate_templates', help='plate templates default folder', type=click.Path())
+@click.option('--plate_file', default='checkerboard.csv', help='plate templates csv file')
+@click.option('-o', '--output_file', default='-', help='output csv file path', type=click.File(mode='w', lazy=True))
+@cli.command()
+def fit_compete(filepath, analyse_file, output_file, ref_strain, total, max_time, plate_folder, plate_file):
+	"""Estimate competition coefficients using mixed growth curves data."""
+	param_names = ['K', 'r', 'nu', 'q0', 'v']
+	ode = curveball.competitions.baranyi_roberts_yr
+
+	fn, _ = os.path.splitext(filepath)
+	analyse_results = pd.read_csv(analyse_file)
+	idx = analyse_results['strain'] == ref_strain
+	params1 = analyse_results[idx]
+	idx = ~(idx | (analyse_results['strain'] == total))
+	params2 = analyse_results[idx]
+	y0 = (params1['y0'].values[0], params2['y0'].values[0])
+	params1 = {v: params1[v].values[0] for v in param_names}
+	params2 = {v: params2[v].values[0] for v in param_names}
+	params = [(params1[v], params2[v]) for v in param_names]
+
+	plate_path = find_plate_file(plate_folder, plate_file)
+	plate = load_plate(plate_path)
+	df = _load_file(filepath, max_time, plate)
+	total_df = df[df.Strain == total]
+	total_t = np.unique(total_df.Time)
+	total_mean = total_df.groupby('Time').OD.mean().values
+	total_y0 = total_df.loc[total_df.Time == 0, 'OD'].mean()
+	y0sum = y0[0] + y0[1]
+	y0 = (total_y0 * y0[0] / y0sum, total_y0 * y0[1] / y0sum)
+
+	retval = curveball.competitions.fit_and_compete(
+		params1,
+		params2,
+		total_df,
+		ode=ode,
+		y0=y0,
+		aguess=(1, 1),
+		PLOT=PLOT,
+		fixed=True,
+		method='bfgs'
+	)
+	if PLOT:
+		t, y, a, fig, ax = retval
+		plot_fn = fn + '_fit-compete.png'
+		fig.savefig(plot_fn)
+		echo_info("Wrote plot to %s" % click.format_filename(plot_fn))
+	else:
+		t, y, a = retval
+	params.append(a)
+
+	MSE = ((odeint(ode, y0, total_t, args=tuple(params)).sum(axis=1) - total_mean)**2).mean()
+
+	result = dict()
+	result['a1'] = a[0]
+	result['a2'] = a[1]
+	result['MSE'] = MSE
+
+	output_table = pd.DataFrame([result]).transpose()
+	output_table.to_csv(output_file)
+	if VERBOSE and output_file.name != '-':
+		click.secho("Wrote output to %s" % output_file.name, fg='green')
 
 
 @click.argument('path', type=click.Path(exists=True, readable=True))
@@ -260,6 +330,25 @@ def analyse(path, output_file, plate_folder, plate_file, blank_strain, ref_strai
 		click.secho("Wrote output to %s" % output_file.name, fg='green')
 
 
+def _load_file(filepath, max_time, plate):
+	fn, ext = os.path.splitext(filepath)
+	echo_info("\tHandler: {1}\n".format(filepath, ext))
+	handler = file_extension_handlers.get(ext)
+	if handler is None:
+		echo_info("No handler found for file {0}".format(click.format_filename(filepath)))
+		return None
+	try:
+		if np.isfinite(max_time):
+			df = handler(filepath, plate=plate, max_time=max_time)
+		else:
+			df = handler(filepath, plate=plate)
+	except IOError as e:
+		ioerror_to_click_exception(e)
+	except (InvalidFileException, zipfile.BadZipFile, OSError, ValueError) as e:
+		raise click.FileError(filepath, hint="parser error, probably not a {1} file, {0}".format(e, ext))
+	return df
+
+
 def _process_file(filepath, plate, blank_strain, ref_strain, max_time, guess, param_min, param_max, param_fix, weights, ci, nsamples):
 	"""Analyses a single growth curves file.
 
@@ -267,22 +356,11 @@ def _process_file(filepath, plate, blank_strain, ref_strain, max_time, guess, pa
 	--------
 	analyse
 	"""
-	results = []	
+	results = []
 	fn, ext = os.path.splitext(filepath)
-	echo_info("\tHandler: {1}\n".format(filepath, ext))
-	handler = file_extension_handlers.get(ext)
-	if handler is None:
-		echo_info("No handler found for file {0}".format(click.format_filename(filepath)))
+	df = _load_file(filepath, max_time, plate)
+	if df is None:
 		return results
-	try: 
-		if np.isfinite(max_time):			
-			df = handler(filepath, plate=plate, max_time=max_time)
-		else:
-			df = handler(filepath, plate=plate)
-	except IOError as e:
-		ioerror_to_click_exception(e)
-	except xlrd.biffh.XLRDError as e:
-		raise click.FileError(filepath, hint="parser error, probably not a {1} file, {0}".format(e.args[0], ext))
 
 	strains = plate.Strain.unique().tolist()
 
@@ -314,6 +392,37 @@ def _process_file(filepath, plate, blank_strain, ref_strain, max_time, guess, pa
 
 	for strain in strains:
 		strain_df = df[df.Strain == strain]
+		if strain_df.OD.nunique() <= 1:
+			warnings.warn("Strain %s has constant OD values; skipping fit." % strain)
+			res = {
+				'folder': os.path.dirname(filepath),
+				'filename': os.path.splitext(os.path.basename(fn))[0],
+				'strain': strain,
+				'model': None,
+				'RSS': np.nan,
+				'RMSD': np.nan,
+				'NRMSD': np.nan,
+				'CV(RMSD)': np.nan,
+				'bic': np.nan,
+				'aic': np.nan,
+				'weighted_bic': np.nan,
+				'weighted_aic': np.nan,
+				'y0': np.nan,
+				'K': np.nan,
+				'r': np.nan,
+				'nu': np.nan,
+				'q0': np.nan,
+				'v': np.nan,
+				'has_lag': False,
+				'has_nu': False,
+				'max_growth_rate': np.nan,
+				'min_doubling_time': np.nan,
+				'lag': np.nan,
+				'w': np.nan
+			}
+			results.append(res)
+			plt.clf()
+			continue
 		_ = curveball.models.fit_model(strain_df, param_guess=guess, param_min=param_min, param_max=param_max, param_fix=param_fix, use_weights=weights, PLOT=PLOT, PRINT=VERBOSE)
 		if PLOT:
 			fit_results,fig,ax = _
@@ -331,8 +440,18 @@ def _process_file(filepath, plate, blank_strain, ref_strain, max_time, guess, pa
 		res['model'] = fit.model.name
 		res['RSS'] = fit.chisqr
 		res['RMSD'] = np.sqrt(res['RSS'] / fit.ndata)
-		res['NRMSD'] = res['RMSD'] / (strain_df.OD.max() - strain_df.OD.min())
-		res['CV(RMSD)'] = res['RMSD'] / (strain_df.OD.mean())
+		od_range = strain_df.OD.max() - strain_df.OD.min()
+		if od_range == 0:
+			warnings.warn("Strain %s has constant OD; normalized metrics undefined" % strain)
+			res['NRMSD'] = np.nan
+		else:
+			res['NRMSD'] = res['RMSD'] / od_range
+		od_mean = strain_df.OD.mean()
+		if od_mean == 0:
+			warnings.warn("Strain %s has mean OD zero; CV undefined" % strain)
+			res['CV(RMSD)'] = np.nan
+		else:
+			res['CV(RMSD)'] = res['RMSD'] / od_mean
 		res['bic'] = fit.bic
 		res['aic'] = fit.aic
 		res['weighted_bic'] = fit.weighted_bic
@@ -386,3 +505,5 @@ def _process_file(filepath, plate, blank_strain, ref_strain, max_time, guess, pa
 
 if __name__ == '__main__':
     cli()
+def _resource_path(package, name):
+	return os.fspath(resources.files(package).joinpath(name))

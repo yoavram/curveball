@@ -19,7 +19,7 @@ Dependencies
 -  lmfit
 -  scikit-learn
 -  sympy
--  xlrd
+-  openpyxl
 -  lxml
 -  click
 -  future
@@ -83,7 +83,7 @@ To update Curveball:
 Dependencies versions
 ^^^^^^^^^^^^^^^^^^^^^
 
-The versions of the dependencies used to develop Curveball are documented in the `conda environment file <https://github.com/yoavram/curveball/blob/master/environment.yml>`_.
+The versions of the dependencies used to develop Curveball are documented in `setup.py` and `requirements.txt` in the repository.
 
 
 Contributing

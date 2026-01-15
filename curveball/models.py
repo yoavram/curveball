@@ -23,7 +23,13 @@ try:
 except ImportError:
 	from scipy.stats import chisqprob
 from scipy.stats import linregress
-from scipy.misc import derivative
+def derivative(func, x0, dx=1.0, n=1, order=3):
+    """Finite-difference derivative fallback for SciPy>=1.10 compatibility."""
+    if n == 1:
+        return (func(x0 + dx) - func(x0 - dx)) / (2.0 * dx)
+    if n == 2:
+        return (func(x0 + dx) - 2.0 * func(x0) + func(x0 - dx)) / (dx ** 2)
+    return derivative(lambda t: derivative(func, t, dx, n - 1, order), x0, dx, 1, order)
 import pandas as pd
 import copy
 import inspect
@@ -171,7 +177,9 @@ def sample_params(model_fit, nsamples, params=None, covar=None):
     if covar is None:
         covar = model_fit.covar
     if covar is None:
-        raise ValueError("Covariance matrix for {0} is invalid (None).".format(model_fit.model))
+        warn("Warning: covariance matrix is None for {0}; cannot sample parameters from covar.".format(model_fit.model))
+        names = [p.name for p in params.values() if p.vary]
+        return pd.DataFrame(columns=names)
     if covar.ndim != 2:
         warn("Covariance matrix doesn't have 2 dimensions: \n{}".format(covar))
     w, h = covar.shape
@@ -600,7 +608,7 @@ def find_lag(model_fit, params=None):
 
     The function calculates the tangent line to the model curve at the point of maximum derivative (the inflection point). 
     The time when this line intersects with :math:`N_0` (the initial population size) 
-    is labeled :math:`\lambda` and is called the lag duration time [fig2.2]_.
+    is labeled :math:`\\lambda` and is called the lag duration time [fig2.2]_.
 
     Parameters
     ----------
@@ -680,6 +688,9 @@ def find_lag_ci(model_fit, param_samples, ci=0.95):
     """    
     if not 0 <= ci <= 1:
         raise ValueError("ci must be between 0 and 1")
+    if param_samples is None or param_samples.shape[0] == 0:
+        warn("Warning: no parameter samples available for lag CI")
+        return np.nan, np.nan
     nsamples = param_samples.shape[0]
     lags = np.zeros(nsamples)    
     for i in range(param_samples.shape[0]):
@@ -699,7 +710,7 @@ def find_lag_ci(model_fit, param_samples, ci=0.95):
     if not idx.all():
         warn("Warning: omitting {0} negative lag values".format(len(lags) - idx.sum()))
     if not idx.any(): # no legal lag values left
-        return np.nan, np.nan, np.nan
+        return np.nan, np.nan
     lags = lags[idx]
     low = np.percentile(lags, margin)
     high = np.percentile(lags, ci * 100.0 + margin)
@@ -856,8 +867,8 @@ def cooks_distance(df, model_fit, use_weights=True):
     
     for well in wells:    
         _df = df[df.Well != well]
-        time = _df['Time'].values
-        OD = _df['OD'].values
+        time = _df['Time'].to_numpy()
+        OD = _df['OD'].to_numpy()
         weights =  calc_weights(_df) if use_weights else None
         model_fit_i = copy.deepcopy(model_fit)
         model_fit_i.fit(data=OD, t=time, weights=weights)
@@ -999,7 +1010,7 @@ def calc_weights(df, PLOT=False):
     ax : matplotlib.axes.Axes
         if the argument `PLOT` was :const:`True`, the generated axis.
     """
-    deviations = df.groupby('Time')['OD'].transform(lambda x: np.repeat(x.std(), len(x))).values
+    deviations = df.groupby('Time')['OD'].transform(lambda x: np.repeat(x.std(), len(x))).to_numpy()
     if np.isnan(deviations).any():
         warn("NaN in deviations, can't use weights")
         weights = None
@@ -1170,11 +1181,11 @@ def fit_model(df, param_guess=None, param_min=None, param_max=None, param_fix=No
         param_fix = set()
 
     df = df.sort_values(by=['Time', 'OD'])
-    time = df['Time'].values
-    OD = df['OD'].values
+    time = df['Time'].to_numpy()
+    OD = df['OD'].to_numpy()
     weights =  calc_weights(df) if use_weights else None
     # TODO why should we use weights if we use the whole data set?
-    ODerr = df.groupby('Time').OD.transform(lambda x: np.repeat(x.std(), len(x))).values
+    ODerr = df.groupby('Time').OD.transform(lambda x: np.repeat(x.std(), len(x))).to_numpy()
    
     if models is None:
         models = get_models(curveball.baranyi_roberts_model)
