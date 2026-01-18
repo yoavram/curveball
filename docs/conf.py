@@ -37,6 +37,7 @@ extensions = [
     'sphinx.ext.coverage',
     'sphinx.ext.mathjax',
     'sphinx.ext.viewcode',
+    'plot_directive',
 #    'numpydoc', # https://pypi.python.org/pypi/numpydoc    
 ]
 

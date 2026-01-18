@@ -423,6 +423,8 @@ def selection_coefs_ts(t, y, ax=None, PLOT=False):
 
         s = \frac{d}{dt} \log{\frac{A(t)}{B(t)}}
 
+    The derivation follows Chevin [12]_.
+
     Parameters
     ----------
     t : numpy.ndarray

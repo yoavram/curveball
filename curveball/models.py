@@ -413,7 +413,7 @@ def find_max_growth_ci(model_fit, param_samples, after_lag=True, ci=0.95):
     model_fit : lmfit.model.ModelResult
         the result of a model fitting procedure
     param_samples : pandas.DataFrame
-        parameter samples, generated using :function:`sample_params` or :function:`bootstrap_params`
+        parameter samples, generated using :func:`sample_params` or :func:`bootstrap_params`    
     after_lag : bool
         if true, only explore the time after the lag phase. Otherwise start at time zero. Defaults to :const:`True`        
     ci : float, optional
@@ -533,7 +533,7 @@ def find_min_doubling_time_ci(model_fit, param_samples, ci=0.95):
     model_fit : lmfit.model.ModelResult
         the result of a model fitting procedure
     param_samples : pandas.DataFrame
-        parameter samples, generated using :function:`sample_params` or :function:`bootstrap_params`    
+        parameter samples, generated using :func:`sample_params` or :func:`bootstrap_params`    
     ci : float, optional
         the fraction of doubling times that should be within the calculated limits. 0 < `ci` <, defaults to 0.95.
     
@@ -578,7 +578,7 @@ def find_K_ci(param_samples, ci=0.95):
     Parameters
     ----------
     param_samples : pandas.DataFrame
-        parameter samples, generated using :function:`sample_params` or :function:`bootstrap_params`    
+        parameter samples, generated using :func:`sample_params` or :func:`bootstrap_params`    
     ci : float, optional
         the fraction of doubling times that should be within the calculated limits. 0 < `ci` <, defaults to 0.95.
     
@@ -672,7 +672,7 @@ def find_lag_ci(model_fit, param_samples, ci=0.95):
     model_fit : lmfit.model.ModelResult
         the result of a model fitting procedure
     param_samples : pandas.DataFrame
-        parameter samples, generated using :function:`sample_params` or :function:`bootstrap_params`    
+        parameter samples, generated using :func:`sample_params` or :func:`bootstrap_params`    
     ci : float, optional
         the fraction of lag durations that should be within the calculated limits. 0 < `ci` <, defaults to 0.95.
     

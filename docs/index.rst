@@ -71,7 +71,6 @@ Contents
    ioutils
    plots
    models
-   baranyi_roberts_model
    likelihood
    competitions
    cli
