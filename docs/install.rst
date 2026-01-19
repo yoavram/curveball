@@ -26,24 +26,14 @@ Dependencies
 -  python-dateutil
        
 
-.. hint::
+Installation steps
+------------------
 
-	The minimal debian (**Ubuntu**, etc.) dependencies for Anaconda are:
+Curveball requires Python 3.11+ and pip. Upgrade pip, setuptools, and wheel, then install Curveball:
 
-	>>> apt-get install libsm6 libxrender1 libfontconfig1
-
-
-Users
------
-
-The recommended way to install the dependencies is to download and install 
-`Anaconda with Python 3 <https://www.anaconda.com/downloads>`_,
-available for free on Windows, OS X, and Linux.
-
-After installing Anaconda, open a terminal or command line, and write the following commands to install the dependencies:
-
->>> conda update --yes conda
+>>> python -m pip install --upgrade pip setuptools wheel
 >>> python -m pip install curveball
+
 
 .. tip::
 

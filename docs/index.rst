@@ -3,10 +3,12 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Curveball: Predicting competition results from growth curves
+Curveball: from growth curves to competitions
 ============================================================
 
 **Author**: `Yoav Ram <http://www.yoavram.com>`_
+
+**Affiliation**: School of Zoology, Faculty of Life Sciences, Tel Aviv University
 
 Curveball is an open-source software for analysis and  
 visualization of high-throughput growth curve data 
@@ -52,12 +54,13 @@ basic familiarity with the **Python programming language** is recommended for us
 Quickstart
 ----------
 
-Install `Anaconda with Python 3 <https://www.anaconda.com/downloads>`_, then run:
+With Python 3.11+ already available, upgrade pip/setuptools/wheel and install Curveball:
 
+>>> python -m pip install --upgrade pip setuptools wheel
 >>> python -m pip install curveball
 >>> curveball --help
 
-For more detailed instructions, Proceed to the :doc:`Installation instructions <install>` and then to the :doc:`tutorial`.
+For more detailed instructions, proceed to the :doc:`Installation instructions <install>` and then to the :doc:`tutorial`.
 
 
 Contents
@@ -100,4 +103,4 @@ References
    
    Curveball documentation, examples, and other materials are licensed under the terms of the `Creative Commons Attribution 4.0 International (CC BY 4.0) license <https://creativecommons.org/licenses/by/4.0/>`_.
 
-Logo `designed by Freepik <http://www.freepik.com/free-vector/ball-of-wool_762106.htm>`_.
+Logo generated with Gemini.

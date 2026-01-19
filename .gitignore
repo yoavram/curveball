@@ -110,3 +110,4 @@ test_*.png
 data/*.png
 data/Spectramax_growth_curve.txt
 docs/_static/*.png
+!docs/_static/newlogo.png

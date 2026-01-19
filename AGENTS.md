@@ -7,7 +7,7 @@ The core library lives in `curveball/` (models, competitions, I/O, plots, CLI). 
 - `pip install -U -e .[tests]`: install the package in editable mode with test dependencies.
 - `make test`: run the test suite with coverage (generates `coverage_report/`).
 - `pytest -v tests`: run tests directly without coverage.
-- `make doc`: build HTML docs and open `docs/_build/html/index.html`.
+- `make doc`: build HTML docs and open `docs/_build/html/index.html`. When using pixi, run the same target through `pixi run make doc`.
 - `tox`: run tests across supported Python versions (if tox is configured locally).
 
 ## Coding Style & Naming Conventions
