@@ -7,6 +7,12 @@
 - Bumped some dependency versions
 - Fixed small minor bugs
 
+## v0.3.0
+
+- Docs: rebuild with new Furo-based theme, refreshed logo, and pip-centric install guidance
+- Docs: clarified CLI commands (fit_compete vs analyse) and added pixi doc build tip
+- Added AGENTS note about pixi `make doc` and updated sidebar styling/background
+
 ## v0.2.15
 
 - Bug fixes
