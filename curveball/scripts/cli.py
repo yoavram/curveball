@@ -7,7 +7,6 @@
 # Licensed under the MIT license:
 # http://www.opensource.org/licenses/MIT-license
 # Copyright (c) 2015, Yoav Ram <yoav@yoavram.com>
-from builtins import map
 import sys
 import os.path
 from importlib import resources

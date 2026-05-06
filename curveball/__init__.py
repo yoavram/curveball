@@ -8,7 +8,6 @@
 # http://www.opensource.org/licenses/MIT-license
 # Copyright (c) 2015, Yoav Ram <yoav@yoavram.com>
 
-from __future__ import absolute_import
 import warnings
 # catch warning caused by seaborn v0.6.0
 warnings.filterwarnings(action="ignore", message="axes.color_cycle is deprecated and replaced with axes.prop_cycle; please use the latter.")

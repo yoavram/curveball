@@ -7,9 +7,6 @@
 # Licensed under the MIT license:
 # http://www.opensource.org/licenses/MIT-license
 # Copyright (c) 2015, Yoav Ram <yoav@yoavram.com>
-from __future__ import division
-from builtins import str
-from past.utils import old_div
 from unittest import TestCase, main
 
 import sys
@@ -429,11 +426,11 @@ class FindMaxGrowthTestCase(TestCase):
 			 
 		t1,y1,a,t2,y2,mu = curveball.models.find_max_growth(model_fit)
 		 
-		self.assertTrue(K > y1 > old_div(K, 2), "y1=%.4g, K/2=%.4g" % (y1, old_div(K, 2)))
+		self.assertTrue(K > y1 > K / 2, "y1=%.4g, K/2=%.4g" % (y1, K / 2))
 		self.assertTrue(K * r / 8 < a < K * r / 4, "a=%.4g, Kr/4=%.4g" % (a, K * r / 4))
 		self.assertTrue(y0 < y2 < y1, "y0=%.4g, y1=%.4g, y2=%.4g," % (y0, y1, y2))
 		self.assertTrue(0 < t2 < t1, "t1=%.4g, t2=%.4g," % (t1, t2))
-		self.assertTrue(a < mu < r * (1 - old_div(y0,K)), "a = %.4g, mu=%.4g, r(1-y0/K)=%.4g" % (a, mu, r * (1-old_div(y0,K))))
+		self.assertTrue(a < mu < r * (1 - y0/K), "a = %.4g, mu=%.4g, r(1-y0/K)=%.4g" % (a, mu, r * (1-y0/K)))
 
 
 	def test_find_max_growth_richards(self):

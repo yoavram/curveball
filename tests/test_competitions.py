@@ -7,8 +7,6 @@
 # Licensed under the MIT license:
 # http://www.opensource.org/licenses/MIT-license
 # Copyright (c) 2015, Yoav Ram <yoav@yoavram.com>
-from __future__ import division
-from builtins import range
 from unittest import TestCase, main
 import sys
 import os

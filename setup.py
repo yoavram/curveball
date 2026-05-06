@@ -52,7 +52,6 @@ setup(
     ],
     install_requires=[
         # remember to use 'package-name>=x.y.z,<x.y+1.0' notation (this way you get bugfixes)
-        'future>=0.18.0',
         'click>=7.0',
         'lxml>=4.7.0',
         'xlrd>=1.2.0,<2.0',

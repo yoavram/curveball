@@ -7,10 +7,6 @@
 # Licensed under the MIT license:
 # http://www.opensource.org/licenses/MIT-license
 # Copyright (c) 2015, Yoav Ram <yoav@yoavram.com>
-from __future__ import print_function
-from __future__ import division
-from builtins import str
-
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
