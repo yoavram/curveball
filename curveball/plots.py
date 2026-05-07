@@ -7,9 +7,6 @@
 # Licensed under the MIT license:
 # http://www.opensource.org/licenses/MIT-license
 # Copyright (c) 2015, Yoav Ram <yoav@yoavram.com>
-from __future__ import division
-from builtins import range
-from past.utils import old_div
 import copy
 import numpy as np
 import scipy.stats
@@ -66,7 +63,7 @@ def plot_wells(df, x='Time', y='OD', plot_func=plt.plot, output_filename=None):
 	g = sns.FacetGrid(df, hue=hue, col='Col', row='Row',
                       palette=palette, hue_order=hue_order,
                       sharex=True, sharey=True, height=1,
-                      aspect=old_div(width,float(height)), despine=True,margin_titles=True)
+                      aspect=width/float(height), despine=True,margin_titles=True)
 	g.map(plot_func, x, y)
 	g.fig.set_figwidth(width)
 	g.fig.set_figheight(height)
@@ -244,7 +241,7 @@ def plot_plate(data, edge_color='#888888', output_filename=None):
 	squares = np.array([[RegularPolygon((i + 0.5, j + 0.5),
 	                                         numVertices=4,
 	                                         radius=0.5 * np.sqrt(2),
-	                                         orientation=old_div(np.pi, 4),
+	                                         orientation=np.pi / 4,
 	                                         ec=edge_color,
 	                                         fc=plate[height-1-j,i])
 	                          for j in range(height)]

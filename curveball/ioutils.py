@@ -7,15 +7,6 @@
 # Licensed under the MIT license:
 # http://www.opensource.org/licenses/MIT-license
 # Copyright (c) 2015, Yoav Ram <yoav@yoavram.com>
-from __future__ import print_function
-from __future__ import division
-from builtins import zip
-from builtins import str
-from builtins import filter
-from builtins import map
-from builtins import range
-from six import string_types
-from past.utils import old_div
 import numpy as np
 import pandas as pd
 from string import ascii_uppercase
@@ -144,7 +135,7 @@ def read_tecan_xlsx(filename, label=u'OD', sheets=None, max_time=None, plate=Non
     wb = openpyxl.load_workbook(filename, data_only=True, read_only=True)
     dateandtime = datetime.datetime.now() # default
 
-    if isinstance(label, string_types):
+    if isinstance(label, str):
         label = [label]
     if sheets is None:
         sheets = range(len(wb.worksheets))
@@ -163,11 +154,11 @@ def read_tecan_xlsx(filename, label=u'OD', sheets=None, max_time=None, plate=Non
                 ## FOR row
                 row = rows[i]
                 first = row[0]
-                if isinstance(first, string_types) and first.startswith(u'Date'):
-                    if isinstance(row[1], string_types):
+                if isinstance(first, str) and first.startswith(u'Date'):
+                    if isinstance(row[1], str):
                         date = ''.join([x for x in row[1:] if x])
                         next_row = rows[i + 1]
-                        if isinstance(next_row[0], string_types) and next_row[0].startswith(u'Time'):
+                        if isinstance(next_row[0], str) and next_row[0].startswith(u'Time'):
                             time = ''.join([x for x in next_row[1:] if x])
                         else:
                             warn(u"Warning: time row missing (sheet '{0}', row{1}), found row starting with {2}".format(sh.name, i, row[0]))
@@ -175,9 +166,9 @@ def read_tecan_xlsx(filename, label=u'OD', sheets=None, max_time=None, plate=Non
                     elif isinstance(row[1], datetime.datetime):
                         date_dt = row[1]
                         next_row = rows[i + 1]
-                        if isinstance(next_row[0], string_types) and next_row[0].startswith(u'Time'):
+                        if isinstance(next_row[0], str) and next_row[0].startswith(u'Time'):
                             time_val = next_row[1]
-                            if isinstance(time_val, string_types):
+                            if isinstance(time_val, str):
                                 time = dateutil.parser.parse(time_val).time()
                             elif isinstance(time_val, datetime.time):
                                 time = time_val
@@ -192,9 +183,9 @@ def read_tecan_xlsx(filename, label=u'OD', sheets=None, max_time=None, plate=Non
                     elif isinstance(row[1], datetime.date):
                         date_dt = datetime.datetime.combine(row[1], datetime.time())
                         next_row = rows[i + 1]
-                        if isinstance(next_row[0], string_types) and next_row[0].startswith(u'Time'):
+                        if isinstance(next_row[0], str) and next_row[0].startswith(u'Time'):
                             time_val = next_row[1]
-                            if isinstance(time_val, string_types):
+                            if isinstance(time_val, str):
                                 time = dateutil.parser.parse(time_val).time()
                             elif isinstance(time_val, datetime.time):
                                 time = time_val
@@ -209,9 +200,9 @@ def read_tecan_xlsx(filename, label=u'OD', sheets=None, max_time=None, plate=Non
                     elif isinstance(row[1], numbers.Number):
                         date_dt = from_excel(row[1], wb.epoch)
                         next_row = rows[i + 1]
-                        if isinstance(next_row[0], string_types) and next_row[0].startswith(u'Time'):
+                        if isinstance(next_row[0], str) and next_row[0].startswith(u'Time'):
                             time_val = next_row[1]
-                            if isinstance(time_val, string_types):
+                            if isinstance(time_val, str):
                                 time = dateutil.parser.parse(time_val).time()
                             elif isinstance(time_val, datetime.time):
                                 time = time_val
@@ -334,10 +325,10 @@ def read_tecan_mat(filename, time_label=u'tps', value_label=u'plate_mat', value_
     assert y.shape[1] == t.shape[0]
 
     df = pd.DataFrame(y.T, columns=np.arange(y.shape[0]) + 1)
-    df[u'Time'] = old_div(t, 3600.)
+    df[u'Time'] = t / 3600.
     df[u'Cycle Nr.'] = np.arange(1, 1 + len(t))
     df = pd.melt(df, id_vars=(u'Cycle Nr.', u'Time'), var_name=u'Well', value_name=value_name)
-    df[u'Well'] = [ascii_uppercase[old_div((int(w) - 1), plate_width)] + str(w % plate_width if w % plate_width > 0 else plate_width) for w in df[u'Well']]
+    df[u'Well'] = [ascii_uppercase[(int(w) - 1) // plate_width] + str(w % plate_width if w % plate_width > 0 else plate_width) for w in df[u'Well']]
     df[u'Row'] = [w[0] for w in df[u'Well']]
     df[u'Col'] = [int(w[1:]) for w in df[u'Well']]
     
